@@ -19,9 +19,19 @@ const userSchema = new mongoose.Schema(
         profilePic: {
             type: String,
             default: ""
-        }
+        },
+        followers: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            default: []
+        }],
+        following: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            default: []
+        }]
     },
-    {timestamps: true}
+    {timestamps: true} //timestamps when account was created
 )
 
 const User = mongoose.model("User", userSchema)

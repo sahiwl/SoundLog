@@ -7,6 +7,8 @@ import { connectDB } from "./lib/db.js"
 dotenv.config()
 const app = express()
 
+app.use(express.json()) // Add this line to parse JSON bodies
+
 const PORT = process.env.PORT
 connectDB()
 
