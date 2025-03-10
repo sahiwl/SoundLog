@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 import { connectDB } from "./lib/db.js";
 import cookieParser from "cookie-parser";
 import userRoutes from "./routes/user.route.js";
-
+import songRoutes from "./routes/song.route.js"
 
 dotenv.config();
 const app = express();
@@ -17,6 +17,7 @@ connectDB();
 
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes)
+app.use("/api/releases", songRoutes)
 
 app.get("/", (req, res) => {
   res.send("Server is live");

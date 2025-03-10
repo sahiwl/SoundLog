@@ -1,6 +1,6 @@
-import { followUser, getUserProfile, unfollowUser } from "../controllers/user.controller";
-import { protectRoute } from "../middleware/auth.middleware";
-import { express } from 'express';
+import { followUser, getUserProfile, unfollowUser } from "../controllers/user.controller.js";
+import { protectRoute } from "../middleware/auth.middleware.js";
+import  express  from 'express';
 
 
 const router = express.Router()
