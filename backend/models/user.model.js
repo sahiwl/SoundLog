@@ -29,7 +29,12 @@ const userSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
             default: []
-        }]
+        }],
+        favourites: [{
+            type: Number,
+            ref: "Song",
+            default: [],
+        }],
     },
     {timestamps: true} //timestamps when account was created
 )

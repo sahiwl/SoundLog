@@ -33,8 +33,8 @@ export const signup = async (req, res) => {
         fullName: newUser.fullName,
         email: newUser.email,
         profilePic: newUser.profilePic,
-        // followers: newUser.followers,
-        // following: newUser.following
+        followers: newUser.followers,
+        following: newUser.following
       });
     }
   } catch (error) {

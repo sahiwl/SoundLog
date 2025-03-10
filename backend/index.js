@@ -4,6 +4,8 @@ import express from "express";
 import dotenv from "dotenv";
 import { connectDB } from "./lib/db.js";
 import cookieParser from "cookie-parser";
+import userRoutes from "./routes/user.route.js";
+
 
 dotenv.config();
 const app = express();
@@ -14,6 +16,8 @@ const PORT = process.env.PORT;
 connectDB();
 
 app.use("/api/auth", authRoutes);
+app.use("/api/user", userRoutes)
+
 app.get("/", (req, res) => {
   res.send("Server is live");
 });
