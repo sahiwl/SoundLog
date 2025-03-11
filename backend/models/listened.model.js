@@ -8,7 +8,7 @@ const listenedSchema = new mongoose.Schema(
       required: true,
     },
     songId: {
-      type: Number,
+      type: String,
       required: true,
     },
   },

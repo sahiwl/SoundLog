@@ -12,8 +12,8 @@ const commentSchema = new mongoose.Schema(
       required: true,
     },
     songId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Song",
+      type: String,
+      // ref: "Song",
       required: true,
     },
   },

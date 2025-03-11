@@ -8,22 +8,19 @@ const reviewSchema = new mongoose.Schema(
       required: true,
     },
     songId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Song", //reference to Song model
+      type: String,
+      // ref: "Song", //reference to Song model
       required: true,
     },
     reviewText: {
       type: String,
       required: true,
     },
-
-    likes: {
-      type: Number,
-      default: 0,
-    },
-    dislikes: {
-      type: Number,
-    },
+    logId:{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Log",
+      default: null
+  }
   },
   { timestamps: true }
 );

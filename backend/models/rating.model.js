@@ -3,8 +3,8 @@ import mongoose from "mongoose";
 const ratingSchema = new mongoose.Schema(
   {
     songId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Song", //reference to Song model
+      type: String,
+      // ref: "Song", //reference to Song model
       required: true,
     },
     userId: {
@@ -18,10 +18,15 @@ const ratingSchema = new mongoose.Schema(
       min: 1,
       max: 5,
     },
+    logId:{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Log",
+      default: null
+  }
   },
   { timestamps: true }
 );
 
-const Rating = mongoose.Model("Rating", ratingSchema);
+const Rating = mongoose.model("Rating", ratingSchema);
 
 export default Rating;
