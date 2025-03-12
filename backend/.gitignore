@@ -42,4 +42,7 @@ pnpm-lock.yaml
 
 findOrCreateSong.js
 spotify.controller.js
-
+validateSong.middleware.js
+validateTrackID.middleware.js
+log.model.js
+findExactSong.js

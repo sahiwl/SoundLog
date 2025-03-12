@@ -7,7 +7,7 @@ const reviewSchema = new mongoose.Schema(
       ref: "User", //reference to User model
       required: true,
     },
-    songId: {
+    itemId: {
       type: String,
       // ref: "Song", //reference to Song model
       required: true,
@@ -16,11 +16,17 @@ const reviewSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    logId:{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Log",
-      default: null
-  }
+    itemType: {
+      type: String,
+      enum: ["album"], // Reviews can only be for albums
+      default: "album",
+      required: true,
+    },
+  //   logId:{
+  //     type: mongoose.Schema.Types.ObjectId,
+  //     ref: "Log",
+  //     default: null
+  // } removing log 
   },
   { timestamps: true }
 );

@@ -5,9 +5,10 @@ import { protectRoute } from '../middleware/auth.middleware.js';
 
 const router = express.Router()
 
-router.post("/like/:trackId", protectRoute, toggleLike)
-router.post("/listen/:trackId", protectRoute, toggleListened)
-router.post("/listenLater/:trackId", protectRoute, toggleListenLater)
-router.post("/rate/:trackId", protectRoute, updateOrAddRating)
+router.post("/like/:itemType/:itemId", protectRoute, toggleLike)
+router.post("/listen/:itemType/:itemId", protectRoute, toggleListened)
+router.post("/listenLater/:itemType/:itemId", protectRoute, toggleListenLater)
+router.post("/rate/:itemType/:itemId", protectRoute, updateOrAddRating)
+
 
 export default router

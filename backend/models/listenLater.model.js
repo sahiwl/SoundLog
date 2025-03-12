@@ -9,7 +9,7 @@ const listenLaterSchema = new Schema(
             ref: "User", 
             required: true 
         },
-        songId: { 
+        itemId: { 
             type: String,
             required: true 
         }, // e.g. '4NHQUGzhtTLFvgF5SZesLK'

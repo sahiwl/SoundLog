@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const ratingSchema = new mongoose.Schema(
   {
-    songId: {
+    itemId: {
       type: String,
       // ref: "Song", //reference to Song model
       required: true,
@@ -15,14 +15,19 @@ const ratingSchema = new mongoose.Schema(
     rating: {
       type: Number,
       required: true,
-      min: 1,
+      min: 0.5,
       max: 5,
+    },
+    itemType: {
+      type: String,
+      enum: ["track", "album"],
+      required: true,
     },
     logId:{
       type: mongoose.Schema.Types.ObjectId,
       ref: "Log",
       default: null
-  }
+    }
   },
   { timestamps: true }
 );

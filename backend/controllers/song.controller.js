@@ -13,10 +13,11 @@ export const searchTracks = async (req,res)=>{
         const data= await pullSpotifyData('search', {
             q: trackName,
             type: 'track',
+            market: 'IN',
             limit: 10
         })
-        return res.json(data.tracks)
-    } catch (error) {
+        return res.json(data)
+    } catch (error) { 
         console.error('Error in searchTracks:', error.message);
         return res.status(500).json({ message: 'Error fetching tracks from Spotify.' });
         
@@ -37,6 +38,7 @@ export const searchAlbums = async (req,res)=>{
           const data = await pullSpotifyData('search', {
             q: albumName,
             type: 'album',
+            market: 'IN',
             limit: 10
           })
 
@@ -62,6 +64,7 @@ export const searchArtists = async (req, res) => {
     const data = await pullSpotifyData('search', {
       q: artistName,
       type: 'artist',
+      market: 'IN',
       limit: 10,
     });
 

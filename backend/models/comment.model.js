@@ -11,9 +11,20 @@ const commentSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    songId: {
+    itemId: {
       type: String,
       // ref: "Song",
+      required: true,
+    },
+    reviewId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Review",
+      required: true,
+    },
+    itemType: {
+      type: String,
+      enum: ["album"], // Comments are only for album reviews
+      default: "album",
       required: true,
     },
   },

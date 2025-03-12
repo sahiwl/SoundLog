@@ -7,8 +7,13 @@ const listenedSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    songId: {
+    itemId: {
       type: String,
+      required: true,
+    },
+    itemType: {
+      type: String,
+      enum: ["track", "album"],
       required: true,
     },
   },

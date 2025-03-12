@@ -5,10 +5,11 @@ import {
   searchArtists,
   searchTracks,
 } from "../controllers/song.controller.js";
+// import { validateSong } from "../middleware/validateSong.middleware.js";
 
 const router = express.Router();
 
-router.get("/tracks", protectRoute, searchTracks);
+router.get("/tracks",  protectRoute, searchTracks);
 router.get("/albums", protectRoute, searchAlbums);
 router.get("/artists", protectRoute, searchArtists);
 
