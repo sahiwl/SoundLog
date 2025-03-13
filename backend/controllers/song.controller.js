@@ -1,7 +1,7 @@
 import { pullSpotifyData } from "../lib/pullSpotifyData.js";
 
 // searchTracks - Searches Spotify for tracks by name.
-// Endpoint: GET /api/spotify/search/tracks?name=Song+Name
+// Endpoint: GET /api/spotify/search/track?name=Song+Name
 export const searchTracks = async (req,res)=>{
     try {
         const trackName = req.query.name
@@ -25,7 +25,7 @@ export const searchTracks = async (req,res)=>{
 }
 
 //  searchAlbums - Searches Spotify for albums by name.
-//  Endpoint: GET /api/spotify/search/albums?name=Album+Name
+//  Endpoint: GET /api/spotify/search/album?name=Album+Name
 
 export const searchAlbums = async (req,res)=>{
     try {
@@ -51,7 +51,7 @@ export const searchAlbums = async (req,res)=>{
 }
 
 // searchArtists - Searches Spotify for artists by name.
-// Endpoint: GET /api/spotify/search/artists?name=Artist+Name
+// Endpoint: GET /api/spotify/search/artist?name=Artist+Name
 
 export const searchArtists = async (req, res) => {
   try {

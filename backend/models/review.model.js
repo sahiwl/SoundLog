@@ -18,8 +18,8 @@ const reviewSchema = new mongoose.Schema(
     },
     itemType: {
       type: String,
-      enum: ["album"], // Reviews can only be for albums
-      default: "album",
+      enum: ["albums"], // Reviews can only be for albums
+      default: "albums",
       required: true,
     },
   //   logId:{

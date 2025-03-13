@@ -15,7 +15,7 @@ const listenLaterSchema = new Schema(
         }, // e.g. '4NHQUGzhtTLFvgF5SZesLK'
         itemType: {
             type: String,
-            enum: ["track", "album"], 
+            enum: ["tracks", "albums"], 
             required: true },
             createdAt: { type: Date, 
             default: Date.now 

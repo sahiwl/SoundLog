@@ -12,7 +12,7 @@ const likeSchema = new mongoose.Schema(
         },
         itemType: {
             type: String,
-            enum: ["track", "album"],
+            enum: ["tracks", "albums"],
             required: true
         },
         logId:{
