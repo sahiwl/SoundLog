@@ -425,4 +425,4 @@ export const deleteComment = async (req, res) => {
       return res.status(500).json({ message: "Internal Server Error, my boy" });
     }
   };
-//This took good 1 whole day, please work for the love of god 🙏🏻
+//This took good 2 whole days, please work for the love of god 🙏🏻
