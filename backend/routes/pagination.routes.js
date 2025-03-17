@@ -6,33 +6,25 @@ import {
   getLikesPage, 
   getListenLaterPage, 
   getReviewsPage, 
-  getReviewDetail, 
-  getItemDetail,
-  getUserReviewDetail,
-  getUserTrackDetail,
-  getUserAlbumDetail
+  getUserReview,
+  getUserTrack,
+  getUserAlbum,
+  getItemPage
 } from '../controllers/pagination.controller.js';
 
 const router = express.Router();
 
-// Tracks page route
-router.get('/tracks', protectRoute, getMusicPage);
+//Get pages
+router.get('/tracks', getMusicPage);
+router.get('/albums', getAlbumPage);
+router.get('/likes', getLikesPage);
+router.get('/listenlater', getListenLaterPage);
+router.get('/review', getReviewsPage);
 
-// Albums page route
-router.get('/albums', protectRoute, getAlbumPage);
+// User-specific pages for individual items
+router.get('/review/:reviewId', protectRoute, getUserReview);
+router.get('/track/:itemId', protectRoute, getUserTrack);
+router.get('/album/:itemId', protectRoute, getUserAlbum);
 
-// Likes page route
-router.get('/likes', protectRoute, getLikesPage);
-
-// Listen Later page route
-router.get('/listen-later', protectRoute, getListenLaterPage);
-
-// Reviews page route
-router.get('/reviews', protectRoute, getReviewsPage);
-
-// User-specific routes
-router.get('/user/review/:reviewId', protectRoute, getUserReviewDetail);
-router.get('/user/track/:itemId', protectRoute, getUserTrackDetail);
-router.get('/user/album/:itemId', protectRoute, getUserAlbumDetail);
 
 export default router; 

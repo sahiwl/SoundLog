@@ -84,7 +84,6 @@ export const getAlbumPage = async (req, res) => {
   try {
     const userId = req.user._id;
     
-    // Get listened albums only
     const listenedItems = await Listened.find(
       { userId, itemType: "albums" }, 
       { itemId: 1, itemType: 1, _id: 0 }
@@ -96,10 +95,8 @@ export const getAlbumPage = async (req, res) => {
       return res.status(200).json({ message: "No listened albums found", data: [] });
     }
     
-    // Extract itemIds for lookup
     const itemIds = listenedItems.map(item => item.itemId);
     
-    // Finding related ratings, reviews, likes
     const ratings = await Rating.find(
       { userId, itemId: { $in: itemIds }, itemType: "albums" },
       { itemId: 1, rating: 1, _id: 1 }
@@ -115,7 +112,6 @@ export const getAlbumPage = async (req, res) => {
       { itemId: 1, _id: 0 }
     );
     
-    // Mapping those related ratings, reviews, likes to listened items
     const ratingMap = new Map();
     const reviewMap = new Map();
     
@@ -129,7 +125,6 @@ export const getAlbumPage = async (req, res) => {
     
     const likedItems = new Set(likes.map(like => like.itemId));
     
-    // Fetch Spotify data for each item
     const spotifyDataPromises = listenedItems.map(async (item) => {
       return { itemId: item.itemId, data: await pullSpotifyData(`albums/${item.itemId}`) };
     });
@@ -137,7 +132,6 @@ export const getAlbumPage = async (req, res) => {
     const spotifyResults = await Promise.all(spotifyDataPromises);
     const spotifyMap = new Map(spotifyResults.map(result => [result.itemId, result.data]));
     
-    // Returning response data
     const listenedData = listenedItems.map(item => {
       return {
         itemId: item.itemId,
@@ -164,7 +158,6 @@ export const getLikesPage = async (req, res) => {
   try {
     const userId = req.user._id;
     
-    // Get liked items
     const likedItems = await Likes.find({userId}, { itemId: 1, itemType: 1, _id: 0 })
       .sort({ _id: -1 })
       .limit(10);
@@ -173,10 +166,8 @@ export const getLikesPage = async (req, res) => {
       return res.status(200).json({ message: "No liked items found", data: [] });
     }
     
-    // Extract itemIds for lookup
     const itemIds = likedItems.map(item => item.itemId);
     
-    // Finding related ratings, reviews, listened
     const ratings = await Rating.find(
       { userId, itemId: { $in: itemIds } },
       { itemId: 1, rating: 1, _id: 1, itemType: 1 }
@@ -192,7 +183,6 @@ export const getLikesPage = async (req, res) => {
       { itemId: 1, _id: 0, itemType: 1 }
     );
     
-    // Mapping those related ratings, reviews, listened to liked items
     const ratingMap = new Map();
     const reviewMap = new Map();
     
@@ -208,7 +198,6 @@ export const getLikesPage = async (req, res) => {
     
     const listenedItems = new Set(listened.map(item => `${item.itemId}-${item.itemType}`));
     
-    // Returning response data
     const likedData = likedItems.map(item => {
       const key = `${item.itemId}-${item.itemType}`;
       return {
@@ -234,9 +223,7 @@ export const getListenLaterPage = async (req, res) => {
   try {
     const userId = req.user._id;
     // const { itemType } = req.query;
-    
-
-    // Get listen later items
+  
     const listenLaterItems = await ListenLater.find({userId}, { itemId: 1, itemType: 1, _id: 0 })
       .sort({ _id: -1 })
       .limit(10);
@@ -245,21 +232,7 @@ export const getListenLaterPage = async (req, res) => {
       return res.status(200).json({ message: "No listen later items found", data: [] });
     }
     
-    // // Fetch Spotify data for each item
-    // const spotifyDataPromises = listenLaterItems.map(async (item) => {
-    //   const endpoint = item.itemType === "albums" ? `albums/${item.itemId}` : `tracks/${item.itemId}`;
-    //   return { itemId: item.itemId, itemType: item.itemType, data: await pullSpotifyData(endpoint) };
-    // });
-    
-    // const spotifyResults = await Promise.all(spotifyDataPromises);
-    // const spotifyMap = new Map(spotifyResults.map(result => [
-    //   `${result.itemId}-${result.itemType}`, result.data
-    // ]));
-    
     const total = await ListenLater.countDocuments({ userId });
-    // Returning response data
-    
-    
     res.status(200).json({ total, results: listenLaterItems });
   } catch (error) {
     console.error("Error in getListenLaterPage:", error.message);
@@ -268,84 +241,136 @@ export const getListenLaterPage = async (req, res) => {
 };
 
 /**
- * getReviewsPage - Get a list of all albums the user has reviewed
- * with related ratings and likes
+ * getUserReview - Get a specific review by ID
  */
-export const getReviewsPage = async (req, res) => {
+export const getUserReview = async (req, res) => {
   try {
-    const userId = req.user._id;
+    const { reviewId } = req.params;
     
-    // Reviews are only for albums
-    const reviews = await Review.find({ userId, itemType: 'albums' }, 
-      { itemId: 1, reviewText: 1, _id: 1, createdAt: 1, itemType: 1 })
-      .sort({ _id: -1 })
-      .limit(10);
+    const review = await Review.findById(reviewId);
+    if (!review) return res.status(404).json({ message: "Review Not Found" });
     
-    if (reviews.length === 0) {
-      return res.status(200).json({ message: "No reviews found", data: [] });
+    // Check if the review belongs to the user
+    if (review.userId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: "This review doesn't belong to you" });
     }
     
-    // Extract itemIds for lookup
-    const itemIds = reviews.map(review => review.itemId);
-    const reviewIds = reviews.map(review => review._id);
-    
-    // Finding related ratings, likes, comments
-    const ratings = await Rating.find(
-      { userId, itemId: { $in: itemIds }, itemType: 'albums' },
-      { itemId: 1, rating: 1, _id: 1 }
+    const rating = await Rating.findOne(
+      { userId: review.userId, itemId: review.itemId, itemType: review.itemType },
+      { rating: 1, _id: 0 }
     );
     
-    const likes = await Likes.find(
-      { userId, itemId: { $in: itemIds }, itemType: 'albums' },
-      { itemId: 1, _id: 0 }
-    );
-    
-    const comments = await Comment.find(
-      { reviewId: { $in: reviewIds } },
-      { reviewId: 1, _id: 1 }
-    );
-    
-    // Mapping those related ratings, likes, comments to reviews
-    const ratingMap = new Map();
-    ratings.forEach(r => {
-      if (!ratingMap.has(r.itemId)) ratingMap.set(r.itemId, r.rating);
+    const liked = await Likes.exists({ 
+      userId: review.userId, 
+      itemId: review.itemId, 
+      itemType: review.itemType 
     });
     
-    const likedItems = new Set(likes.map(like => like.itemId));
-    
-    // Count comments per review
-    const commentCountMap = new Map();
-    comments.forEach(c => {
-      const reviewId = c.reviewId.toString();
-      commentCountMap.set(reviewId, (commentCountMap.get(reviewId) || 0) + 1);
+    const comments = await Comment.find({ reviewId })
+//       .populate('userId', 'username profilePicture');    
+    res.json({
+      reviewId: review._id,
+      itemId: review.itemId,
+      itemType: review.itemType,
+      reviewText: review.reviewText,
+      createdAt: review.createdAt,
+      rating: rating?.rating || null,
+      liked: !!liked,
+      comments,
     });
+  } catch (error) {
+    console.error("Error in getUserReview:", error.message);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+/**
+ * getUserTrack - Get a specific track by ID
+ */
+export const getUserTrack = async (req, res) => {
+  try {
+    const { itemId } = req.params;
+    const userId = req.user._id;
     
-    // Fetch Spotify data for each item
-    // const spotifyDataPromises = reviews.map(async (review) => {
-    //   return { itemId: review.itemId, data: await pullSpotifyData(`albums/${review.itemId}`) };
-    // });
+    // Check if the user has listened to this track
+    const listened = await Listened.findOne({ userId, itemId, itemType: "tracks" });
+    if (!listened) {
+      return res.status(404).json({ message: "Track not found in your listened items" });
+    }
     
-    // const spotifyResults = await Promise.all(spotifyDataPromises);
-    // const spotifyMap = new Map(spotifyResults.map(result => [result.itemId, result.data]));
+    const rating = await Rating.findOne(
+      { userId, itemId, itemType: "tracks" },
+      { rating: 1, _id: 0 }
+    );
     
-    // Returning response data
-    const reviewsData = reviews.map(review => {
-      return {
+    const liked = await Likes.exists({ userId, itemId, itemType: "tracks" });
+    const listenLater = await ListenLater.exists({ userId, itemId, itemType: "tracks" });
+  
+    res.json({
+      itemId,
+      itemType: "tracks",
+      listenedAt: listened.createdAt,
+      rating: rating?.rating || null,
+      liked: !!liked,
+      inListenLater: !!listenLater,
+
+    });
+  } catch (error) {
+    console.error("Error in getUserTrack:", error.message);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+/**
+ * getUserAlbum - Get a specific album by ID
+ */
+export const getUserAlbum = async (req, res) => {
+  try {
+    const { itemId } = req.params;
+    const userId = req.user._id;
+    
+    // Check if the user has listened to this album
+    const listened = await Listened.findOne({ userId, itemId, itemType: "albums" });
+    if (!listened) {
+      return res.status(404).json({ message: "Album not found in your listened items" });
+    }
+    
+    const rating = await Rating.findOne(
+      { userId, itemId, itemType: "albums" },
+      { rating: 1, _id: 0 }
+    );
+    
+    const review = await Review.findOne(
+      { userId, itemId, itemType: "albums" },
+      { _id: 1, reviewText: 1, createdAt: 1 }
+    );
+    
+    const liked = await Likes.exists({ userId, itemId, itemType: "albums" });
+    const listenLater = await ListenLater.exists({ userId, itemId, itemType: "albums" });
+    
+    // Get comments if there's a review
+    let comments = [];
+    if (review) {
+      comments = await Comment.find({ reviewId: review._id })
+  //       .populate('userId', 'username profilePicture');
+    }
+    
+    res.json({
+      itemId,
+      itemType: "albums",
+      listenedAt: listened.createdAt,
+      rating: rating?.rating || null,
+      review: review ? {
         reviewId: review._id,
-        itemId: review.itemId,
-        itemType: review.itemType,
         reviewText: review.reviewText,
         createdAt: review.createdAt,
-        rating: ratingMap.get(review.itemId) || null,
-        liked: likedItems.has(review.itemId),
-        commentCount: commentCountMap.get(review._id.toString()) || 0,
-        // spotifyData: spotifyMap.get(review.itemId) || null
-      };
+        comments
+      } : null,
+      liked: !!liked, //will return true or false
+      inListenLater: !!listenLater, //will return true or false
     });
-    
-    res.status(200).json({ reviews: reviewsData });
   } catch (error) {
-    console.error("Error in getReviewsPage:", error.message);
+    console.error("Error in getUserAlbum:", error.message);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
