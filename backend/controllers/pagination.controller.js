@@ -11,6 +11,7 @@ import User from "../models/user.model.js";
  * getMusicPage - Get a list of all tracks the user has listened to
  * with related ratings and likes
  */
+//✅ tested 
 export const getMusicPage = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -20,7 +21,7 @@ export const getMusicPage = async (req, res) => {
       { userId, itemType: "tracks" }, 
       { itemId: 1, itemType: 1, _id: 0 }
     )
-      .sort({ _id: -1 })
+    .sort({_id: -1})
       .limit(10);
     
     if (listenedItems.length === 0) {
@@ -65,7 +66,7 @@ export const getMusicPage = async (req, res) => {
         itemType: item.itemType,
         rating: ratingMap.get(item.itemId) || null,
         liked: likedItems.has(item.itemId),
-        spotifyData: spotifyMap.get(item.itemId) || null
+        // spotifyData: spotifyMap.get(item.itemId) || null
       };
     });
     
@@ -80,6 +81,7 @@ export const getMusicPage = async (req, res) => {
  * getAlbumPage - Get a list of all albums the user has listened to
  * with related ratings, reviews, and likes
  */
+//✅ tested 
 export const getAlbumPage = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -139,7 +141,7 @@ export const getAlbumPage = async (req, res) => {
         rating: ratingMap.get(item.itemId) || null,
         reviewId: reviewMap.get(item.itemId) || null,
         liked: likedItems.has(item.itemId),
-        spotifyData: spotifyMap.get(item.itemId) || null
+        // spotifyData: spotifyMap.get(item.itemId) || null
       };
     });
     
@@ -154,6 +156,8 @@ export const getAlbumPage = async (req, res) => {
  * getLikesPage - Get a list of all songs and albums the user has liked
  * with related ratings, reviews, and listened status
  */
+//✅ tested 
+
 export const getLikesPage = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -219,6 +223,7 @@ export const getLikesPage = async (req, res) => {
 /**
  * getListenLaterPage - Get a list of all songs and albums the user has added to listen later
  */
+//✅ tested 
 export const getListenLaterPage = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -241,8 +246,77 @@ export const getListenLaterPage = async (req, res) => {
 };
 
 /**
+ * getReviewsPage - Get a list of all albums the user has reviewed
+ * with related ratings and likes
+ */
+//✅ tested 
+export const getReviewsPage = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    // Reviews are only for albums
+    const reviews = await Review.find({ userId, itemType: 'albums' }, 
+      { itemId: 1, reviewText: 1, _id: 1, createdAt: 1, itemType: 1 })
+      .sort({ _id: -1 })
+      .limit(10);
+
+    if (reviews.length === 0) {
+      return res.status(200).json({ message: "No reviews found", data: [] });
+    }
+    const itemIds = reviews.map(review => review.itemId);
+
+    const reviewIds = reviews.map(review => review._id);
+
+    const ratings = await Rating.find(
+      { userId, itemId: { $in: itemIds }, itemType: 'albums' },
+      { itemId: 1, rating: 1, _id: 1 }
+    );
+
+    const likes = await Likes.find(
+      { userId, itemId: { $in: itemIds }, itemType: 'albums' },
+      { itemId: 1, _id: 0 }
+    );
+
+    const comments = await Comment.find(
+      { reviewId: { $in: reviewIds } },
+      { reviewId: 1, _id: 1 }
+    );
+    const ratingMap = new Map();
+    ratings.forEach(r => {
+      if (!ratingMap.has(r.itemId)) ratingMap.set(r.itemId, r.rating);
+    });
+    const likedItems = new Set(likes.map(like => like.itemId));
+
+    // Count comments per review
+    const commentCountMap = new Map();
+    comments.forEach(c => {
+      const reviewId = c.reviewId.toString();
+      commentCountMap.set(reviewId, (commentCountMap.get(reviewId) || 0) + 1);
+    });
+
+    const reviewsData = reviews.map(review => {
+      return {
+        reviewId: review._id,
+        itemId: review.itemId,
+        itemType: review.itemType,
+        reviewText: review.reviewText,
+        createdAt: review.createdAt,
+        rating: ratingMap.get(review.itemId) || null,
+        liked: likedItems.has(review.itemId),
+        commentCount: commentCountMap.get(review._id.toString()) || 0,
+      };
+    })
+    res.status(200).json({ reviews: reviewsData });
+  } catch (error) {
+    console.error("Error in getReviewsPage:", error.message);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+/**
  * getUserReview - Get a specific review by ID
  */
+//✅ tested 
 export const getUserReview = async (req, res) => {
   try {
     const { reviewId } = req.params;
@@ -287,6 +361,7 @@ export const getUserReview = async (req, res) => {
 /**
  * getUserTrack - Get a specific track by ID
  */
+//✅ tested 
 export const getUserTrack = async (req, res) => {
   try {
     const { itemId } = req.params;
@@ -302,6 +377,8 @@ export const getUserTrack = async (req, res) => {
       { userId, itemId, itemType: "tracks" },
       { rating: 1, _id: 0 }
     );
+
+    // if(!rating)
     
     const liked = await Likes.exists({ userId, itemId, itemType: "tracks" });
     const listenLater = await ListenLater.exists({ userId, itemId, itemType: "tracks" });
@@ -324,6 +401,7 @@ export const getUserTrack = async (req, res) => {
 /**
  * getUserAlbum - Get a specific album by ID
  */
+//✅ tested 
 export const getUserAlbum = async (req, res) => {
   try {
     const { itemId } = req.params;
