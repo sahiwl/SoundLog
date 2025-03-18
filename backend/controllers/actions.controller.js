@@ -1,4 +1,4 @@
-import { pullSpotifyData } from "../lib/pullSpotifyData.js";
+import { searchSpotifyData } from "../lib/pullSpotifyData.js";
 import Likes from "../models/likes.model.js";
 import Listened from "../models/listened.model.js";
 import ListenLater from "../models/listenlater.model.js";
@@ -27,7 +27,7 @@ export const toggleLike = async(req,res)=>{
         }
 
         const endpoint = itemType === "albums" ? `albums/${itemId}` : `tracks/${itemId}`;
-        const music = await pullSpotifyData(endpoint);
+        const music = await searchSpotifyData(endpoint);
         
         if (!music || music.error) {
             return res.status(404).json({ message: `${itemType.charAt(0).toUpperCase() + itemType.slice(1)} not found.` });
@@ -77,7 +77,7 @@ export const updateOrAddRating = async (req,res)=>{
         }
         
         const endpoint = itemType === "albums" ? `albums/${itemId}` : `tracks/${itemId}`;
-        const music = await pullSpotifyData(endpoint);
+        const music = await searchSpotifyData(endpoint);
         
         if (!music || music.error) {
             return res.status(404).json({ message: `${itemType.charAt(0).toUpperCase() + itemType.slice(1)} not found on Spotify.` });
@@ -144,7 +144,7 @@ export const toggleListened = async (req,res) => {
         }
         
         const endpoint = itemType === "albums" ? `albums/${itemId}` : `tracks/${itemId}`;
-        const music = await pullSpotifyData(endpoint);
+        const music = await searchSpotifyData(endpoint);
         
         if (!music || music.error) {
             return res.status(404).json({ message: `${itemType.charAt(0).toUpperCase() + itemType.slice(1)} not found.` });
@@ -204,7 +204,7 @@ export const toggleListenLater = async (req,res) => {
         }
         
         const endpoint = itemType === "albums" ? `albums/${itemId}` : `tracks/${itemId}`;
-        const music = await pullSpotifyData(endpoint);
+        const music = await searchSpotifyData(endpoint);
         
         if(!music || music.error){
             return res.status(404).json({message: `${itemType.charAt(0).toUpperCase() + itemType.slice(1)} not found. Try again!`})
@@ -277,7 +277,7 @@ export const addReview = async (req,res)=>{
         }
         
         const endpoint = `albums/${itemId}`
-        const music = await pullSpotifyData(endpoint)
+        const music = await searchSpotifyData(endpoint)
         if(!music || music.error)   return res.status(404).json({ message: `${itemType.charAt(0).toUpperCase() + itemType.slice(1)} not found on Spotify.` });
         
         //check for existing review

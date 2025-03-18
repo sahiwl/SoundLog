@@ -1,4 +1,4 @@
-import { pullSpotifyData } from "../lib/pullSpotifyData.js";
+import { searchSpotifyData } from "../lib/pullSpotifyData.js";
 import Likes from "../models/likes.model.js";
 import Listened from "../models/listened.model.js";
 import ListenLater from "../models/listenlater.model.js";
@@ -6,13 +6,14 @@ import Rating from "../models/rating.model.js";
 import Review from "../models/review.model.js";
 import Comment from "../models/comment.model.js";
 import User from "../models/user.model.js";
+import { getAlbumDetails, getTrackDetails } from "./song.controller.js";
 
 /**
- * getMusicPage - Get a list of all tracks the user has listened to
+ * getTracksPage - Get a list of all tracks the user has listened to
  * with related ratings and likes
  */
 //✅ tested 
-export const getMusicPage = async (req, res) => {
+export const getTracksPage = async (req, res) => {
   try {
     const userId = req.user._id;
     
@@ -53,7 +54,7 @@ export const getMusicPage = async (req, res) => {
     
     // Fetch Spotify data for each item
     const spotifyDataPromises = listenedItems.map(async (item) => {
-      return { itemId: item.itemId, data: await pullSpotifyData(`tracks/${item.itemId}`) };
+      return { itemId: item.itemId, data: await getTrackDetails(`${item.itemId}`) };
     });
     
     const spotifyResults = await Promise.all(spotifyDataPromises);
@@ -66,7 +67,7 @@ export const getMusicPage = async (req, res) => {
         itemType: item.itemType,
         rating: ratingMap.get(item.itemId) || null,
         liked: likedItems.has(item.itemId),
-        // spotifyData: spotifyMap.get(item.itemId) || null
+        spotifyData: spotifyMap.get(item.itemId) || null
       };
     });
     
@@ -128,7 +129,7 @@ export const getAlbumPage = async (req, res) => {
     const likedItems = new Set(likes.map(like => like.itemId));
     
     const spotifyDataPromises = listenedItems.map(async (item) => {
-      return { itemId: item.itemId, data: await pullSpotifyData(`albums/${item.itemId}`) };
+      return { itemId: item.itemId, data: await getAlbumDetails(`${item.itemId}`) };
     });
     
     const spotifyResults = await Promise.all(spotifyDataPromises);
@@ -141,7 +142,7 @@ export const getAlbumPage = async (req, res) => {
         rating: ratingMap.get(item.itemId) || null,
         reviewId: reviewMap.get(item.itemId) || null,
         liked: likedItems.has(item.itemId),
-        // spotifyData: spotifyMap.get(item.itemId) || null
+        spotifyData: spotifyMap.get(item.itemId) || null
       };
     });
     

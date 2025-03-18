@@ -5,10 +5,10 @@ import dotenv from "dotenv";
 import { connectDB } from "./lib/db.js";
 import cookieParser from "cookie-parser";
 import userRoutes from "./routes/user.route.js";
-import songRoutes from "./routes/song.route.js"
+import searchRoutes from "./routes/search.route.js"
 import actionsRoutes from "./routes/actions.routes.js"
 import paginationRoutes from "./routes/pagination.routes.js"
-
+import songRoutes from "./routes/song.routes.js"
 
 dotenv.config();
 const app = express();
@@ -20,9 +20,10 @@ connectDB();
 
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes)
-app.use("/api/releases", songRoutes)
+app.use("/api/releases", searchRoutes)
 app.use("/api/actions", actionsRoutes)
 app.use("/api/pages", paginationRoutes)
+app.use("/api/music", songRoutes)
 
 app.get("/", (req, res) => {
   res.send("Server is live");
