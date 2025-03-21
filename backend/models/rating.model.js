@@ -4,8 +4,7 @@ const ratingSchema = new mongoose.Schema(
   {
     itemId: {
       type: String,
-      // ref: "Song", //reference to Song model
-      required: true,
+      required: true, //as we can rate both songs and albums
     },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -15,19 +14,19 @@ const ratingSchema = new mongoose.Schema(
     rating: {
       type: Number,
       required: true,
-      min: 0.5,
-      max: 5,
+      min: 0,
+      max: 100,
     },
     itemType: {
       type: String,
       enum: ["tracks", "albums"],
       required: true,
     },
-    logId:{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Log",
-      default: null
-    }
+    // logId:{
+    //   type: mongoose.Schema.Types.ObjectId,
+    //   ref: "Log",
+    //   default: null
+    // }
   },
   { timestamps: true }
 );

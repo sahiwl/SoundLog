@@ -9,17 +9,17 @@ const listenLaterSchema = new Schema(
             ref: "User", 
             required: true 
         },
-        itemId: { 
+        albumId: { 
             type: String,
             required: true 
         }, // e.g. '4NHQUGzhtTLFvgF5SZesLK'
-        itemType: {
-            type: String,
-            enum: ["tracks", "albums"], 
-            required: true },
-            createdAt: { type: Date, 
-            default: Date.now 
-        },
+        // itemType: {
+        //     type: String,
+        //     enum: ["tracks", "albums"], 
+        //     required: true },
+        //     createdAt: { type: Date, 
+        //     default: Date.now 
+        // },
 },{timestamps: true}
 );
 

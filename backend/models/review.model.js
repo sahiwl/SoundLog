@@ -7,7 +7,7 @@ const reviewSchema = new mongoose.Schema(
       ref: "User", //reference to User model
       required: true,
     },
-    itemId: {
+    albumId: {
       type: String,
       // ref: "Song", //reference to Song model
       required: true,
@@ -16,12 +16,12 @@ const reviewSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    itemType: {
-      type: String,
-      enum: ["albums"], // Reviews can only be for albums
-      default: "albums",
-      required: true,
-    },
+    // itemType: {
+    //   type: String,
+    //   enum: ["albums"], // Reviews can only be for albums
+    //   default: "albums",
+    //   required: true,
+    // },removing this since likes are only for album
   //   logId:{
   //     type: mongoose.Schema.Types.ObjectId,
   //     ref: "Log",

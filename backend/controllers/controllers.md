@@ -6,3 +6,7 @@
 
 ### TODOS
 - in getUserTracks, use spotify tracks api to call - pass itemID in it
+
+changes 21mar25-
+- changed actions controller, such that whenver an action is performed - tracks or albums, it is saved in the db first, and the next time on the same object action will be performed, it will search for that obj (tracks or albums) in db first, if(!obj) in db -> then only api call happens. Same for pagination.
+- changed models a bit, readjusted them according to the spotify response. 

@@ -6,15 +6,15 @@ const likeSchema = new mongoose.Schema(
             ref: "User",
             required: true
         },
-        itemId:{
+        albumId:{
             type: String,
             required: true
         },
-        itemType: {
-            type: String,
-            enum: ["tracks", "albums"],
-            required: true
-        },
+        // itemType: {
+        //     type: String,
+        //     enum: ["tracks", "albums"],
+        //     required: true
+        // }, removing this since likes are only for album
         logId:{
             type: mongoose.Schema.Types.ObjectId,
             ref: "Log",

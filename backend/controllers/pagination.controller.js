@@ -1,455 +1,382 @@
-import { searchSpotifyData } from "../lib/pullSpotifyData.js";
-import Likes from "../models/likes.model.js";
-import Listened from "../models/listened.model.js";
-import ListenLater from "../models/listenlater.model.js";
+import { GetSpecificAlbum, GetSpecificTrack } from "../lib/pullSpotifyData.js";
+import Album from "../models/album.model.js";
+import Track from "../models/track.model.js";
 import Rating from "../models/rating.model.js";
 import Review from "../models/review.model.js";
+import Likes from "../models/likes.model.js";
+import Listened from "../models/listened.model.js";
 import Comment from "../models/comment.model.js";
-import User from "../models/user.model.js";
-import { getAlbumDetails, getTrackDetails } from "./song.controller.js";
 
-/**
- * getTracksPage - Get a list of all tracks the user has listened to
- * with related ratings and likes
- */
-//✅ tested 
-export const getTracksPage = async (req, res) => {
-  try {
-    const userId = req.user._id;
-    
-    // Get listened tracks only
-    const listenedItems = await Listened.find(
-      { userId, itemType: "tracks" }, 
-      { itemId: 1, itemType: 1, _id: 0 }
-    )
-    .sort({_id: -1})
-      .limit(10);
-    
-    if (listenedItems.length === 0) {
-      return res.status(200).json({ message: "No listened tracks found", data: [] });
+// Get user's reviews with pagination 
+// ✅ tested
+export const getUserReviews = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const page = parseInt(req.query.page) || 1;
+        const limit = 10;
+        const skip = (page - 1) * limit;
+
+        // Get reviews with just the review text and rating
+        const reviews = await Review.find({ userId })
+            .select('reviewText rating albumId createdAt')
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit)
+            .populate('userId', 'username');
+
+        // Get total count for pagination
+        const total = await Review.countDocuments({ userId });
+
+        res.json({
+            reviews: reviews,
+            currentPage: page,
+            totalPages: Math.ceil(total / limit),
+            total
+        });
+    } catch (error) {
+        console.error("Error in getUserReviews:", error);
+        res.status(500).json({ message: "Internal Server Error" });
     }
-    
-    // Extract itemIds for lookup
-    const itemIds = listenedItems.map(item => item.itemId);
-    
-    // Finding related ratings and likes
-    const ratings = await Rating.find(
-      { userId, itemId: { $in: itemIds }, itemType: "tracks" },
-      { itemId: 1, rating: 1, _id: 1 }
-    ).sort({ _id: -1 });
-    
-    const likes = await Likes.find(
-      { userId, itemId: { $in: itemIds }, itemType: "tracks" },
-      { itemId: 1, _id: 0 }
-    );
-    
-    // Mapping those related ratings and likes to listened items
-    const ratingMap = new Map();
-    
-    ratings.forEach(r => {
-      if (!ratingMap.has(r.itemId)) ratingMap.set(r.itemId, r.rating);
-    });
-    
-    const likedItems = new Set(likes.map(like => like.itemId));
-    
-    // Fetch Spotify data for each item
-    const spotifyDataPromises = listenedItems.map(async (item) => {
-      return { itemId: item.itemId, data: await getTrackDetails(`${item.itemId}`) };
-    });
-    
-    const spotifyResults = await Promise.all(spotifyDataPromises);
-    const spotifyMap = new Map(spotifyResults.map(result => [result.itemId, result.data]));
-    
-    // Returning response data
-    const listenedData = listenedItems.map(item => {
-      return {
-        itemId: item.itemId,
-        itemType: item.itemType,
-        rating: ratingMap.get(item.itemId) || null,
-        liked: likedItems.has(item.itemId),
-        spotifyData: spotifyMap.get(item.itemId) || null
-      };
-    });
-    
-    res.status(200).json({ tracks: listenedData });
-  } catch (error) {
-    console.error("Error in getMusicPage:", error.message);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
 };
 
-/**
- * getAlbumPage - Get a list of all albums the user has listened to
- * with related ratings, reviews, and likes
- */
-//✅ tested 
+// Get user's albums (rated and listened) with pagination
+// ✅ tested
+export const getUserAlbums = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const page = parseInt(req.query.page) || 1;
+        const limit = 10;
+        const skip = (page - 1) * limit;
+
+        // Get rated albums with timestamps and ratings
+        const ratings = await Rating.find({ userId, itemType: "albums" })
+            .sort({ createdAt: -1 })
+            .select('itemId rating createdAt')
+            .skip(skip)
+            .limit(limit);
+
+        // Get listened albums with timestamps
+        const listened = await Listened.find({ userId, itemType: "albums" })
+            .sort({ createdAt: -1 })
+            .select('albumId createdAt')
+            .skip(skip)
+            .limit(limit);
+
+        // Combine and deduplicate albums while preserving timestamps and ratings
+        const albumData = new Map();
+        
+        ratings.forEach(r => {
+            albumData.set(r.itemId, {
+                albumId: r.itemId,
+                rating: r.rating,
+                timestamp: r.createdAt
+            });
+        });
+
+        listened.forEach(l => {
+            if (!albumData.has(l.albumId)) {
+                albumData.set(l.albumId, {
+                    albumId: l.albumId,
+                    timestamp: l.createdAt
+                });
+            }
+        });
+
+        // Get album details from database or Spotify API
+        const albumsWithDetails = await Promise.all(
+            Array.from(albumData.values()).map(async (data) => {
+                // Check if album exists in database
+                let album = await Album.findOne({ albumId: data.albumId });
+                
+                // If not found, fetch from Spotify and save
+                if (!album) {
+                    console.log(data.albumId)
+                    const spotifyAlbum = await GetSpecificAlbum(data.albumId);
+                    album = await Album.create({
+                        albumId: data.albumId,
+                        name: spotifyAlbum.name,
+                        album_type: spotifyAlbum.album_type,
+                        total_tracks: spotifyAlbum.total_tracks,
+                        release_date: spotifyAlbum.release_date,
+                        images: spotifyAlbum.images,
+                        artists: spotifyAlbum.artists.map(artist => ({
+                            spotifyId: artist.id,
+                            name: artist.name
+                        })),
+                        external_urls: spotifyAlbum.external_urls,
+                        uri: spotifyAlbum.uri
+                    });
+                }
+
+                // Return only needed fields
+                return {
+                    name: album.name,
+                    release_date: album.release_date,
+                    link: album.external_urls.spotify,
+                    rating: data.rating || null,
+                    timestamp: data.timestamp
+                };
+            })
+        );
+
+        // Get total count for pagination
+        const total = await Promise.all([
+            Rating.countDocuments({ userId, itemType: "albums" }),
+            Listened.countDocuments({ userId, itemType: "albums" })
+        ]);
+
+        res.json({
+            albums: albumsWithDetails,
+            currentPage: page,
+            totalPages: Math.ceil(Math.max(...total) / limit),
+            total: Math.max(...total)
+        });
+    } catch (error) {
+        console.error("Error in getUserAlbums:", error.message);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
+// Get user's liked albums with pagination
+// ✅ tested
+export const getUserLikes = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const page = parseInt(req.query.page) || 1;
+        const limit = 10;
+        const skip = (page - 1) * limit;
+
+        // Get liked albums with timestamps
+        const likes = await Likes.find({ userId })
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        // Get album details and associated reviews
+        const albumsWithDetails = await Promise.all(
+            likes.map(async (like) => {
+                // Check if album exists in database
+                let album = await Album.findOne({ albumId: like.albumId });
+                
+                // If not found, fetch from Spotify and save to db
+                if (!album) {
+                    const spotifyAlbum = await GetSpecificAlbum(like.albumId);
+                    album = await Album.create({
+                        albumId: like.albumId,
+                        name: spotifyAlbum.name,
+                        album_type: spotifyAlbum.album_type,
+                        total_tracks: spotifyAlbum.total_tracks,
+                        release_date: spotifyAlbum.release_date,
+                        images: spotifyAlbum.images,
+                        artists: spotifyAlbum.artists.map(artist => ({
+                            spotifyId: artist.id,
+                            name: artist.name
+                        })),
+                        external_urls: spotifyAlbum.external_urls,
+                        uri: spotifyAlbum.uri
+                    });
+                }
+                return album;
+            })
+        );
+
+        // add a feature of showing what user liked furthermore- other users reviews (and those particular reviews - rating, username, reviewtext)
+        // Get total count for pagination
+        const total = await Likes.countDocuments({ userId });
+
+        res.json({
+            albums:albumsWithDetails,
+            currentPage: page,
+            totalPages: Math.ceil(total / limit),
+            total
+        });
+    } catch (error) {
+        console.error("Error in getUserLikes:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
+// Get individual album details with reviews
 export const getAlbumPage = async (req, res) => {
-  try {
-    const userId = req.user._id;
-    
-    const listenedItems = await Listened.find(
-      { userId, itemType: "albums" }, 
-      { itemId: 1, itemType: 1, _id: 0 }
-    )
-      .sort({ _id: -1 })
-      .limit(10);
-    
-    if (listenedItems.length === 0) {
-      return res.status(200).json({ message: "No listened albums found", data: [] });
+    try {
+        const { albumId } = req.params;
+        const page = parseInt(req.query.page) || 1;
+        const limit = 10;
+        const skip = (page - 1) * limit;
+
+        // Get or create album in database
+        let album = await Album.findOne({ albumId });
+        
+        if (!album) {
+            // If album not in database, fetch from Spotify
+            const spotifyData = await GetSpecificAlbum(albumId);
+            if (!spotifyData) {
+                return res.status(404).json({ message: "Album not found" });
+            }
+
+            // Create new album document with proper structure
+            album = await Album.create({
+                albumId: albumId,
+                name: spotifyData.name,
+                album_type: spotifyData.album_type,
+                total_tracks: spotifyData.total_tracks,
+                release_date: spotifyData.release_date,
+                images: spotifyData.images,
+                artists: spotifyData.artists.map(artist => ({
+                    spotifyId: artist.id,
+                    name: artist.name
+                })),
+                external_urls: spotifyData.external_urls,
+                uri: spotifyData.uri
+            });
+        }
+
+        // Get reviews for this album
+        const reviews = await Review.find({ albumId })
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit)
+            .populate('userId', 'username');
+
+        // Get comments and ratings for each review
+        const reviewsWithDetails = await Promise.all(
+            reviews.map(async (review) => {
+                // Get comments for this review
+                const comments = await Comment.find({ reviewId: review._id })
+                    .populate('userId', 'username');
+
+                // Get ratings for this review
+                const ratings = await Rating.find({ reviewId: review._id })
+                    .populate('userId', 'username');
+
+                return {
+                    reviewId: review._id,
+                    reviewText: review.reviewText,
+                    rating: review.rating,
+                    createdAt: review.createdAt,
+                    user: {
+                        id: review.userId._id,
+                        username: review.userId.username
+                    },
+                    comments: comments.map(comment => ({
+                        commentId: comment._id,
+                        text: comment.text,
+                        createdAt: comment.createdAt,
+                        user: {
+                            id: comment.userId._id,
+                            username: comment.userId.username
+                        }
+                    })),
+                    ratings: ratings.map(rating => ({
+                        ratingId: rating._id,
+                        rating: rating.rating,
+                        createdAt: rating.createdAt,
+                        user: {
+                            id: rating.userId._id,
+                            username: rating.userId.username
+                        }
+                    })),
+                    commentCount: comments.length
+                };
+            })
+        );
+
+        // Get total counts for pagination
+        const [totalReviews, totalComments] = await Promise.all([
+            Review.countDocuments({ albumId }),
+            Comment.countDocuments({ reviewId: { $in: reviews.map(r => r._id) } })
+        ]);
+
+        // Return complete response
+        res.json({
+            album: {
+                id: album._id,
+                albumId: album.albumId,
+                name: album.name,
+                album_type: album.album_type,
+                total_tracks: album.total_tracks,
+                release_date: album.release_date,
+                images: album.images,
+                artists: album.artists,
+                external_urls: album.external_urls,
+                uri: album.uri
+            },
+            reviews: reviewsWithDetails,
+            pagination: {
+                currentPage: page,
+                totalPages: Math.ceil(totalReviews / limit),
+                totalReviews,
+                totalComments
+            }
+        });
+
+    } catch (error) {
+        console.error("Error in getAlbumPage:", error.message);
+        res.status(500).json({ message: "Internal Server Error" });
     }
-    
-    const itemIds = listenedItems.map(item => item.itemId);
-    
-    const ratings = await Rating.find(
-      { userId, itemId: { $in: itemIds }, itemType: "albums" },
-      { itemId: 1, rating: 1, _id: 1 }
-    ).sort({ _id: -1 });
-    
-    const reviews = await Review.find(
-      { userId, itemId: { $in: itemIds }, itemType: 'albums' },
-      { itemId: 1, _id: 1 }
-    ).sort({ _id: -1 });
-    
-    const likes = await Likes.find(
-      { userId, itemId: { $in: itemIds }, itemType: "albums" },
-      { itemId: 1, _id: 0 }
-    );
-    
-    const ratingMap = new Map();
-    const reviewMap = new Map();
-    
-    ratings.forEach(r => {
-      if (!ratingMap.has(r.itemId)) ratingMap.set(r.itemId, r.rating);
-    });
-    
-    reviews.forEach(r => {
-      if (!reviewMap.has(r.itemId)) reviewMap.set(r.itemId, r._id);
-    });
-    
-    const likedItems = new Set(likes.map(like => like.itemId));
-    
-    const spotifyDataPromises = listenedItems.map(async (item) => {
-      return { itemId: item.itemId, data: await getAlbumDetails(`${item.itemId}`) };
-    });
-    
-    const spotifyResults = await Promise.all(spotifyDataPromises);
-    const spotifyMap = new Map(spotifyResults.map(result => [result.itemId, result.data]));
-    
-    const listenedData = listenedItems.map(item => {
-      return {
-        itemId: item.itemId,
-        itemType: item.itemType,
-        rating: ratingMap.get(item.itemId) || null,
-        reviewId: reviewMap.get(item.itemId) || null,
-        liked: likedItems.has(item.itemId),
-        spotifyData: spotifyMap.get(item.itemId) || null
-      };
-    });
-    
-    res.status(200).json({ albums: listenedData });
-  } catch (error) {
-    console.error("Error in getAlbumPage:", error.message);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
 };
 
-/**
- * getLikesPage - Get a list of all songs and albums the user has liked
- * with related ratings, reviews, and listened status
- */
-//✅ tested 
+// Get individual track details with ratings
+export const getTrackPage = async (req, res) => {
+    try {
+        const { trackId } = req.params;
+        const page = parseInt(req.query.page) || 1;
+        const limit = 10;
+        const skip = (page - 1) * limit;
 
-export const getLikesPage = async (req, res) => {
-  try {
-    const userId = req.user._id;
-    
-    const likedItems = await Likes.find({userId}, { itemId: 1, itemType: 1, _id: 0 })
-      .sort({ _id: -1 })
-      .limit(10);
-    
-    if (likedItems.length === 0) {
-      return res.status(200).json({ message: "No liked items found", data: [] });
+        // Get track details from database first
+        let track = await Track.findOne({ trackId: trackId });
+        
+        // If track doesn't exist in database, fetch from Spotify API and save
+        if (!track) {
+            try {
+                const spotifyTrack = await GetSpecificTrack(trackId);
+                track = await Track.create({
+                    trackId: spotifyTrack.id,
+                    name: spotifyTrack.name,
+                    duration_ms: spotifyTrack.duration_ms,
+                    explicit: spotifyTrack.explicit,
+                    popularity: spotifyTrack.popularity,
+                    track_number: spotifyTrack.track_number,
+                    album: {
+                        album_type: spotifyTrack.album.album_type,
+                        spotifyId: spotifyTrack.album.id,
+                        name: spotifyTrack.album.name,
+                        release_date: spotifyTrack.album.release_date,
+                        images: spotifyTrack.album.images
+                    },
+                    artists: spotifyTrack.artists.map(artist => ({
+                        spotifyId: artist.id,
+                        name: artist.name
+                    })),
+                    external_urls: spotifyTrack.external_urls,
+                    uri: spotifyTrack.uri
+                });
+            } catch (error) {
+                console.error("Error fetching track from Spotify:", error);
+                return res.status(404).json({ message: "Track not found" });
+            }
+        }
+
+        // Get ratings with user details
+        const ratings = await Rating.find({ itemId: trackId, itemType: "tracks" })
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit)
+            .populate('userId', 'username');
+
+        // Get total count for pagination
+        const total = await Rating.countDocuments({ itemId: trackId, itemType: "tracks" });
+
+        res.json({
+            track,
+            ratings,
+            currentPage: page,
+            totalPages: Math.ceil(total / limit),
+            total
+        });
+    } catch (error) {
+        console.error("Error in getTrackDetails:", error);
+        res.status(500).json({ message: "Internal Server Error" });
     }
-    
-    const itemIds = likedItems.map(item => item.itemId);
-    
-    const ratings = await Rating.find(
-      { userId, itemId: { $in: itemIds } },
-      { itemId: 1, rating: 1, _id: 1, itemType: 1 }
-    ).sort({ _id: -1 });
-    
-    const reviews = await Review.find(
-      { userId, itemId: { $in: itemIds }, itemType: 'albums' },
-      { itemId: 1, _id: 1, itemType: 1 }
-    ).sort({ _id: -1 });
-    
-    const listened = await Listened.find(
-      { userId, itemId: { $in: itemIds } },
-      { itemId: 1, _id: 0, itemType: 1 }
-    );
-    
-    const ratingMap = new Map();
-    const reviewMap = new Map();
-    
-    ratings.forEach(r => {
-      const key = `${r.itemId}-${r.itemType}`;
-      if (!ratingMap.has(key)) ratingMap.set(key, r.rating);
-    });
-    
-    reviews.forEach(r => {
-      const key = `${r.itemId}-${r.itemType}`;
-      if (!reviewMap.has(key)) reviewMap.set(key, r._id);
-    });
-    
-    const listenedItems = new Set(listened.map(item => `${item.itemId}-${item.itemType}`));
-    
-    const likedData = likedItems.map(item => {
-      const key = `${item.itemId}-${item.itemType}`;
-      return {
-        itemId: item.itemId,
-        itemType: item.itemType,
-        rating: ratingMap.get(key) || null,
-        reviewId: reviewMap.get(key) || null,
-        listened: listenedItems.has(key)
-      };
-    });
-    
-    res.status(200).json({ likes: likedData });
-  } catch (error) {
-    console.error("Error in getLikesPage:", error.message);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-};
-
-/**
- * getListenLaterPage - Get a list of all songs and albums the user has added to listen later
- */
-//✅ tested 
-export const getListenLaterPage = async (req, res) => {
-  try {
-    const userId = req.user._id;
-    // const { itemType } = req.query;
-  
-    const listenLaterItems = await ListenLater.find({userId}, { itemId: 1, itemType: 1, _id: 0 })
-      .sort({ _id: -1 })
-      .limit(10);
-    
-    if (listenLaterItems.length === 0) {
-      return res.status(200).json({ message: "No listen later items found", data: [] });
-    }
-    
-    const total = await ListenLater.countDocuments({ userId });
-    res.status(200).json({ total, results: listenLaterItems });
-  } catch (error) {
-    console.error("Error in getListenLaterPage:", error.message);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-};
-
-/**
- * getReviewsPage - Get a list of all albums the user has reviewed
- * with related ratings and likes
- */
-//✅ tested 
-export const getReviewsPage = async (req, res) => {
-  try {
-    const userId = req.user._id;
-
-    // Reviews are only for albums
-    const reviews = await Review.find({ userId, itemType: 'albums' }, 
-      { itemId: 1, reviewText: 1, _id: 1, createdAt: 1, itemType: 1 })
-      .sort({ _id: -1 })
-      .limit(10);
-
-    if (reviews.length === 0) {
-      return res.status(200).json({ message: "No reviews found", data: [] });
-    }
-    const itemIds = reviews.map(review => review.itemId);
-
-    const reviewIds = reviews.map(review => review._id);
-
-    const ratings = await Rating.find(
-      { userId, itemId: { $in: itemIds }, itemType: 'albums' },
-      { itemId: 1, rating: 1, _id: 1 }
-    );
-
-    const likes = await Likes.find(
-      { userId, itemId: { $in: itemIds }, itemType: 'albums' },
-      { itemId: 1, _id: 0 }
-    );
-
-    const comments = await Comment.find(
-      { reviewId: { $in: reviewIds } },
-      { reviewId: 1, _id: 1 }
-    );
-    const ratingMap = new Map();
-    ratings.forEach(r => {
-      if (!ratingMap.has(r.itemId)) ratingMap.set(r.itemId, r.rating);
-    });
-    const likedItems = new Set(likes.map(like => like.itemId));
-
-    // Count comments per review
-    const commentCountMap = new Map();
-    comments.forEach(c => {
-      const reviewId = c.reviewId.toString();
-      commentCountMap.set(reviewId, (commentCountMap.get(reviewId) || 0) + 1);
-    });
-
-    const reviewsData = reviews.map(review => {
-      return {
-        reviewId: review._id,
-        itemId: review.itemId,
-        itemType: review.itemType,
-        reviewText: review.reviewText,
-        createdAt: review.createdAt,
-        rating: ratingMap.get(review.itemId) || null,
-        liked: likedItems.has(review.itemId),
-        commentCount: commentCountMap.get(review._id.toString()) || 0,
-      };
-    })
-    res.status(200).json({ reviews: reviewsData });
-  } catch (error) {
-    console.error("Error in getReviewsPage:", error.message);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-};
-
-/**
- * getUserReview - Get a specific review by ID
- */
-//✅ tested 
-export const getUserReview = async (req, res) => {
-  try {
-    const { reviewId } = req.params;
-    
-    const review = await Review.findById(reviewId);
-    if (!review) return res.status(404).json({ message: "Review Not Found" });
-    
-    // Check if the review belongs to the user
-    if (review.userId.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: "This review doesn't belong to you" });
-    }
-    
-    const rating = await Rating.findOne(
-      { userId: review.userId, itemId: review.itemId, itemType: review.itemType },
-      { rating: 1, _id: 0 }
-    );
-    
-    const liked = await Likes.exists({ 
-      userId: review.userId, 
-      itemId: review.itemId, 
-      itemType: review.itemType 
-    });
-    
-    const comments = await Comment.find({ reviewId })
-//       .populate('userId', 'username profilePicture');    
-    res.json({
-      reviewId: review._id,
-      itemId: review.itemId,
-      itemType: review.itemType,
-      reviewText: review.reviewText,
-      createdAt: review.createdAt,
-      rating: rating?.rating || null,
-      liked: !!liked,
-      comments,
-    });
-  } catch (error) {
-    console.error("Error in getUserReview:", error.message);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-};
-
-/**
- * getUserTrack - Get a specific track by ID
- */
-//✅ tested 
-export const getUserTrack = async (req, res) => {
-  try {
-    const { itemId } = req.params;
-    const userId = req.user._id;
-    
-    // Check if the user has listened to this track
-    const listened = await Listened.findOne({ userId, itemId, itemType: "tracks" });
-    if (!listened) {
-      return res.status(404).json({ message: "Track not found in your listened items" });
-    }
-    
-    const rating = await Rating.findOne(
-      { userId, itemId, itemType: "tracks" },
-      { rating: 1, _id: 0 }
-    );
-
-    // if(!rating)
-    
-    const liked = await Likes.exists({ userId, itemId, itemType: "tracks" });
-    const listenLater = await ListenLater.exists({ userId, itemId, itemType: "tracks" });
-  
-    res.json({
-      itemId,
-      itemType: "tracks",
-      listenedAt: listened.createdAt,
-      rating: rating?.rating || null,
-      liked: !!liked,
-      inListenLater: !!listenLater,
-
-    });
-  } catch (error) {
-    console.error("Error in getUserTrack:", error.message);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-};
-
-/**
- * getUserAlbum - Get a specific album by ID
- */
-//✅ tested 
-export const getUserAlbum = async (req, res) => {
-  try {
-    const { itemId } = req.params;
-    const userId = req.user._id;
-    
-    // Check if the user has listened to this album
-    const listened = await Listened.findOne({ userId, itemId, itemType: "albums" });
-    if (!listened) {
-      return res.status(404).json({ message: "Album not found in your listened items" });
-    }
-    
-    const rating = await Rating.findOne(
-      { userId, itemId, itemType: "albums" },
-      { rating: 1, _id: 0 }
-    );
-    
-    const review = await Review.findOne(
-      { userId, itemId, itemType: "albums" },
-      { _id: 1, reviewText: 1, createdAt: 1 }
-    );
-    
-    const liked = await Likes.exists({ userId, itemId, itemType: "albums" });
-    const listenLater = await ListenLater.exists({ userId, itemId, itemType: "albums" });
-    
-    // Get comments if there's a review
-    let comments = [];
-    if (review) {
-      comments = await Comment.find({ reviewId: review._id })
-  //       .populate('userId', 'username profilePicture');
-    }
-    
-    res.json({
-      itemId,
-      itemType: "albums",
-      listenedAt: listened.createdAt,
-      rating: rating?.rating || null,
-      review: review ? {
-        reviewId: review._id,
-        reviewText: review.reviewText,
-        createdAt: review.createdAt,
-        comments
-      } : null,
-      liked: !!liked, //will return true or false
-      inListenLater: !!listenLater, //will return true or false
-    });
-  } catch (error) {
-    console.error("Error in getUserAlbum:", error.message);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
 };
