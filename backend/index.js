@@ -9,6 +9,7 @@ import searchRoutes from "./routes/search.route.js"
 import actionsRoutes from "./routes/actions.routes.js"
 import paginationRoutes from "./routes/pagination.routes.js"
 import songRoutes from "./routes/song.routes.js"
+import { rateLimiter } from "./middleware/rateLimiter.js";
 
 dotenv.config();
 const app = express();
@@ -21,9 +22,9 @@ connectDB();
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes)
 app.use("/api/releases", searchRoutes)
-app.use("/api/actions", actionsRoutes)
-app.use("/api/pages", paginationRoutes)
-app.use("/api/music", songRoutes)
+app.use("/api/actions", actionsRoutes, rateLimiter)
+app.use("/api/pages", paginationRoutes,rateLimiter)
+app.use("/api/music", songRoutes, rateLimiter)
 
 app.get("/", (req, res) => {
   res.send("Server is live");

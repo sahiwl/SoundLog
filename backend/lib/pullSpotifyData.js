@@ -80,7 +80,7 @@ export const GetAlbumTracks = async(itemId, params= {}) =>{
   }
 }
 
-export const getNewReleases = async (limit,offset) =>{
+export const getNewReleases = async (limit, offset) =>{
   try {
     const token = await getSpotifyAccessToken()
     const endpoint = `https://api.spotify.com/v1/browse/new-releases`

@@ -1,4 +1,4 @@
-import { GetSpecificAlbum, GetSpecificTrack } from "../lib/pullSpotifyData.js";
+import { getNewReleases, GetSpecificAlbum, GetSpecificTrack } from "../lib/pullSpotifyData.js";
 import Album from "../models/album.model.js";
 import Track from "../models/track.model.js";
 import Rating from "../models/rating.model.js";
@@ -6,6 +6,7 @@ import Review from "../models/review.model.js";
 import Likes from "../models/likes.model.js";
 import Listened from "../models/listened.model.js";
 import Comment from "../models/comment.model.js";
+import { getNewReleasesHandler } from "./song.controller.js";
 
 // Get user's reviews with pagination 
 // ✅ tested
@@ -380,3 +381,17 @@ export const getTrackPage = async (req, res) => {
         res.status(500).json({ message: "Internal Server Error" });
     }
 };
+
+export const getNewReleasesPage = async (req,res)=>{
+    try {
+        const limit = parseInt(req.query.limit) || 20
+        const offset = parseInt(req.query.offset) || 0
+
+
+        const response = await getNewReleases({limit, offset})
+        res.status(200).json(response)
+    } catch (error) {
+        console.error("Error in getNewReleasesPage:", error.message);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+}

@@ -39,10 +39,11 @@ export const getAlbumTracksHandler = async (req, res) => {
 
 export const getNewReleasesHandler = async (req,res)=>{
     try {
-        const limit = req.query.limit || 20
-        const offset = req.query.offset || 20
+        const limit = parseInt(req.query.limit) || 20
+        const offset = parseInt(req.query.offset) || 0
         const newRelease = await getNewReleases(limit, offset)
-        res.status(200).json(newRelease);
+       
+        return  res.status(200).json(newRelease);
         } catch (error) {
         console.error("Error in getNewReleasesHandler:", error.message);
       res.status(500).json({ message: "Internal Server Error" });
