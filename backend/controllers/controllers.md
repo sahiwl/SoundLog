@@ -7,6 +7,7 @@
 ### TODOS
 
 - in getUserTracks, use spotify tracks api to call - pass itemID in it
+- GetOrCreateSpotifyData - after 1000docs or more, delete the old entries / use a date-time limiter to delete old docs. for eg- keep last 10days docs, delete the rest
 
 
 

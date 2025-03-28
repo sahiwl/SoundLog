@@ -19,7 +19,7 @@ const Navbar = () => {
           <a href="#features" className="nav-link">Features</a>
           <a href="#how-it-works" className="nav-link">How It Works</a>
           <a href="#community" className="nav-link">Community</a>
-          <a href="/signup" className="button-secondary">Login</a>
+          <Link to="/login" className="button-secondary">Login</Link>
           <Link to="/signup" className="button-primary text-center">Sign Up</Link>
           </div>
 
@@ -60,9 +60,9 @@ const Navbar = () => {
             Community
           </a>
           <div className="flex flex-col space-y-3 pt-2">
-            <a href="/signup" className="button-secondary text-center">Login</a>
+            <Link to="/login" className="button-secondary text-center">Login</Link>
 
-            <a href="/signup" className="button-primary text-center">Sign Up</a>
+            <Link to="/signup" className="button-primary text-center">Sign Up</Link>
 
           </div>
         </div>

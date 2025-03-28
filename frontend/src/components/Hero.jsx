@@ -1,6 +1,8 @@
 import React from 'react';
 
+
 const Hero = () => {
+
   return (
     <div className="relative min-h-[80vh] pt-16 flex items-center bg-black">
       <div className="section-container relative z-10 flex flex-col items-center text-center">
@@ -12,7 +14,6 @@ const Hero = () => {
         <p className="text-base md:text-lg text-zinc-400 max-w-2xl mb-8">
           Discover, rate, and review music that moves you. Connect with a community of passionate listeners and create your personal music library.
         </p>
-        
         <div className="flex flex-col sm:flex-row gap-3 mb-12">
           <a href="#" className="button-primary text-center">
             Start Logging

@@ -10,12 +10,20 @@ import actionsRoutes from "./routes/actions.routes.js"
 import paginationRoutes from "./routes/pagination.routes.js"
 import songRoutes from "./routes/song.routes.js"
 import { rateLimiter } from "./middleware/rateLimiter.js";
+import cors from "cors";
 
 dotenv.config();
 const app = express();
 
 app.use(express.json()); // Add this line to parse JSON bodies
 app.use(cookieParser());
+
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true
+}))
+
+
 const PORT = process.env.PORT;
 connectDB();
 
