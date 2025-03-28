@@ -1,74 +1,98 @@
+import React, { useState, useEffect, useCallback, memo } from "react";
+import { Menu, X, Search, User, LogOut } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import useAuthStore from "../store/useAuthStore";
+import { toast, ToastContainer, Zoom } from "react-toastify";
 
-import React, { useState } from 'react';
-import { Menu, X } from "lucide-react";
-import { Link } from "react-router-dom";
-const Navbar = () => {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+// const SearchInput = memo(({ className }) => (
+//   <div className="relative">
+//     <input
+//       type="text"
+//       placeholder="Search..."
+//       className={className || "px-4 py-2 rounded bg-gray-800 text-white focus:outline-none"}
+//     />
+//     <Search className="absolute right-2 top-2 text-gray-400" size={18} />
+//   </div>
+// ));
+
+const UserSection = memo(({ isAuthenticated, onLogout }) =>
+  isAuthenticated ? (
+    <div className="flex items-center space-x-4">
+      <User className="text-white" size={24} />
+      <button
+        onClick={onLogout}
+        className="text-white hover:text-purple-400 transition-colors"
+      >
+        <LogOut size={20} />
+      </button>
+    </div>
+  ) : (
+    <Link to="/signup" className="button-primary text-center">
+      Join Now
+    </Link>
+  )
+);
+
+const Navbar = memo(() => {
+  const { checkAuth, logout, isAuthenticated } = useAuthStore();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  const handleLogout = useCallback(() => {
+    logout();
+    toast.success("Logging you out, redirecting...");
+    setTimeout(() => {
+      navigate("/");
+    }, 2500);
+  }, [logout]);
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 py-4 px-6 bg-black/80 backdrop-blur border-b border-white/5">
-      <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <a href="/" className="flex items-center space-x-2">
+      <div className="max-w-7xl mx-auto flex items-center justify-between space-x-4">
+        <a href="/" className="flex-shrink-0">
           <span className="text-xl font-bold text-white">
             Sound<span className="text-purple-400">Log</span>
           </span>
         </a>
 
-        {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center space-x-6">
-          <a href="#features" className="nav-link">Features</a>
-          <a href="#how-it-works" className="nav-link">How It Works</a>
-          <a href="#community" className="nav-link">Community</a>
-          <Link to="/login" className="button-secondary">Login</Link>
-          <Link to="/signup" className="button-primary text-center">Sign Up</Link>
+        <div className="flex items-center space-x-6 overflow-x-auto">
+          {/* <SearchInput className="w-48 px-4 py-2 rounded bg-gray-800 text-white focus:outline-none" /> */}
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search..."
+              className="px-4 py-2 rounded bg-gray-800 text-white focus:outline-none"
+            />
+            <Search
+              className="absolute right-2 top-2 text-gray-400"
+              size={18}
+            />
           </div>
 
-        {/* Mobile Menu Button */}
-        <button 
-          className="md:hidden text-white"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-        >
-          {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
-      </div>
-
-      {/* Mobile Menu */}
-      <div className={`md:hidden absolute top-full left-0 right-0 bg-black/90 shadow-lg border-b border-white/5 ${
-        mobileMenuOpen ? "max-h-screen opacity-100" : "max-h-0 opacity-0 overflow-hidden"
-      }`}>
-        <div className="px-6 py-4 flex flex-col space-y-4">
-          <a 
-            href="#features" 
-            className="nav-link py-2" 
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            Features
-          </a>
-          <a 
-            href="#how-it-works" 
-            className="nav-link py-2"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            How It Works
-          </a>
-          <a 
-            href="#community" 
-            className="nav-link py-2"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            Community
-          </a>
-          <div className="flex flex-col space-y-3 pt-2">
-            <Link to="/login" className="button-secondary text-center">Login</Link>
-
-            <Link to="/signup" className="button-primary text-center">Sign Up</Link>
-
-          </div>
+          <Link to="/songs" className="nav-link whitespace-nowrap">
+            Songs
+          </Link>
+          <Link to="/albums" className="nav-link whitespace-nowrap">
+            Albums
+          </Link>
+          <Link to="/listen-later" className="nav-link whitespace-nowrap">
+            ListenLater
+          </Link>
+          <Link to="/likes" className="nav-link whitespace-nowrap">
+            Likes
+          </Link>
+          <UserSection
+            isAuthenticated={isAuthenticated}
+            onLogout={handleLogout}
+          />
         </div>
       </div>
+      <ToastContainer transition={Zoom} />
     </nav>
   );
-};
+});
 
 export default Navbar;

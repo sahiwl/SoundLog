@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "daisyui";
 
 @theme {
   --color-soundlog-navy: #1E2F50;
@@ -38,6 +39,7 @@
     --secondary: rgb(40, 40, 40); 
     --accent: rgb(114, 46, 209); 
   }
+   
 }
 
  @layer components {

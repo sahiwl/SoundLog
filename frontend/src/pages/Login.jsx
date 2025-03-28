@@ -48,7 +48,7 @@ const navigate = useNavigate()
 
           // Redirect after toast completes
           setTimeout(() => {
-              navigate('/');
+              navigate('/home');
           }, 2500);
       }
   } catch (error) {
@@ -118,7 +118,7 @@ const navigate = useNavigate()
         </a>
       </p>
     </div>
-    <ToastContainer stacked/>
+    <ToastContainer stacked position='top-right'/>
   </div>
 
   )

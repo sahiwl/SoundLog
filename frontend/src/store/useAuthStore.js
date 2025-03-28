@@ -6,16 +6,17 @@ const useAuthStore = create((set)=>({
     isSigningUp: false,
     isLoggingUp: false,
     isCheckingAuth: false,
+    isAuthenticated: false,
 
     isUpdatingProfile: false,
 
     checkAuth: async ()=>{
         try {
             const res = await axiosInstance.get("/auth/check")
-            set({authUser: res.data})
+            set({authUser: res.data, isAuthenticated: res.data.isAuthenticated})
         } catch (error) {
             console.error("Error in checkAuth: ", error.message)
-            set({authUser: null})
+            set({authUser: null, isAuthenticated: false})
         }finally{
             set({isCheckingAuth: false})
         }
@@ -25,7 +26,7 @@ const useAuthStore = create((set)=>({
         set({isSigningUp: true})
         try {
             const res = await axiosInstance.post("/auth/signup", data)
-            set({authUser: res.data})
+            set({authUser: res.data, isAuthenticated: true})
             return { success: true, data: res.data }
         } catch (error) {
             console.error("Error in signup: ", error.message)
@@ -42,7 +43,7 @@ const useAuthStore = create((set)=>({
         set({isLoggingUp: true})
         try {
             const res = await axiosInstance.post("/auth/login", data)
-            set({authUser: res.data})
+            set({authUser: res.data, isAuthenticated: true})
             console.log("Login successful:", res.data);
             return { 
                 success: true, 
@@ -62,8 +63,8 @@ const useAuthStore = create((set)=>({
     
     logout: async () => {
         try {
-          await axios.post('/auth/logout');
-          set({ authUser: null });
+          await axiosInstance.post('/auth/logout');
+          set({ authUser: null, isAuthenticated: false });
         } catch (error) {
           console.error("Logout error: ", error.message);
         }
