@@ -39,22 +39,22 @@ const useAuthStore = create((set)=>({
         }
     },
 
-    login: async(data)=>{
+    signin: async(data)=>{
         set({isLoggingUp: true})
         try {
             const res = await axiosInstance.post("/auth/login", data)
             set({authUser: res.data, isAuthenticated: true})
-            console.log("Login successful:", res.data);
+            console.log("signin successful:", res.data);
             return { 
                 success: true, 
                 data: res.data,
-                message: "Login successful!" 
+                message: "signin successful!" 
             };
         } catch (error) {
-            console.error("Error in login: ", error.message)
+            console.error("Error in signin: ", error.message)
             return { 
                 success: false, 
-                error: error.response?.data?.message || "Login failed. Please check your credentials." 
+                error: error.response?.data?.message || "signin failed. Please check your credentials." 
             };
         }finally{
             set({isLoggingUp: false})

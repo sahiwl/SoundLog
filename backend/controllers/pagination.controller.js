@@ -91,29 +91,62 @@ export const getUserAlbums = async (req, res) => {
                 
                 // If not found, fetch from Spotify and save
                 if (!album) {
-                    console.log(data.albumId)
                     const spotifyAlbum = await GetSpecificAlbum(data.albumId);
                     album = await Album.create({
                         albumId: data.albumId,
                         name: spotifyAlbum.name,
                         album_type: spotifyAlbum.album_type,
                         total_tracks: spotifyAlbum.total_tracks,
+                        is_playable: spotifyAlbum.is_playable,
                         release_date: spotifyAlbum.release_date,
+                        release_date_precision: spotifyAlbum.release_date_precision,
                         images: spotifyAlbum.images,
                         artists: spotifyAlbum.artists.map(artist => ({
                             spotifyId: artist.id,
-                            name: artist.name
+                            name: artist.name,
+                            uri: artist.uri,
+                            href: artist.href,
+                            external_urls: artist.external_urls,
+                            type: artist.type
                         })),
+                        tracks: {
+                            total: spotifyAlbum.tracks?.total,
+                            items: spotifyAlbum.tracks?.items?.map(track => ({
+                                name: track.name,
+                                trackId: track.id,
+                                disc_number: track.disc_number,
+                                duration_ms: track.duration_ms,
+                                explicit: track.explicit,
+                                track_number: track.track_number,
+                                uri: track.uri,
+                                is_playable: track.is_playable,
+                                is_local: track.is_local,
+                                preview_url: track.preview_url,
+                                artists: track.artists.map(artist => ({
+                                    spotifyId: artist.id,
+                                    name: artist.name,
+                                    uri: artist.uri,
+                                    external_urls: artist.external_urls
+                                }))
+                            }))
+                        },
                         external_urls: spotifyAlbum.external_urls,
-                        uri: spotifyAlbum.uri
+                        external_ids: spotifyAlbum.external_ids,
+                        uri: spotifyAlbum.uri,
+                        href: spotifyAlbum.href,
+                        popularity: spotifyAlbum.popularity,
+                        label: spotifyAlbum.label,
+                        copyrights: spotifyAlbum.copyrights,
+                        genres: spotifyAlbum.genres
                     });
                 }
 
-                // Return only needed fields
+                // Update lastAccessed timestamp
+                album.lastAccessed = new Date();
+                await album.save();
+
                 return {
-                    name: album.name,
-                    release_date: album.release_date,
-                    link: album.external_urls.spotify,
+                    ...album.toObject(),
                     rating: data.rating || null,
                     timestamp: data.timestamp
                 };
@@ -167,26 +200,63 @@ export const getUserLikes = async (req, res) => {
                         name: spotifyAlbum.name,
                         album_type: spotifyAlbum.album_type,
                         total_tracks: spotifyAlbum.total_tracks,
+                        is_playable: spotifyAlbum.is_playable,
                         release_date: spotifyAlbum.release_date,
+                        release_date_precision: spotifyAlbum.release_date_precision,
                         images: spotifyAlbum.images,
                         artists: spotifyAlbum.artists.map(artist => ({
                             spotifyId: artist.id,
-                            name: artist.name
+                            name: artist.name,
+                            uri: artist.uri,
+                            href: artist.href,
+                            external_urls: artist.external_urls,
+                            type: artist.type
                         })),
+                        tracks: {
+                            total: spotifyAlbum.tracks?.total,
+                            items: spotifyAlbum.tracks?.items?.map(track => ({
+                                name: track.name,
+                                trackId: track.id,
+                                disc_number: track.disc_number,
+                                duration_ms: track.duration_ms,
+                                explicit: track.explicit,
+                                track_number: track.track_number,
+                                uri: track.uri,
+                                is_playable: track.is_playable,
+                                is_local: track.is_local,
+                                preview_url: track.preview_url,
+                                artists: track.artists.map(artist => ({
+                                    spotifyId: artist.id,
+                                    name: artist.name,
+                                    uri: artist.uri,
+                                    external_urls: artist.external_urls
+                                }))
+                            }))
+                        },
                         external_urls: spotifyAlbum.external_urls,
-                        uri: spotifyAlbum.uri
+                        external_ids: spotifyAlbum.external_ids,
+                        uri: spotifyAlbum.uri,
+                        href: spotifyAlbum.href,
+                        popularity: spotifyAlbum.popularity,
+                        label: spotifyAlbum.label,
+                        copyrights: spotifyAlbum.copyrights,
+                        genres: spotifyAlbum.genres
                     });
                 }
-                return album;
+
+                // Update lastAccessed timestamp
+                album.lastAccessed = new Date();
+                await album.save();
+
+                return album.toObject();
             })
         );
 
-        // add a feature of showing what user liked furthermore- other users reviews (and those particular reviews - rating, username, reviewtext)
         // Get total count for pagination
         const total = await Likes.countDocuments({ userId });
 
         res.json({
-            albums:albumsWithDetails,
+            albums: albumsWithDetails,
             currentPage: page,
             totalPages: Math.ceil(total / limit),
             total
@@ -221,16 +291,53 @@ export const getAlbumPage = async (req, res) => {
                 name: spotifyData.name,
                 album_type: spotifyData.album_type,
                 total_tracks: spotifyData.total_tracks,
+                is_playable: spotifyData.is_playable,
                 release_date: spotifyData.release_date,
+                release_date_precision: spotifyData.release_date_precision,
                 images: spotifyData.images,
                 artists: spotifyData.artists.map(artist => ({
                     spotifyId: artist.id,
-                    name: artist.name
+                    name: artist.name,
+                    uri: artist.uri,
+                    href: artist.href,
+                    external_urls: artist.external_urls,
+                    type: artist.type
                 })),
+                tracks: {
+                    total: spotifyData.tracks?.total,
+                    items: spotifyData.tracks?.items?.map(track => ({
+                        name: track.name,
+                        trackId: track.id,
+                        disc_number: track.disc_number,
+                        duration_ms: track.duration_ms,
+                        explicit: track.explicit,
+                        track_number: track.track_number,
+                        uri: track.uri,
+                        is_playable: track.is_playable,
+                        is_local: track.is_local,
+                        preview_url: track.preview_url,
+                        artists: track.artists.map(artist => ({
+                            spotifyId: artist.id,
+                            name: artist.name,
+                            uri: artist.uri,
+                            external_urls: artist.external_urls
+                        }))
+                    }))
+                },
                 external_urls: spotifyData.external_urls,
-                uri: spotifyData.uri
+                external_ids: spotifyData.external_ids,
+                uri: spotifyData.uri,
+                href: spotifyData.href,
+                popularity: spotifyData.popularity,
+                label: spotifyData.label,
+                copyrights: spotifyData.copyrights,
+                genres: spotifyData.genres
             });
         }
+
+        // Update lastAccessed timestamp
+        album.lastAccessed = new Date();
+        await album.save();
 
         // Get reviews for this album
         const reviews = await Review.find({ albumId })
@@ -288,20 +395,9 @@ export const getAlbumPage = async (req, res) => {
             Comment.countDocuments({ reviewId: { $in: reviews.map(r => r._id) } })
         ]);
 
-        // Return complete response
+        // Return complete response with full album document
         res.json({
-            album: {
-                id: album._id,
-                albumId: album.albumId,
-                name: album.name,
-                album_type: album.album_type,
-                total_tracks: album.total_tracks,
-                release_date: album.release_date,
-                images: album.images,
-                artists: album.artists,
-                external_urls: album.external_urls,
-                uri: album.uri
-            },
+            album: album.toObject(), // Convert to plain object to include all fields
             reviews: reviewsWithDetails,
             pagination: {
                 currentPage: page,
@@ -325,41 +421,71 @@ export const getTrackPage = async (req, res) => {
         const limit = 10;
         const skip = (page - 1) * limit;
 
-        // Get track details from database first
-        let track = await Track.findOne({ trackId: trackId });
+        // Get or create track in database
+        let track = await Track.findOne({ trackId });
         
-        // If track doesn't exist in database, fetch from Spotify API and save
         if (!track) {
-            try {
-                const spotifyTrack = await GetSpecificTrack(trackId);
-                track = await Track.create({
-                    trackId: spotifyTrack.id,
-                    name: spotifyTrack.name,
-                    duration_ms: spotifyTrack.duration_ms,
-                    explicit: spotifyTrack.explicit,
-                    popularity: spotifyTrack.popularity,
-                    track_number: spotifyTrack.track_number,
-                    album: {
-                        album_type: spotifyTrack.album.album_type,
-                        spotifyId: spotifyTrack.album.id,
-                        name: spotifyTrack.album.name,
-                        release_date: spotifyTrack.album.release_date,
-                        images: spotifyTrack.album.images
-                    },
-                    artists: spotifyTrack.artists.map(artist => ({
-                        spotifyId: artist.id,
-                        name: artist.name
-                    })),
-                    external_urls: spotifyTrack.external_urls,
-                    uri: spotifyTrack.uri
-                });
-            } catch (error) {
-                console.error("Error fetching track from Spotify:", error);
-                return res.status(404).json({ message: "Track not found" });
+            // If track not in database, fetch from Spotify
+            const spotifyData = await GetSpecificTrack(trackId);
+            if (!spotifyData || !spotifyData.id) {
+                return res.status(404).json({ message: "Track not found or invalid track data" });
             }
+
+            track = await Track.create({
+                trackId: spotifyData.id,
+                name: spotifyData.name,
+                duration_ms: spotifyData.duration_ms,
+                explicit: spotifyData.explicit,
+                popularity: spotifyData.popularity,
+                track_number: spotifyData.track_number,
+                disc_number: spotifyData.disc_number,
+                is_local: spotifyData.is_local,
+                is_playable: spotifyData.is_playable,
+                preview_url: spotifyData.preview_url,
+                type: spotifyData.type,
+                href: spotifyData.href,
+                album: {
+                    album_type: spotifyData.album?.album_type,
+                    spotifyId: spotifyData.album?.id,
+                    name: spotifyData.album?.name,
+                    release_date: spotifyData.album?.release_date,
+                    release_date_precision: spotifyData.album?.release_date_precision,
+                    total_tracks: spotifyData.album?.total_tracks,
+                    type: spotifyData.album?.type,
+                    uri: spotifyData.album?.uri,
+                    href: spotifyData.album?.href,
+                    is_playable: spotifyData.album?.is_playable,
+                    images: spotifyData.album?.images || [],
+                    artists: spotifyData.album?.artists?.map(artist => ({
+                        spotifyId: artist.id,
+                        name: artist.name,
+                        type: artist.type,
+                        uri: artist.uri,
+                        href: artist.href,
+                        external_urls: artist.external_urls
+                    })) || [],
+                    external_urls: spotifyData.album?.external_urls
+                },
+                artists: spotifyData.artists?.map(artist => ({
+                    spotifyId: artist.id,
+                    name: artist.name,
+                    type: artist.type,
+                    uri: artist.uri,
+                    href: artist.href,
+                    external_urls: artist.external_urls
+                })) || [],
+                external_urls: spotifyData.external_urls,
+                external_ids: spotifyData.external_ids,
+                uri: spotifyData.uri,
+                linked_from: spotifyData.linked_from
+            });
         }
 
-        // Get ratings with user details
+        // Update lastAccessed timestamp
+        track.lastAccessed = new Date();
+        await track.save();
+
+        // Get ratings for this track
         const ratings = await Rating.find({ itemId: trackId, itemType: "tracks" })
             .sort({ createdAt: -1 })
             .skip(skip)
@@ -367,17 +493,29 @@ export const getTrackPage = async (req, res) => {
             .populate('userId', 'username');
 
         // Get total count for pagination
-        const total = await Rating.countDocuments({ itemId: trackId, itemType: "tracks" });
+        const totalRatings = await Rating.countDocuments({ itemId: trackId, itemType: "tracks" });
 
+        // Return complete response
         res.json({
-            track,
-            ratings,
-            currentPage: page,
-            totalPages: Math.ceil(total / limit),
-            total
+            track: track.toObject(),
+            ratings: ratings.map(rating => ({
+                ratingId: rating._id,
+                rating: rating.rating,
+                createdAt: rating.createdAt,
+                user: {
+                    id: rating.userId._id,
+                    username: rating.userId.username
+                }
+            })),
+            pagination: {
+                currentPage: page,
+                totalPages: Math.ceil(totalRatings / limit),
+                totalRatings
+            }
         });
+
     } catch (error) {
-        console.error("Error in getTrackDetails:", error);
+        console.error("Error in getTrackPage:", error);
         res.status(500).json({ message: "Internal Server Error" });
     }
 };

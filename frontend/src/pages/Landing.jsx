@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react'
-import Hero from '../components/Hero'
+import Hero from '../components/Landing/Hero'
 import Navbar from '../components/Navbar'
-import Features from '../components/Features'
-import HowItWorks from '../components/HowItWorks'
-import Footer from '../components/Footer'
+import Features from '../components/Landing/Features'
+import HowItWorks from '../components/Landing/HowItWorks'
+import Footer from '../components/Landing/Footer'
 import useAuthStore from '../store/useAuthStore'
 
 
@@ -26,7 +26,7 @@ const Landing = () => {
   return (
     
     <div className=' text-white bg-background'>
-      <Navbar/>
+
       <Hero/>
       <Features/>
       <HowItWorks/>

@@ -3,17 +3,8 @@ import { Menu, X, Search, User, LogOut } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import useAuthStore from "../store/useAuthStore";
 import { toast, ToastContainer, Zoom } from "react-toastify";
+import FullScreenSearch from "./Search";
 
-// const SearchInput = memo(({ className }) => (
-//   <div className="relative">
-//     <input
-//       type="text"
-//       placeholder="Search..."
-//       className={className || "px-4 py-2 rounded bg-gray-800 text-white focus:outline-none"}
-//     />
-//     <Search className="absolute right-2 top-2 text-gray-400" size={18} />
-//   </div>
-// ));
 
 const UserSection = memo(({ isAuthenticated, onLogout }) =>
   isAuthenticated ? (
@@ -27,19 +18,21 @@ const UserSection = memo(({ isAuthenticated, onLogout }) =>
       </button>
     </div>
   ) : (
-    <Link to="/signup" className="button-primary text-center">
-      Join Now
+    <Link to="/signin" className="button-primary text-center">
+      SIGN IN
     </Link>
   )
 );
 
 const Navbar = memo(() => {
   const { checkAuth, logout, isAuthenticated } = useAuthStore();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showSearchOverlay, setShowSearchOverlay] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     checkAuth();
-  }, []);
+  }, [checkAuth]);
 
   const handleLogout = useCallback(() => {
     logout();
@@ -49,49 +42,69 @@ const Navbar = memo(() => {
     }, 2500);
   }, [logout]);
 
-  return (
-    <nav className="fixed top-0 left-0 right-0 z-50 py-4 px-6 bg-black/80 backdrop-blur border-b border-white/5">
-      <div className="max-w-7xl mx-auto flex items-center justify-between space-x-4">
-        <a href="/" className="flex-shrink-0">
-          <span className="text-xl font-bold text-white">
-            Sound<span className="text-purple-400">Log</span>
-          </span>
-        </a>
+  const handleSearchFocus = () => {
+    setShowSearchOverlay(true);
+  };
 
-        <div className="flex items-center space-x-6 overflow-x-auto">
-          {/* <SearchInput className="w-48 px-4 py-2 rounded bg-gray-800 text-white focus:outline-none" /> */}
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Search..."
-              className="px-4 py-2 rounded bg-gray-800 text-white focus:outline-none"
-            />
-            <Search
-              className="absolute right-2 top-2 text-gray-400"
-              size={18}
+  const handleCloseSearch = () => {
+    setShowSearchOverlay(false);
+    setSearchQuery("");
+  };
+
+  return (
+    <>
+      <nav className="fixed top-0 left-0 right-0 z-50 py-4 px-6 bg-black/80 backdrop-blur border-b border-white/5">
+        <div className="max-w-7xl mx-auto flex items-center justify-between space-x-4">
+          <a href="/" className="flex-shrink-0">
+            <span className="text-xl font-bold text-white">
+              Sound<span className="text-purple-400">Log</span>
+            </span>
+          </a>
+          <div className="flex items-center space-x-6 overflow-x-auto">
+            {/* Full-screen search input */}
+            <div className="relative w-80">
+              <input
+                type="text"
+                placeholder="Search..."
+                className="input input-bordered w-full"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={handleSearchFocus}
+              />
+              <Search
+                className="absolute right-2 top-2 text-gray-400"
+                size={18}
+              />
+            </div>
+            <Link to="/songs" className="nav-link whitespace-nowrap">
+              Songs
+            </Link>
+            <Link to="/albums" className="nav-link whitespace-nowrap">
+              Albums
+            </Link>
+            <Link to="/listen-later" className="nav-link whitespace-nowrap">
+              ListenLater
+            </Link>
+            <Link to="/likes" className="nav-link whitespace-nowrap">
+              Likes
+            </Link>
+            <UserSection
+              isAuthenticated={isAuthenticated}
+              onLogout={handleLogout}
             />
           </div>
-
-          <Link to="/songs" className="nav-link whitespace-nowrap">
-            Songs
-          </Link>
-          <Link to="/albums" className="nav-link whitespace-nowrap">
-            Albums
-          </Link>
-          <Link to="/listen-later" className="nav-link whitespace-nowrap">
-            ListenLater
-          </Link>
-          <Link to="/likes" className="nav-link whitespace-nowrap">
-            Likes
-          </Link>
-          <UserSection
-            isAuthenticated={isAuthenticated}
-            onLogout={handleLogout}
-          />
         </div>
-      </div>
-      <ToastContainer transition={Zoom} />
-    </nav>
+        <ToastContainer transition={Zoom} />
+      </nav>
+      
+      {/* Full-screen search overlay */}
+      {showSearchOverlay && (
+        <FullScreenSearch
+          query={searchQuery}
+          onClose={handleCloseSearch}
+        />
+      )}
+    </>
   );
 });
 

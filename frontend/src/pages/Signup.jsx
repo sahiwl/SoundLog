@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import useAuthStore from '../store/useAuthStore';
 import { Eye, EyeOff, X } from "lucide-react";
 import { ToastContainer, toast } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Signup = () => {
   const navigate = useNavigate()
@@ -126,9 +126,10 @@ const Signup = () => {
 
       <p className="mt-4 text-center text-sm text-gray-400">
       been here already?{' '}
-      <a href="/login" className="text-white underline">
+      <Link to="/signin" className="text-white underline">
         Login
-      </a>
+      </Link>
+
       </p>
     </div>
     <ToastContainer stacked />

@@ -11,6 +11,8 @@ import paginationRoutes from "./routes/pagination.routes.js"
 import songRoutes from "./routes/song.routes.js"
 import { rateLimiter } from "./middleware/rateLimiter.js";
 import cors from "cors";
+import mongoose from "mongoose";
+import { cleanupInactiveDocuments } from "./lib/cleanup.js";
 
 dotenv.config();
 const app = express();
@@ -32,11 +34,14 @@ app.use("/api/user", userRoutes)
 app.use("/api/releases", searchRoutes)
 app.use("/api/actions", actionsRoutes, rateLimiter)
 app.use("/api/pages", paginationRoutes,rateLimiter)
-app.use("/api/music", songRoutes, rateLimiter)
+app.use("/api/music", songRoutes)
 
 app.get("/", (req, res) => {
   res.send("Server is live");
 });
+
+// Schedule cleanup task to run daily at midnight
+setInterval(cleanupInactiveDocuments, 24 * 60 * 60 * 1000);
 
 app.listen(PORT, () => {
   console.log(`This server is running on port: `, PORT);

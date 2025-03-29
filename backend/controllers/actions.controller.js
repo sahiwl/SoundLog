@@ -32,15 +32,54 @@ const getOrCreateSpotifyData = async (itemId, itemType) => {
                     name: spotifyData.name,
                     album_type: spotifyData.album_type,
                     total_tracks: spotifyData.total_tracks,
+                    is_playable: spotifyData.is_playable,
                     release_date: spotifyData.release_date,
+                    release_date_precision: spotifyData.release_date_precision,
                     images: spotifyData.images,
                     artists: spotifyData.artists.map(artist => ({
-                        id: artist.id,
-                        name: artist.name
+                        spotifyId: artist.id,
+                        name: artist.name,
+                        uri: artist.uri,
+                        href: artist.href,
+                        external_urls: artist.external_urls,
+                        type: artist.type
                     })),
+                    tracks: {
+                        total: spotifyData.tracks?.total,
+                        items: spotifyData.tracks?.items?.map(track => ({
+                            name: track.name,
+                            trackId: track.id,
+                            disc_number: track.disc_number,
+                            duration_ms: track.duration_ms,
+                            explicit: track.explicit,
+                            track_number: track.track_number,
+                            uri: track.uri,
+                            is_playable: track.is_playable,
+                            is_local: track.is_local,
+                            preview_url: track.preview_url,
+                            artists: track.artists.map(artist => ({
+                                spotifyId: artist.id,
+                                name: artist.name,
+                                uri: artist.uri,
+                                external_urls: artist.external_urls
+                            }))
+                        }))
+                    },
                     external_urls: spotifyData.external_urls,
-                    uri: spotifyData.uri
+                    external_ids: spotifyData.external_ids,
+                    uri: spotifyData.uri,
+                    href: spotifyData.href,
+                    popularity: spotifyData.popularity,
+                    label: spotifyData.label,
+                    copyrights: spotifyData.copyrights,
+                    genres: spotifyData.genres,
+                    lastAccessed: new Date(),
+                    createdAt: new Date()
                 });
+            } else {
+                // Update lastAccessed timestamp
+                item.lastAccessed = new Date();
+                await item.save();
             }
         } else {
             item = await Track.findOne({ trackId: itemId });
@@ -49,7 +88,60 @@ const getOrCreateSpotifyData = async (itemId, itemType) => {
                 if (!spotifyData || spotifyData.error) {
                     throw new Error(`${itemType.slice(0, -1)} not found on Spotify.`);
                 }
-                item = await Track.create(spotifyData);
+                item = await Track.create({
+                    trackId: itemId,
+                    name: spotifyData.name,
+                    duration_ms: spotifyData.duration_ms,
+                    explicit: spotifyData.explicit,
+                    popularity: spotifyData.popularity,
+                    track_number: spotifyData.track_number,
+                    disc_number: spotifyData.disc_number,
+                    is_local: spotifyData.is_local,
+                    is_playable: spotifyData.is_playable,
+                    preview_url: spotifyData.preview_url,
+                    type: spotifyData.type,
+                    href: spotifyData.href,
+                    album: {
+                        album_type: spotifyData.album?.album_type,
+                        spotifyId: spotifyData.album?.id,
+                        name: spotifyData.album?.name,
+                        release_date: spotifyData.album?.release_date,
+                        release_date_precision: spotifyData.album?.release_date_precision,
+                        total_tracks: spotifyData.album?.total_tracks,
+                        type: spotifyData.album?.type,
+                        uri: spotifyData.album?.uri,
+                        href: spotifyData.album?.href,
+                        is_playable: spotifyData.album?.is_playable,
+                        images: spotifyData.album?.images,
+                        artists: spotifyData.album?.artists?.map(artist => ({
+                            spotifyId: artist.id,
+                            name: artist.name,
+                            type: artist.type,
+                            uri: artist.uri,
+                            href: artist.href,
+                            external_urls: artist.external_urls
+                        })),
+                        external_urls: spotifyData.album?.external_urls
+                    },
+                    artists: spotifyData.artists.map(artist => ({
+                        spotifyId: artist.id,
+                        name: artist.name,
+                        type: artist.type,
+                        uri: artist.uri,
+                        href: artist.href,
+                        external_urls: artist.external_urls
+                    })),
+                    external_urls: spotifyData.external_urls,
+                    external_ids: spotifyData.external_ids,
+                    uri: spotifyData.uri,
+                    linked_from: spotifyData.linked_from,
+                    lastAccessed: new Date(),
+                    createdAt: new Date()
+                });
+            } else {
+                // Update lastAccessed timestamp
+                item.lastAccessed = new Date();
+                await item.save();
             }
         }
         return item;
@@ -132,18 +224,17 @@ export const addRating = async (req, res) => {
         
         let newRating;
         if (existingRating) {
-            // Update existing rating
-            existingRating.rating = rating;
-            newRating = await existingRating.save();
-        } else {
-            // Create new rating
-            newRating = await Rating.create({ 
-                userId, 
-                itemId, 
-                rating, 
-                itemType 
-            });
+            // Delete existing rating first
+            await existingRating.deleteOne();
         }
+        
+        // Create new rating
+        newRating = await Rating.create({ 
+            userId, 
+            itemId, 
+            rating, 
+            itemType 
+        });
           
         if(itemType === "albums"){
             // Remove from Listen Later if exists

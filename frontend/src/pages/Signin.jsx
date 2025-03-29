@@ -4,11 +4,11 @@ import { Eye, EyeOff, X } from "lucide-react";
 import { ToastContainer, toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 
-const Login = () => {
+const Signin = () => {
   const [formData, setformData]= useState({email: '', password: ''})
   const [showPassword, setshowPassword] = useState(false)
 
-  const {login} = useAuthStore();
+  const {signin} = useAuthStore();
   
 const navigate = useNavigate()
   const validateForm = ()=>{
@@ -27,11 +27,13 @@ const navigate = useNavigate()
       return;
     }
     try {
-      const result = await login(formData);
+      const result = await signin(formData);
       if (!result.success) {
-          toast.error(`Login error: ${result.error}`);
+          toast.error(`Signin error: ${result.error}`, {
+            autoClose: 5000
+          });
       } else {
-        toast.success('🦄 Login Successful!', {
+        toast.success('🦄 Signin Successful!', {
         position: "top-right",
         autoClose: 5000,
         hideProgressBar: false,
@@ -41,7 +43,7 @@ const navigate = useNavigate()
         progress: undefined,
         theme: "dark",
         });
-          console.log("Login successful:", result.data);
+          console.log("signin successful:", result.data);
 
           // Clear form
           setformData({email: '', password: ''});
@@ -52,7 +54,7 @@ const navigate = useNavigate()
           }, 2500);
       }
   } catch (error) {
-      console.error("Login error:", error);
+      console.error("signin error2:", error);
       toast.error("An unexpected error occurred");
   }
     }
@@ -60,9 +62,9 @@ const navigate = useNavigate()
   return (
     <div className="flex min-h-screen items-center justify-center bg-black px-4">
     <div className="w-full max-w-md rounded-lg bg-zinc-900 p-6 shadow-md">
-      <h2 className="text-2xl font-semibold text-white">Login</h2>
+      <h2 className="text-2xl font-semibold text-white">Sign in</h2>
       <p className="mt-1 text-sm text-gray-400">
-        Enter your email below to login to your account
+        Enter your email below to signin to your account
       </p>
 
       <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
@@ -103,12 +105,12 @@ const navigate = useNavigate()
         <button
         type='submit'
         className="w-full rounded bg-white px-4 py-2 text-black font-medium hover:bg-gray-200">
-          Login
+          Sign in
         </button>
       </form>
 
       <button className="mt-4 w-full rounded border border-gray-700 bg-zinc-800 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700">
-        Login with Google
+        Sign in with Google
       </button>
 
       <p className="mt-4 text-center text-sm text-gray-400">
@@ -118,10 +120,10 @@ const navigate = useNavigate()
         </a>
       </p>
     </div>
-    <ToastContainer stacked position='top-right'/>
+    <ToastContainer stacked />
   </div>
 
   )
 }
 
-export default Login
+export default Signin

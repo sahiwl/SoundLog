@@ -7,7 +7,7 @@ import clsx from 'clsx'
 const Homepage = () => {
     return (
         <div className="min-h-screen bg-gray-900 relative">
-             {/* Hero Section */}
+             {/* Hero Section
              <div className="relative h-[60vh] bg-gradient-to-b from-gray-800 to-gray-900">
                 <div 
                     className={clsx(
@@ -20,13 +20,26 @@ const Homepage = () => {
                     <div className="absolute inset-0 bg-gradient-to-r from-black via-transparent to-black opacity-50"></div>
                 </div>
                 <div className="relative z-10 flex flex-col items-center justify-center h-full text-white px-4">
-                    <h1 className="text-5xl font-bold mb-4">Track your music journey.</h1>
-                    <p className="text-xl mb-8">Rate, review, and share your favorite albums.</p>
-                    <button className="bg-green-500 hover:bg-green-600 text-white px-8 py-3 rounded-full font-semibold">
-                        Get Started — it's free!
-                    </button>
-                </div>
-            </div>
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 text-white">
+            {" "}
+            Share Your <span className="text-purple-400">Music Journey</span>
+          </h1>
+
+          <p className="text-base md:text-lg text-zinc-400 max-w-2xl mb-8">
+            Discover, rate, and review music that moves you. Connect with a
+            community of passionate listeners and create your personal music
+            library.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 mb-12">
+            <a href="#" className="button-primary text-center">
+              Start Logging
+            </a>
+            <a href="#features" className="button-secondary text-center">
+              Explore Features
+            </a>
+          </div>
+        </div>
+            </div> */}
 
             {/* Content Container */}
             <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
