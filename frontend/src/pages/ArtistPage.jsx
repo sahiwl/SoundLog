@@ -2,19 +2,12 @@ import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
 import { axiosInstance } from "../lib/axios.js"
 
-// Sample albums data for demonstration
-const sampleAlbums = [
-  { id: 1, title: "Whole Lotta Red", year: "2020", criticScore: 75, userScore: 82, image: "/placeholder.svg" },
-  { id: 2, title: "Die Lit", year: "2018", criticScore: 79, userScore: 84, image: "/placeholder.svg" },
-  { id: 3, title: "Playboi Carti", year: "2017", criticScore: 72, userScore: 80, image: "/placeholder.svg" },
-]
 
 const ArtistPage = () => {
   const { artistId } = useParams()
   const [artistData, setArtistData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
-  const [albums, setAlbums] = useState(sampleAlbums)
 
   const fetchArtistDetails = async () => {
     try {

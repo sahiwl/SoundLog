@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+//strictly for albums likes only
 const likeSchema = new mongoose.Schema(
     {
         userId:{

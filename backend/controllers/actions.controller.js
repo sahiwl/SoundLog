@@ -258,6 +258,36 @@ export const addRating = async (req, res) => {
     }
 }
 
+export const getRating = async (req, res) => {
+    try {
+        const { itemType, itemId } = req.params;
+        const userId = req.user._id;
+        
+        if (!itemId) {
+            return res.status(400).json({ message: "itemId is required." });
+        }
+        
+        if (!itemType || (itemType !== "tracks" && itemType !== "albums")) {
+            return res.status(400).json({ message: "Valid itemType (tracks or albums) is required." });
+        }
+
+        const existingRating = await Rating.findOne({ 
+            userId, 
+            itemId, 
+            itemType 
+        });
+
+        if (!existingRating) {
+            return res.json({ rating: null });
+        }
+
+        return res.json({ rating: existingRating.rating });
+
+    } catch (error) {
+        console.error("Error in getRating:", error.message);
+        return res.status(500).json({ message: "Internal Server Error" });
+    }
+};
 
 /**
   toggleListened - Toggle whether a user has marked a album as listened. 
@@ -551,4 +581,80 @@ export const deleteComment = async (req, res) => {
       return res.status(500).json({ message: "Internal Server Error, my boy" });
     }
   };
-//This took good 2 whole days, please work for the love of god 🙏🏻
+
+export const getReviews = async (req, res) => {
+    try {
+        const { albumId } = req.params;
+        
+        if (!albumId) {
+            return res.status(400).json({ message: "albumId is required." });
+        }
+
+        const reviews = await Review.find({ albumId })
+            .sort({ createdAt: -1 })
+            .populate('userId', 'username');
+
+        const reviewsWithDetails = await Promise.all(
+            reviews.map(async (review) => {
+                const comments = await Comment.find({ reviewId: review._id })
+                    .populate('userId', 'username');
+
+                return {
+                    reviewId: review._id,
+                    reviewText: review.reviewText,
+                    createdAt: review.createdAt,
+                    user: {
+                        id: review.userId._id,
+                        username: review.userId.username
+                    },
+                    commentCount: comments.length
+                };
+            })
+        );
+
+        return res.status(200).json({ 
+            reviews: reviewsWithDetails,
+            totalReviews: reviewsWithDetails.length
+        });
+
+    } catch (error) {
+        console.error("Error in getReviews:", error.message);
+        return res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
+export const likeReview = async (req, res) => {
+  try {
+    const { reviewId } = req.params;
+    const userId = req.user._id;
+
+    if (!reviewId) {
+      return res.status(400).json({ message: "reviewId is required." });
+    }
+
+    const review = await Review.findById(reviewId);
+    if (!review) {
+      return res.status(404).json({ message: "Review not found." });
+    }
+
+    const userHasLiked = review.likedBy.includes(userId);
+
+    if (userHasLiked) {
+      // Remove like
+      review.likes = Math.max(0, review.likes - 1); // Ensure likes don't go below 0
+      review.likedBy = review.likedBy.filter(id => !id.equals(userId));
+      await review.save();
+      return res.status(200).json({ message: "Review unliked.", likes: review.likes });
+    } else {
+      // Add like
+      review.likes += 1;
+      review.likedBy.push(userId);
+      await review.save();
+      return res.status(200).json({ message: "Review liked.", likes: review.likes });
+    }
+
+  } catch (error) {
+    console.error("Error in likeReview:", error.message);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};

@@ -16,17 +16,14 @@ const reviewSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    // itemType: {
-    //   type: String,
-    //   enum: ["albums"], // Reviews can only be for albums
-    //   default: "albums",
-    //   required: true,
-    // },removing this since likes are only for album
-  //   logId:{
-  //     type: mongoose.Schema.Types.ObjectId,
-  //     ref: "Log",
-  //     default: null
-  // } removing log 
+    likes: {
+      type: Number,
+      default: 0, // Default like count is 0
+    },
+    likedBy: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User"
+    }],
   },
   { timestamps: true }
 );

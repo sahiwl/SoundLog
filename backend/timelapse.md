@@ -7,3 +7,6 @@
  - so as a safetly, cleanup.js deletes the docs which are not accessed in the last 7days since lastAccess (date)
  - this make sures not too many unaccessed albums, tracks docs stay on db
  - also spotify gives free 3calls/sec so we don't really need ratelimiting. 
+
+
+[ ] - feature -> edit review

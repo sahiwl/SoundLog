@@ -3,12 +3,17 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams, Link } from "react-router-dom";
 import { axiosInstance } from "../lib/axios";
+import ActionForm from "../components/ActionForm.jsx";
+import { toast } from 'react-toastify';
+import { Heart } from "lucide-react";
 
 const AlbumPage = () => {
   const { albumId } = useParams(); // album ID
   const [albumData, setAlbumData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [reviews, setReviews] = useState([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
 
   const fetchAlbumDetails = async () => {
     try {
@@ -25,13 +30,55 @@ const AlbumPage = () => {
     }
   };
 
+  const fetchReviews = async () => {
+    try {
+      setReviewsLoading(true);
+      const response = await axiosInstance.get(`/actions/review/${albumId}`);
+      console.log("Reviews response:", response.data);
+      // The reviews are inside response.data.reviews
+      setReviews(response.data.reviews || []);
+    } catch (err) {
+      console.error("Error fetching reviews:", err);
+      toast.error("Error fetching reviews");
+    } finally {
+      setReviewsLoading(false);
+    }
+  };
+
+  const handleLikeReview = async (reviewId) => {
+    try {
+      const response = await axiosInstance.post(`/actions/review/like/${reviewId}`);
+      toast.success("Review liked!");
+      setReviews((prevReviews) =>
+        prevReviews.map((review) =>
+          review.reviewId === reviewId
+            ? { ...review, likes: response.data.likes }
+            : review
+        )
+      );
+    } catch (err) {
+      console.error("Error liking review:", err);
+      toast.error("Error liking review.");
+    }
+  };
+
   useEffect(() => {
-    if (albumId) fetchAlbumDetails();
+    if (albumId) {
+      fetchAlbumDetails();
+      fetchReviews();
+    }
   }, [albumId]);
 
   if (loading) return <p>Loading album details...</p>;
   if (error) return <p>{error}</p>;
   if (!albumData) return <p>No album data found.</p>;
+
+
+  const handleActionComplete=  ()=>{
+    // Refresh album data after action is completed
+    fetchAlbumDetails();
+    fetchReviews(); // Refresh reviews after new action
+  }
 
   function formatDuration(ms) {
     const minutes = Math.floor(ms / 60000);
@@ -121,53 +168,53 @@ const AlbumPage = () => {
               </div>
             </div>
 
-            {/* User Review Section */}
-            <div className="mt-8 bg-grids rounded p-4">
-              <div className="flex items-center mb-4">
-                <div className="w-12 h-12 bg-gray-600 rounded-full mr-4"></div>
-                <div>
-                  <p className="font-medium">User: {albumData.user ? albumData.user.username : "Anonymous"}</p>
-                  {/* Dummy rate display */}
-                  <div className="flex items-center">
-                    <span className="text-sm text-gray-400">Rating: {albumData.rating || "N/A"}</span>
-                    <span className="ml-2 px-2 py-1 bg-gray-700 text-xs">RATE</span>
-                  </div>
-                </div>
-                <div className="ml-auto flex space-x-6">
-                  <button className="flex flex-col items-center">
-                    <span className="w-8 h-8 flex items-center justify-center">🎧</span>
-                    <span className="text-xs text-gray-400">LISTEN</span>
-                  </button>
-                  <button className="flex flex-col items-center">
-                    <span className="w-8 h-8 flex items-center justify-center">♡</span>
-                    <span className="text-xs text-gray-400">LIKE</span>
-                  </button>
-                  <button className="flex flex-col items-center">
-                    <span className="w-8 h-8 flex items-center justify-center">+</span>
-                    <span className="text-xs text-gray-400">SAVE</span>
-                  </button>
-                </div>
+            <ActionForm albumId={albumId} onActionComplete={handleActionComplete} />
+
+             {/* Reviews Section */}
+             <div className="mt-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-medium">REVIEWS</h3>
+                <span className="text-sm text-gray-400">
+                  {reviews?.length || 0} REVIEWS
+                  
+                </span>
               </div>
-              <textarea
-                className="w-full bg-gray-700 rounded p-3 text-white"
-                rows="4"
-                placeholder="Add a Review"
-              ></textarea>
-              <div className="flex items-center mt-4">
-                <div className="flex items-center">
-                  <button className="flex items-center text-gray-400 text-sm mr-4">
-                    <span className="mr-1">☰</span> Add to List
-                  </button>
-                  <button className="flex items-center text-gray-400 text-sm mr-4">
-                    <span className="mr-1">↗</span> Recommend
-                  </button>
-                  <button className="flex items-center text-gray-400 text-sm">
-                    <span className="mr-1">🏷</span> Tag
-                  </button>
-                </div>
-                <div className="ml-auto">
-                  <button className="bg-gray-700 px-3 py-1 text-sm">POST</button>
-                </div>
+
+              <div className="space-y-4">
+                {reviewsLoading ? (
+                  <div className="col-span-full text-center">Loading reviews...</div>
+                ) : reviews && reviews.length > 0 ? (
+                  reviews.map(review => (
+                    <div key={review.reviewId} className="bg-grids p-4 rounded">
+                      <div className="flex justify-between items-center mb-2">
+                        <div>
+                          <p className="font-medium">{review.user.username}</p>
+                          <p className="text-xs text-gray-400">User ID: {review.user.id}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-gray-400 text-sm">
+                            {new Date(review.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                      <p className="text-sm mt-2">{review.reviewText}</p>
+                      <div className="flex items-center justify-between mt-4">
+                        <button
+                          onClick={() => handleLikeReview(review.reviewId)}
+                          className="flex items-center text-sm text-blue-400 hover:underline"
+                        >
+                          <Heart size={20}/>
+                          {"  "}Like 
+                        </button>
+                        <span className="text-xs text-gray-400">{review.likes} likes</span>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="col-span-full bg-grids p-4 rounded text-center">
+                    <p className="text-gray-400">No reviews yet. Be the first to review this album!</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -254,31 +301,7 @@ const AlbumPage = () => {
               </div>
             </div>
 
-            {/* Reviews Section */}
-            <div className="mt-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-medium">REVIEWS</h3>
-                <span className="text-sm text-gray-400">{albumData.reviews ? albumData.reviews.length : 0} REVIEWS</span>
-              </div>
-
-              <div className="space-y-4">
-                {albumData.reviews && albumData.reviews.map(review => (
-                  <div key={review.reviewId} className="bg-grids p-4 rounded">
-                    <div className="flex justify-between items-center mb-2">
-                      <p className="font-medium">{review.user.username}</p>
-                      <p className="text-gray-400 text-sm">{new Date(review.createdAt).toLocaleDateString()}</p>
-                    </div>
-                    <p className="text-sm">{review.reviewText}</p>
-                  </div>
-                ))}
-
-                {(!albumData.reviews || albumData.reviews.length === 0) && (
-                  <div className="bg-grids p-4 rounded text-center">
-                    <p className="text-gray-400">No reviews yet. Be the first to review this album!</p>
-                  </div>
-                )}
-              </div>
-            </div>
+           
           </div>
         </div>
       </div>
