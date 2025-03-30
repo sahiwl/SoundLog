@@ -116,17 +116,17 @@ const ActionForm = ({ albumId, onActionComplete }) => {
     }
   };
 
-  const handleRatingInputChange = (e) => {
-    setInputRating(e.target.value);
-  };
+  // const handleRatingInputChange = (e) => {
+  //   setInputRating(e.target.value);
+  // };
 
-  const handleKeyDown = (e) => {
-    // Only handle Enter key, allow other keys to work normally
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleSubmitRating();
-    }
-  };
+  // const handleKeyDown = (e) => {
+  //   // Only handle Enter key, allow other keys to work normally
+  //   if (e.key === 'Enter') {
+  //     e.preventDefault();
+  //     handleSubmitRating();
+  //   }
+  // };
 
   return (
     <div className="mt-8 bg-grids rounded p-4">

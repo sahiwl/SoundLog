@@ -5,87 +5,91 @@ import NewReleases2 from '../components/NewReleases2'
 import clsx from 'clsx'
 
 const Homepage = () => {
-    return (
-        <div className="min-h-screen bg-background relative">
+  return (
+    <div className="text-white pt-28">
+      <div className="container mx-auto px-4 py-6">
+        {/* New Releases Section */}
+        <NewReleases2 />
 
-            {/* Content Container */}
-            <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Popular This Week */}
+        <section className="mt-12">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-lg font-medium">POPULAR THIS WEEK</h2>
+            <span className="text-sm text-gray-400">VIEW ALL</span>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {[1, 2, 3, 4, 5, 6].map((item) => (
+              <div key={item} className="group relative aspect-square bg-grids rounded-lg overflow-hidden">
+                <img 
+                  src={`https://picsum.photos/300/300?random=${item}`} 
+                  alt="Album cover" 
+                  className="h-full w-full object-cover group-hover:opacity-75 transition-opacity"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="absolute bottom-0 p-3">
+                    <p className="text-white text-sm font-medium truncate">Album Name</p>
+                    <p className="text-gray-300 text-xs">Artist Name</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
 
-                {/* Popular This Week */}
-                <section className="py-12">
-                    <h2 className="text-2xl font-bold text-white mb-6">Popular This Week</h2>
-                    <div className="carousel carousel-center w-full p-4 space-x-4 rounded-box">
-                        {[1, 2, 3, 4, 5, 6].map((item) => (
-                            <div key={item} className="carousel-item w-[350px]">
-                                <div className="group relative aspect-square overflow-hidden rounded-lg hover:opacity-75 transition-opacity">
-                                    <img 
-                                        src={`https://picsum.photos/300/300?random=${item}`} 
-                                        alt="Album cover" 
-                                        className="h-full w-full object-cover"
-                                    />
-                                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-300">
-                                        <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                                            <p className="text-white font-medium truncate">Album Name</p>
-                                            <p className="text-gray-300 text-sm">Artist Name</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </section>
+        {/* Recent Activity */}
+        <section className="mt-12">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-lg font-medium">RECENT ACTIVITY</h2>
+            <span className="text-sm text-gray-400">VIEW ALL</span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[1, 2, 3, 4, 5].map((item) => (
+              <div key={item} className="bg-grids rounded-lg p-4">
+                <div className="flex gap-4 items-center">
+                  <img 
+                    src={`https://picsum.photos/100/100?random=${item + 10}`} 
+                    alt="User avatar" 
+                    className="w-12 h-12 rounded-full"
+                  />
+                  <div>
+                    <p className="text-sm">
+                      <span className="font-medium">Username</span> rated{' '}
+                      <span className="text-blue-400 hover:underline cursor-pointer">Album Name</span>
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">2 hours ago</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
 
-                {/* Recent Activity */}
-                <section className="py-12">
-                    <h2 className="text-2xl font-bold text-white mb-6">Recent Activity</h2>
-                    <div className="carousel carousel-center w-full p-4 space-x-4 rounded-box">
-                        {[1, 2, 3, 4, 5].map((item) => (
-                            <div key={item} className="carousel-item w-[400px] bg-gray-700 rounded-lg p-4">
-                                <div className="flex gap-4">
-                                    <img 
-                                        src={`https://picsum.photos/100/100?random=${item + 10}`} 
-                                        alt="User avatar" 
-                                        className="w-12 h-12 rounded-full"
-                                    />
-                                    <div>
-                                        <p className="text-white"><span className="font-bold">Username</span> rated <span className="text-green-400">Album Name</span></p>
-                                        <p className="text-gray-400 text-sm">2 hours ago</p>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </section>
-
-                {/* Staff Picks */}
-                <section className="py-12">
-                    <h2 className="text-2xl font-bold text-white mb-6">Staff Picks</h2>
-                    <div className="carousel carousel-center w-full p-4 space-x-4 rounded-box">
-                        {[1, 2, 3, 4].map((item) => (
-                            <div key={item} className="carousel-item w-[500px]">
-                                <div className="relative group">
-                                    <img 
-                                        src={`https://picsum.photos/600/300?random=${item + 20}`} 
-                                        alt="Album cover" 
-                                        className="rounded-lg w-full hover:opacity-75 transition-opacity"
-                                    />
-                                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black to-transparent">
-                                        <h3 className="text-white font-bold">Featured Album Name</h3>
-                                        <p className="text-gray-300">Artist Name</p>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </section>
-
-                {/* New Releases Section */}
-                <NewReleases2 />
-            </div>
-        </div>
-    )
-}
-
+        {/* Staff Picks */}
+        <section className="mt-12 mb-12">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-lg font-medium">STAFF PICKS</h2>
+            <span className="text-sm text-gray-400">VIEW ALL</span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {[1, 2, 3, 4].map((item) => (
+              <div key={item} className="bg-grids rounded-lg overflow-hidden">
+                <img 
+                  src={`https://picsum.photos/600/300?random=${item + 20}`} 
+                  alt="Album cover" 
+                  className="w-full h-48 object-cover hover:opacity-75 transition-opacity"
+                />
+                <div className="p-4">
+                  <h3 className="font-medium">Featured Album Name</h3>
+                  <p className="text-sm text-gray-400 mt-1">Artist Name</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+};
 
 export const NewReleases1 = () => {
     const [newReleases, setNewReleases] = useState([])

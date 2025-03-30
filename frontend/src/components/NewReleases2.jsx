@@ -30,14 +30,14 @@ const NewReleases2 = () => {
     if (error) return <div className="text-red-500 text-center">{error}</div>
   
     return (
-      <div className="min-h-screen bg- text-white p-8">
+      <div className="min-h-content py-20 bg- text-white p-8">
         <h1 className="text-3xl font-bold mb-8">New Releases</h1>
         
         <div className="carousel carousel-center w-full p-4 space-x-4 rounded-box gap-4">
           {newReleases.map((album) => (
             <div 
               key={album.id} 
-              className="carousel-item w-[350px]"
+              className="carousel-item w-[330px]"
             >
                 <div className="group relative aspect-square overflow-hidden rounded-lg hover:opacity-75 transition-opacity">
 

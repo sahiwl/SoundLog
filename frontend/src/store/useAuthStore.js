@@ -55,14 +55,12 @@ const useAuthStore = create((set)=>({
     signin: async(data)=>{
         set({isLoggingUp: true})
         try {
-            const res = await axiosInstance.post("/auth/login", data)
+            const res = await axiosInstance.post("/auth/login", {
+                username: data.username,  // Change from email to username
+                password: data.password
+            });
             set({authUser: res.data, isAuthenticated: true})
-            console.log("signin successful:", res.data);
-            return { 
-                success: true, 
-                data: res.data,
-                message: "signin successful!" 
-            };
+            return { success: true, data: res.data };
         } catch (error) {
             console.error("Error in signin: ", error.message)
             return { 

@@ -6,10 +6,13 @@ import { toast, ToastContainer, Zoom } from "react-toastify";
 import FullScreenSearch from "./Search";
 
 
-const UserSection = memo(({ isAuthenticated, onLogout }) =>
+const UserSection = memo(({ isAuthenticated, onLogout, username }) =>
   isAuthenticated ? (
     <div className="flex items-center space-x-4">
-      <User className="text-white" size={24} />
+      <div className="flex items-center gap-2">
+        <User className="text-white" size={24} />
+        <span className="text-white">{username}</span>
+      </div>
       <button
         onClick={onLogout}
         className="text-white hover:text-purple-400 transition-colors"
@@ -42,8 +45,8 @@ const Navbar = memo(() => {
     checkAuthStatus();
   }, []); // Empty dependency array
 
-  const handleLogout = useCallback(() => {
-    logout();
+  const handleLogout = useCallback(async () => {
+    await logout();
     toast.success("Logging you out, redirecting...");
     setTimeout(() => {
       navigate("/");
@@ -84,8 +87,8 @@ const Navbar = memo(() => {
                 size={18}
               />
             </div>
-            <Link to="/songs" className="nav-link whitespace-nowrap">
-              Songs
+            <Link to="/reviews" className="nav-link whitespace-nowrap">
+              Reviews
             </Link>
             <Link to="/albums" className="nav-link whitespace-nowrap">
               Albums
@@ -99,6 +102,7 @@ const Navbar = memo(() => {
             <UserSection
               isAuthenticated={isAuthenticated}
               onLogout={handleLogout}
+              username={authUser?.username}
             />
           </div>
         </div>

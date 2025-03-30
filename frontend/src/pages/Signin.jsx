@@ -2,17 +2,17 @@ import React, { useState } from 'react'
 import useAuthStore from '../store/useAuthStore'
 import { Eye, EyeOff, X } from "lucide-react";
 import { ToastContainer, toast } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Signin = () => {
-  const [formData, setformData]= useState({email: '', password: ''})
+  const [formData, setformData] = useState({username: '', password: ''})  // Change email to username
   const [showPassword, setshowPassword] = useState(false)
 
   const {signin} = useAuthStore();
   
 const navigate = useNavigate()
   const validateForm = ()=>{
-    return !formData.email || !formData.password 
+    return !formData.username || !formData.password 
 
   }
 
@@ -46,7 +46,7 @@ const navigate = useNavigate()
           console.log("signin successful:", result.data);
 
           // Clear form
-          setformData({email: '', password: ''});
+          setformData({username: '', password: ''});
 
           // Redirect after toast completes
           setTimeout(() => {
@@ -64,18 +64,18 @@ const navigate = useNavigate()
     <div className="w-full max-w-md rounded-lg bg-zinc-900 p-6 shadow-md">
       <h2 className="text-2xl font-semibold text-white">Sign in</h2>
       <p className="mt-1 text-sm text-gray-400">
-        Enter your email below to signin to your account
+        Enter your username below to sign in to your account
       </p>
 
       <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
         <div className="text-left">
-          <label className="block text-sm font-medium text-gray-300">Email</label>
+          <label className="block text-sm font-medium text-gray-300">Username</label>
           <input
-            type="email"
-            name="email"
-            value={formData.email}
+            type="text"
+            name="username"
+            value={formData.username}
             onChange={handleChange}
-            placeholder="Email"
+            placeholder="Username"
             className="mt-1 w-full rounded border border-gray-700 bg-zinc-800 px-4 py-2 text-sm text-gray-200 focus:border-white focus:outline-none"
           />
         </div>
@@ -115,9 +115,9 @@ const navigate = useNavigate()
 
       <p className="mt-4 text-center text-sm text-gray-400">
         Don't have an account?{' '}
-        <a href="/signup" className="text-white underline">
+        <Link to="/signup" className="text-white underline">
           Sign up
-        </a>
+        </Link>
       </p>
     </div>
     <ToastContainer stacked />
