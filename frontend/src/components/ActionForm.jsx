@@ -2,67 +2,77 @@ import React, { useState, useEffect } from "react";
 import { axiosInstance } from "../lib/axios";
 import { toast } from "react-toastify";
 import useAuthStore from "../store/useAuthStore";
-import { Headphones, Heart, PlusCircle } from "lucide-react";
+import { Headphones, Heart, HeartOff, PlusCircle, Save, Check, BookmarkIcon } from "lucide-react";
 
 const ActionForm = ({ albumId, onActionComplete }) => {
-  const { authUser } = useAuthStore(); // Get user from auth store
+  const { authUser } = useAuthStore();
   const [reviewText, setReviewText] = useState("");
-  const [rating, setRating] = useState(0);
-  const [inputRating, setInputRating] = useState('');
   const [loading, setLoading] = useState(false);
   const [isEditingRating, setIsEditingRating] = useState(false);
+  const [inputRating, setInputRating] = useState('');
 
-  const itemType = "albums"; // Fixed syntax
+  // States from getActions
+  const [listened, setListened] = useState(false);
+  const [liked, setLiked] = useState(false);
+  const [listenLater, setListenLater] = useState(false);
+  const [rating, setRating] = useState(null);
+  const [reviewed, setReviewed] = useState(false);
 
   useEffect(() => {
-    // Fetch existing rating for the album
-    const fetchRating = async () => {
+    const fetchActions = async () => {
       try {
-        // Fixed URL construction to match backend route
-        const response = await axiosInstance.get(
-          `/actions/rate/${itemType}/${albumId}`
-        );
-        if (response.data && response.data.rating) {
-          setRating(response.data.rating);
-        }
+        const response = await axiosInstance.get(`/actions/actions/${albumId}`);
+        const { listened, liked, listenLater, rating, reviewed } = response.data;
+        setListened(listened);
+        setLiked(liked);
+        setListenLater(listenLater);
+        setRating(rating);
+        setReviewed(reviewed);
       } catch (error) {
-        console.error("Error fetching rating:", error);
+        console.error("Error fetching actions:", error);
       }
     };
-    fetchRating();
-  }, [albumId, itemType]);
+    fetchActions();
+  }, [albumId]);
 
-  const handleLike = async () => {
+  const handleAction = async (actionType) => {
     try {
-      const resp = await axiosInstance.post(`/actions/like/${albumId}`);
-      toast.success(resp.data.message);
-      onActionComplete?.(); // Refreshes parent component
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Error liking album");
-    }
-  };
+      setLoading(true);
+      let endpoint;
+      let newState;
+      
+      switch (actionType) {
+        case 'like':
+          endpoint = `/actions/like/${albumId}`;
+          newState = !liked;
+          setLiked(newState);
+          break;
+        case 'listen':
+          endpoint = `/actions/listen/${albumId}`;
+          newState = !listened;
+          setListened(newState);
+          break;
+        case 'listenLater':
+          endpoint = `/actions/listenLater/${albumId}`;
+          newState = !listenLater;
+          setListenLater(newState);
+          break;
+        default:
+          return;
+      }
 
-  const handleToggleListened = async () => {
-    try {
-      const resp = await axiosInstance.post(`/actions/listen/${albumId}`);
-      toast.success(resp.data.message);
-      onActionComplete?.(); //refreshes parent component
+      const response = await axiosInstance.post(endpoint);
+      toast.success(response.data.message);
     } catch (error) {
-      toast.error(
-        error.response?.data?.message || "Error marking album as listened"
-      );
-    }
-  };
-
-  const handleToggleListenLater = async () => {
-    try {
-      const resp = await axiosInstance.post(`/actions/listenLater/${albumId}`);
-      toast.success(resp.data.message);
-      onActionComplete?.(); //refreshes parent component
-    } catch (error) {
-      toast.error(
-        error.response?.data?.message || "Error adding album to listen-later"
-      );
+      toast.error(error.response?.data?.message || `Error updating ${actionType}`);
+      // Revert state on error
+      switch (actionType) {
+        case 'like': setLiked(!liked); break;
+        case 'listen': setListened(!listened); break;
+        case 'listenLater': setListenLater(!listenLater); break;
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -74,33 +84,12 @@ const ActionForm = ({ albumId, onActionComplete }) => {
     }
     setLoading(true);
     try {
-      const resp = await axiosInstance.post(
-        `/actions/rate/${itemType}/${albumId}`,
-        { rating: ratingNum }
-      );
-      toast.success(resp.data.message);
+      await axiosInstance.post(`/actions/rate/albums/${albumId}`, { rating: ratingNum });
       setRating(ratingNum);
       setInputRating('');
       setIsEditingRating(false);
-      onActionComplete?.();
     } catch (error) {
-      toast.error(error.response?.data?.message || "Error rating this album.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDeleteRating = async () => {
-    setLoading(true);
-    try {
-      const resp = await axiosInstance.delete(
-        `/actions/rate/albums/${albumId}`
-      );
-      toast.success(resp.data.message);
-      setRating(null);
-      onActionComplete?.();
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Error deleting rating.");
+      toast.error(error.response?.data?.message || "Error rating album");
     } finally {
       setLoading(false);
     }
@@ -144,80 +133,79 @@ const ActionForm = ({ albumId, onActionComplete }) => {
       <div className="flex items-center mb-4">
         <div className="w-12 h-12 bg-gray-600 rounded-full mr-4"></div>
         <div>
-          <p className="font-medium">
-            User: {authUser?.username || "Anonymous"}
-          </p>
+          <p className="font-medium">{authUser?.username || "Anonymous"}</p>
           <div className="flex items-center">
-
-              {isEditingRating || rating === 0 ? (
-                <div className="">
+            {isEditingRating || !rating ? (
+              <div className="">
                 <input
                   value={inputRating}
-                  onChange={handleRatingInputChange}
-                  onKeyDown={handleKeyDown}
+                  onChange={(e) => setInputRating(e.target.value)}
                   type="number"
                   min="0"
                   max="100"
                   placeholder="1-100"
                   className="bg-gray-700 rounded p-2 w-20 text-white"
-                  />
+                />
                 <button
-                onClick={handleSubmitRating}
-                disabled={loading}
-                className="ml-2 px-2 py-1 bg-gray-700 text-xs"
+                  onClick={handleSubmitRating}
+                  disabled={loading}
+                  className="ml-2 px-2 py-1 bg-gray-700 text-xs"
                 >
-                {loading ? "Saving..." : "SAVE"}
-              </button>
-                  </div>
-              ) : (
-                <span className="font-bold text-white">
-                  {rating}
-                </span>
-              )}
-
-              {rating !== null && (
-                <div className="flex justify-around p-2">
-                  <button
-                    onClick={() => setIsEditingRating(true)}
-                    className="ml-2 px-2 py-1 bg-gray-700 text-xs"
-                  >
-                    EDIT
-                  </button>
-                  <button
-                    onClick={handleDeleteRating}
-                    disabled={loading}
-                    className="px-3 py-1 ml-2 bg-gray-700 text-xs hover:bg-gray-600"
-                  >
-                    DELETE
-                  </button>
-                </div>
-              )}
+                  {loading ? "Saving..." : "RATE"}
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center">
+                <span className="font-bold text-white">{rating}</span>
+                <button
+                  onClick={() => setIsEditingRating(true)}
+                  className="ml-2 px-2 py-1 bg-gray-700 text-xs"
+                >
+                  EDIT
+                </button>
+              </div>
+            )}
           </div>
         </div>
+
         <div className="ml-auto flex space-x-6">
           <button
-            onClick={handleToggleListened}
+            onClick={() => handleAction('listen')}
             className="flex flex-col items-center"
+            disabled={loading}
           >
             <span className="w-8 h-8 flex items-center justify-center">
-              <Headphones size={20} />
+              <Headphones size={20} className={listened ? "text-green-500" : ""} />
             </span>
-            <span className="text-xs text-gray-400">LISTEN</span>
-          </button>
-          <button onClick={handleLike} className="flex flex-col items-center">
-            <span className="w-8 h-8 flex items-center justify-center">
-              <Heart size={20} />
+            <span className="text-xs text-gray-400">
+              {listened ? 'LISTENED' : 'LISTEN'}
             </span>
-            <span className="text-xs text-gray-400">LIKE</span>
           </button>
+
           <button
-            onClick={handleToggleListenLater}
+            onClick={() => handleAction('like')}
             className="flex flex-col items-center"
+            disabled={loading}
           >
             <span className="w-8 h-8 flex items-center justify-center">
-              <PlusCircle size={20} />
+              {liked ? <Heart fill="currentColor" size={20} className="text-red-500" /> : <HeartOff size={20} />}
             </span>
-            <span className="text-xs text-gray-400">SAVE</span>
+            <span className="text-xs text-gray-400">
+              {liked ? 'LIKED' : 'LIKE'}
+            </span>
+          </button>
+
+          <button
+            onClick={() => handleAction('listenLater')}
+            className="flex flex-col items-center"
+            disabled={loading}
+          >
+            <span className="w-8 h-8 flex items-center justify-center">
+              {listenLater ? <Check size={20} className="text-green-500" /> : <BookmarkIcon size={20} />}
+            </span>
+            <span className="text-xs text-gray-400">
+              {listenLater ? 'ListenLater' : 'ListenLater'}
+            </span>
           </button>
         </div>
       </div>

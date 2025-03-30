@@ -5,7 +5,8 @@ import { useParams, Link } from "react-router-dom";
 import { axiosInstance } from "../lib/axios";
 import ActionForm from "../components/ActionForm.jsx";
 import { toast } from 'react-toastify';
-import { Heart } from "lucide-react";
+import { Heart, Pencil, X } from "lucide-react";
+import ReviewsSection from '../components/ReviewsSection';
 
 const AlbumPage = () => {
   const { albumId } = useParams(); // album ID
@@ -14,6 +15,9 @@ const AlbumPage = () => {
   const [error, setError] = useState("");
   const [reviews, setReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [userId, setUserId] = useState(null);
+  const [editingReviewId, setEditingReviewId] = useState(null);
+  const [editedReviewText, setEditedReviewText] = useState("");
 
   const fetchAlbumDetails = async () => {
     try {
@@ -48,17 +52,59 @@ const AlbumPage = () => {
   const handleLikeReview = async (reviewId) => {
     try {
       const response = await axiosInstance.post(`/actions/review/like/${reviewId}`);
-      toast.success("Review liked!");
+      toast.success(response.data.message);
+      
+      // Immediately update the reviews state with both likes count and likedBy array
       setReviews((prevReviews) =>
         prevReviews.map((review) =>
           review.reviewId === reviewId
-            ? { ...review, likes: response.data.likes }
+            ? { 
+                ...review, 
+                likes: response.data.likes,
+                likedBy: review.likedBy?.includes(userId) 
+                  ? review.likedBy.filter(id => id !== userId)
+                  : [...(review.likedBy || []), userId]
+              }
             : review
         )
       );
+
     } catch (err) {
       console.error("Error liking review:", err);
-      toast.error("Error liking review.");
+      toast.error("Error toggling like");
+    }
+  };
+
+  const handleEditClick = (review) => {
+    setEditingReviewId(review.reviewId);
+    setEditedReviewText(review.reviewText);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingReviewId(null);
+    setEditedReviewText("");
+  };
+
+  const handleUpdateReview = async (reviewId) => {
+    try {
+      await axiosInstance.put(`/actions/review/${albumId}`, {
+        reviewText: editedReviewText.trim()
+      });
+
+      setReviews(prevReviews =>
+        prevReviews.map(review =>
+          review.reviewId === reviewId
+            ? { ...review, reviewText: editedReviewText.trim() }
+            : review
+        )
+      );
+
+      toast.success("Review updated successfully");
+      setEditingReviewId(null);
+      setEditedReviewText("");
+    } catch (err) {
+      console.error("Error updating review:", err);
+      toast.error("Error updating review");
     }
   };
 
@@ -68,6 +114,18 @@ const AlbumPage = () => {
       fetchReviews();
     }
   }, [albumId]);
+
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const response = await axiosInstance.get('/auth/check');
+        setUserId(response.data._id);
+      } catch (err) {
+        console.error('Error fetching current user:', err);
+      }
+    };
+    fetchCurrentUser();
+  }, []);
 
   if (loading) return <p>Loading album details...</p>;
   if (error) return <p>{error}</p>;
@@ -102,17 +160,6 @@ const AlbumPage = () => {
 
   return (
     <div className="bg-background text-white pt-28 min-h-screen">
-      {/* Navigation Tabs */}
-      {/* <div className="border-b border-gray-700">
-        <div className="container mx-auto my-20">
-          <nav className="flex">
-            <a href="#" className="px-5 py-4 font-medium text-white">OVERVIEW</a>
-            <a href="#" className="px-5 py-4 font-medium text-gray-400">USER REVIEWS</a>
-            <a href="#" className="px-5 py-4 font-medium text-gray-400">LISTS</a>
-            <a href="#" className="px-5 py-4 font-medium text-gray-400">DISCOGRAPHY</a>
-          </nav>
-        </div>
-      </div> */}
 
       {/* Main Content */}
       <div className="container  mx-auto px-4 py-6">
@@ -170,53 +217,16 @@ const AlbumPage = () => {
 
             <ActionForm albumId={albumId} onActionComplete={handleActionComplete} />
 
-             {/* Reviews Section */}
-             <div className="mt-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-medium">REVIEWS</h3>
-                <span className="text-sm text-gray-400">
-                  {reviews?.length || 0} REVIEWS
-                  
-                </span>
-              </div>
-
-              <div className="space-y-4">
-                {reviewsLoading ? (
-                  <div className="col-span-full text-center">Loading reviews...</div>
-                ) : reviews && reviews.length > 0 ? (
-                  reviews.map(review => (
-                    <div key={review.reviewId} className="bg-grids p-4 rounded">
-                      <div className="flex justify-between items-center mb-2">
-                        <div>
-                          <p className="font-medium">{review.user.username}</p>
-                          <p className="text-xs text-gray-400">User ID: {review.user.id}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-gray-400 text-sm">
-                            {new Date(review.createdAt).toLocaleDateString()}
-                          </p>
-                        </div>
-                      </div>
-                      <p className="text-sm mt-2">{review.reviewText}</p>
-                      <div className="flex items-center justify-between mt-4">
-                        <button
-                          onClick={() => handleLikeReview(review.reviewId)}
-                          className="flex items-center text-sm text-blue-400 hover:underline"
-                        >
-                          <Heart size={20}/>
-                          {"  "}Like 
-                        </button>
-                        <span className="text-xs text-gray-400">{review.likes} likes</span>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="col-span-full bg-grids p-4 rounded text-center">
-                    <p className="text-gray-400">No reviews yet. Be the first to review this album!</p>
-                  </div>
-                )}
-              </div>
-            </div>
+            {reviewsLoading ? (
+              <div className="text-center mt-6">Loading reviews...</div>
+            ) : (
+              <ReviewsSection 
+                reviews={reviews}
+                userId={userId}
+                albumId={albumId}
+                onReviewUpdate={fetchReviews}
+              />
+            )}
           </div>
 
           {/* Right Column - Additional Details and Track List */}

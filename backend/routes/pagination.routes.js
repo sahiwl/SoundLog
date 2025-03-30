@@ -13,7 +13,7 @@ import {
 
 const router = express.Router();
 
-// User-specific pages for individual items
+//Get pages
 router.get('/tracks/:trackId', protectRoute, getTrackPage);
 router.get('/albums/:albumId', protectRoute, getAlbumPage);
 router.get('/artists/:artistId', protectRoute, getArtistPage);
@@ -21,10 +21,11 @@ router.get('/newreleases', protectRoute, getNewReleasesPage);
 // router.get('/listenlater', protectRoute, getListenLaterPage);
 // router.get('/reviews', protectRoute, getUserReviews);
 
-//Get pages
+// User-specific pages for individual items
   router.get('/reviews', protectRoute, getUserReviews);
   router.get('/likes', protectRoute, getUserLikes);
   router.get('/albums', protectRoute, getUserAlbums);
+  //getUserListenlater
 
 
 export default router; 

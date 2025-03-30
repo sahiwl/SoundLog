@@ -292,7 +292,8 @@ export const getRating = async (req, res) => {
 /**
   toggleListened - Toggle whether a user has marked a album as listened. 
   Expects: req.params.albumId (Spotify album ID as a string). 
-  When unmarking, if a rating exists for this album, the operation is forbidden.
+
+  //30Mar - user can mark unlisten even if they had previously liked/rated the album
  */
 // ✔️ - tested,revamped
 export const toggleListened = async (req,res) => {
@@ -307,27 +308,17 @@ export const toggleListened = async (req,res) => {
         // Use the utility function to get or create album data
         await getOrCreateSpotifyData(albumId, 'albums');
         
-        const existingRating = await Rating.findOne({ userId, itemId: albumId, itemType: "albums" });
-        const existingReview = await Review.findOne({userId, albumId})
-
         //toggle off - remove from listened
         const existingListened = await Listened.findOne({ userId, albumId });
         
         if(existingListened){
-            if(existingRating || existingReview){
-                return res.status(400).json({ 
-                    message: `Cannot unlisten an album as there is a review or rating. Remove those first.` 
-                });
-            }
-            
             await Listened.deleteOne({ _id: existingListened._id})
             return res.status(200).json({ message: "Album removed from listened." });
         }
         
         // Mark as listened.
         await Listened.create({ userId, albumId});
-        // Also, remove from Listen Later if exists.
-        await ListenLater.deleteOne({ userId, albumId });
+
         return res.status(200).json({ message: "album marked as listened." });
 
     } catch (error) {
@@ -592,7 +583,8 @@ export const getReviews = async (req, res) => {
 
         const reviews = await Review.find({ albumId })
             .sort({ createdAt: -1 })
-            .populate('userId', 'username');
+            .populate('userId', 'username')
+            .populate('likedBy', 'username'); // Add this to populate likedBy users
 
         const reviewsWithDetails = await Promise.all(
             reviews.map(async (review) => {
@@ -603,6 +595,8 @@ export const getReviews = async (req, res) => {
                     reviewId: review._id,
                     reviewText: review.reviewText,
                     createdAt: review.createdAt,
+                    likes: review.likes,          // Include likes count
+                    likedBy: review.likedBy.map(user => user._id), // Include array of user IDs who liked
                     user: {
                         id: review.userId._id,
                         username: review.userId.username
@@ -656,5 +650,46 @@ export const likeReview = async (req, res) => {
   } catch (error) {
     console.error("Error in likeReview:", error.message);
     return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const getActions = async (req, res) => {
+  try {
+    const { albumId } = req.params;
+    const userId = req.user._id;
+
+    if (!albumId) {
+      return res.status(400).json({ message: "albumId is required." });
+    }
+
+    // Get album data or create if doesn't exist
+    const album = await getOrCreateSpotifyData(albumId, 'albums');
+    if (!album) {
+      return res.status(404).json({ message: "Album Not Found" });
+    }
+
+    // Check all user actions for this album
+    const [listened, liked, listenLater, rating, review] = await Promise.all([
+      Listened.exists({ userId, albumId }),
+      Likes.exists({ userId, albumId }),
+      ListenLater.exists({ userId, albumId }),
+      Rating.findOne(
+        { userId, itemId: albumId, itemType: 'albums' }, 
+        { rating: 1, _id: 0 }
+      ),
+      Review.exists({ userId, albumId })
+    ]);
+
+    res.status(200).json({
+      listened: !!listened,
+      liked: !!liked,
+      listenLater: !!listenLater,
+      rating: rating ? rating.rating : null,
+      reviewed: !!review
+    });
+
+  } catch (error) {
+    console.error("Error in getActions:", error.message);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };

@@ -1,6 +1,6 @@
 import { addComment, addReview, deleteComment, deleteRating, deleteReview, 
          toggleLike, toggleListened, toggleListenLater, addRating, 
-         updateReview, getRating, getReviews, likeReview } from "../controllers/actions.controller.js";
+         updateReview, getRating, getReviews, likeReview, getActions } from "../controllers/actions.controller.js";
 
 import express from 'express'
 import { protectRoute } from '../middleware/auth.middleware.js';
@@ -27,5 +27,6 @@ router.post("/review/like/:reviewId", protectRoute, likeReview)
 router.post("/comment", protectRoute, addComment)// Expects reviewId and commentText in body
 router.delete("/comment/:commentId", protectRoute, deleteComment)
 
+router.get("/actions/:albumId", protectRoute, getActions)
 
 export default router
