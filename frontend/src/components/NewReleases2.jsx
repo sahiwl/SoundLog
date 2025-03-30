@@ -2,8 +2,10 @@ import React from 'react'
 import { useState, useEffect } from 'react'
 import { axiosInstance } from '../lib/axios'
 import { ToastContainer, toast } from 'react-toastify'
+import { Link } from 'react-router-dom'
 
 const NewReleases2 = () => {
+
     const [newReleases, setNewReleases] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
@@ -44,7 +46,8 @@ const NewReleases2 = () => {
                 alt={album.name}
                 className="h-full w-full object-cover"
               />
-              <div className="absolute inset-0 bg- bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-300">
+{/* target div -> click to go to albumPage */}
+              <Link className="absolute inset-0 bg- bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-300" to={`/album/${album.id}`}> 
                 <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
                   <p className="text-sm font-medium truncate">{album.name}</p>
                   <p className="text-xs text-gray-300 truncate">
@@ -52,7 +55,7 @@ const NewReleases2 = () => {
                   </p>
                   <ToastContainer stacked position='top-right'/>
                 </div>
-              </div>
+              </Link>
             </div>
             </div>
           ))}

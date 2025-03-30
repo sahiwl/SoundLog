@@ -25,14 +25,22 @@ const UserSection = memo(({ isAuthenticated, onLogout }) =>
 );
 
 const Navbar = memo(() => {
-  const { checkAuth, logout, isAuthenticated } = useAuthStore();
+  const { checkAuth, logout, isAuthenticated, authUser } = useAuthStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearchOverlay, setShowSearchOverlay] = useState(false);
   const navigate = useNavigate();
 
+  // Change this useEffect to run only once when component mounts
   useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
+    const checkAuthStatus = async () => {
+      try {
+        await checkAuth();
+      } catch (error) {
+        console.error("Auth check failed:", error);
+      }
+    };
+    checkAuthStatus();
+  }, []); // Empty dependency array
 
   const handleLogout = useCallback(() => {
     logout();

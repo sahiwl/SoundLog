@@ -33,16 +33,24 @@
 
 @layer base {
   :root {
-    --background: rgb(0, 0, 0);
+    --background: rgb(23 23 23); /* Define the background color */
     --foreground: rgb(255, 255, 255); 
     --primary: rgb(114, 46, 209); 
     --secondary: rgb(40, 40, 40); 
     --accent: rgb(114, 46, 209); 
+    --grids: rgb(30,30,30);
   }
-   
 }
 
- @layer components {
+.bg-background {
+  background-color: var(--background); /* Use the defined background color */
+}
+
+.bg-grids {
+  background-color: var(--grids);
+}
+
+@layer components {
   .glass {
     background-color: rgb(24, 24, 27, 0.6); /* bg-zinc-900/60 */
     backdrop-filter: blur(8px);

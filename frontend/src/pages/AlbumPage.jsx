@@ -5,7 +5,7 @@ import { useParams, Link } from "react-router-dom";
 import { axiosInstance } from "../lib/axios";
 
 const AlbumPage = () => {
-  const { itemId } = useParams(); // album ID
+  const { albumId } = useParams(); // album ID
   const [albumData, setAlbumData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -13,7 +13,7 @@ const AlbumPage = () => {
   const fetchAlbumDetails = async () => {
     try {
       setLoading(true);
-      const response = await axiosInstance.get(`/pages/albums/${itemId}`, { // Keep this API endpoint path
+      const response = await axiosInstance.get(`/pages/albums/${albumId}`, { // Keep this API endpoint path
         withCredentials: true,
       });
       setAlbumData(response.data.album);
@@ -26,8 +26,8 @@ const AlbumPage = () => {
   };
 
   useEffect(() => {
-    if (itemId) fetchAlbumDetails();
-  }, [itemId]);
+    if (albumId) fetchAlbumDetails();
+  }, [albumId]);
 
   if (loading) return <p>Loading album details...</p>;
   if (error) return <p>{error}</p>;
@@ -54,10 +54,10 @@ const AlbumPage = () => {
   }
 
   return (
-    <div className="bg-gray-950 text-white min-h-screen">
+    <div className="bg-background text-white pt-28 min-h-screen">
       {/* Navigation Tabs */}
-      <div className="border-b border-gray-700">
-        <div className="container mx-auto">
+      {/* <div className="border-b border-gray-700">
+        <div className="container mx-auto my-20">
           <nav className="flex">
             <a href="#" className="px-5 py-4 font-medium text-white">OVERVIEW</a>
             <a href="#" className="px-5 py-4 font-medium text-gray-400">USER REVIEWS</a>
@@ -65,10 +65,10 @@ const AlbumPage = () => {
             <a href="#" className="px-5 py-4 font-medium text-gray-400">DISCOGRAPHY</a>
           </nav>
         </div>
-      </div>
+      </div> */}
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-6">
+      <div className="container  mx-auto px-4 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Album Info */}
           <div className="lg:col-span-2">
@@ -91,13 +91,13 @@ const AlbumPage = () => {
                 />
                 {/* Streaming Links */}
                 <div className="flex mt-4 space-x-2">
-                  <a href="#" className="bg-gray-800 text-white px-3 py-2 rounded flex items-center space-x-2">
+                  <a href="#" className="bg-grids text-white px-3 py-2 rounded flex items-center space-x-2">
                     <span>Amazon</span>
                   </a>
-                  <a href="#" className="bg-gray-800 text-white px-3 py-2 rounded flex items-center space-x-2">
+                  <a href="#" className="bg-grids text-white px-3 py-2 rounded flex items-center space-x-2">
                     <span>Apple Music</span>
                   </a>
-                  <a href={albumData.external_urls.spotify} target="_blank" rel="noreferrer" className="bg-gray-800 text-white px-3 py-2 rounded flex items-center space-x-2">
+                  <a href={albumData.external_urls.spotify} target="_blank" rel="noreferrer" className="bg-grids text-white px-3 py-2 rounded flex items-center space-x-2">
                     <span>Spotify</span>
                   </a>
                 </div>
@@ -106,7 +106,7 @@ const AlbumPage = () => {
               {/* Scores */}
               <div className="flex-grow">
                 {/* User Score (Static Example) */}
-                <div className="bg-gray-800 p-4 rounded">
+                <div className="bg-grids p-4 rounded">
                   <h3 className="text-sm font-medium mb-2">USER SCORE</h3>
                   <div className="flex items-end mb-2">
                     <span className="text-6xl font-bold">72</span>
@@ -122,7 +122,7 @@ const AlbumPage = () => {
             </div>
 
             {/* User Review Section */}
-            <div className="mt-8 bg-gray-800 rounded p-4">
+            <div className="mt-8 bg-grids rounded p-4">
               <div className="flex items-center mb-4">
                 <div className="w-12 h-12 bg-gray-600 rounded-full mr-4"></div>
                 <div>
@@ -175,7 +175,7 @@ const AlbumPage = () => {
           {/* Right Column - Additional Details and Track List */}
           <div>
             {/* Details Section */}
-            <div className="bg-gray-800 p-4 rounded mb-6">
+            <div className="bg-grids p-4 rounded mb-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-medium">DETAILS</h3>
               </div>
@@ -193,13 +193,13 @@ const AlbumPage = () => {
                   <span className="text-white">{albumData.label || "N/A"}</span>
                   <span className="text-gray-400">  label</span>
                 </p>
-                <p>
+                {/* <p>
                   <span className="text-white">Hip-Hop/Rap, Trap</span>
-                </p>
-                <p className="text-gray-400 text-sm">
+                </p> */}
+                {/* <p className="text-gray-400 text-sm">
                   Alternative Hip-Hop, Cloud Rap, Experimental
-                </p>
-                <p className="text-gray-400 text-sm">{albumData.genres || "N.A"}  genre</p>
+                </p> */}
+                <p className="text-gray-400 text-sm">{albumData.genres ? albumData.genres : "N.A"}  genre</p>
 
                 <p className="mt-4">
                   <span className="text-white">
@@ -229,7 +229,7 @@ const AlbumPage = () => {
                   <Link 
                     to={`/tracks/${track.trackId}`} 
                     key={track.trackId}
-                    className="flex items-center hover:bg-gray-800 p-2 rounded transition-colors"
+                    className="flex items-center hover:bg-grids p-2 rounded transition-colors"
                   >
                     <span className="w-6 text-gray-400">{index + 1}</span>
                     <div className="flex-grow">
@@ -263,7 +263,7 @@ const AlbumPage = () => {
 
               <div className="space-y-4">
                 {albumData.reviews && albumData.reviews.map(review => (
-                  <div key={review.reviewId} className="bg-gray-800 p-4 rounded">
+                  <div key={review.reviewId} className="bg-grids p-4 rounded">
                     <div className="flex justify-between items-center mb-2">
                       <p className="font-medium">{review.user.username}</p>
                       <p className="text-gray-400 text-sm">{new Date(review.createdAt).toLocaleDateString()}</p>
@@ -273,7 +273,7 @@ const AlbumPage = () => {
                 ))}
 
                 {(!albumData.reviews || albumData.reviews.length === 0) && (
-                  <div className="bg-gray-800 p-4 rounded text-center">
+                  <div className="bg-grids p-4 rounded text-center">
                     <p className="text-gray-400">No reviews yet. Be the first to review this album!</p>
                   </div>
                 )}

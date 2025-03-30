@@ -1,6 +1,7 @@
-import { GetAlbumTracks, getNewReleases, GetSpecificAlbum, GetSpecificTrack} from "../lib/pullSpotifyData.js"
+import { GetAlbumTracks, getNewReleases, GetSpecificAlbum, GetSpecificArtist, GetSpecificTrack} from "../lib/pullSpotifyData.js"
 import Album from "../models/album.model.js";
 import Track from "../models/track.model.js";
+import Artist from "../models/artist.model.js";
 
 export const getTrackDetails = async(itemId)=>{
     try {
@@ -135,6 +136,46 @@ export const getAlbumDetails = async(itemId)=>{
     }
 }
 
+export const getArtistDetails = async(artistId) => {
+    try {
+        // Check if artist exists in database
+        let artist = await Artist.findOne({ artistId });
+        if (!artist) {
+            const spotifyData = await GetSpecificArtist(`${artistId}`, {
+                market: 'IN'
+            });
+            if (!spotifyData || spotifyData.error) {
+                throw new Error("Artist not found on Spotify.");
+            }
+            
+            artist = await Artist.create({
+                artistId: spotifyData.id,
+                name: spotifyData.name,
+                followers: {
+                    href: spotifyData.followers.href,
+                    total: spotifyData.followers.total
+                },
+                genres: spotifyData.genres,
+                href: spotifyData.href,
+                images: spotifyData.images.map(img => ({
+                    url: img.url,
+                    height: img.height,
+                    width: img.width
+                })),
+                popularity: spotifyData.popularity,
+                type: spotifyData.type,
+                uri: spotifyData.uri,
+                external_urls: {
+                    spotify: spotifyData.external_urls.spotify
+                }
+            });
+        }
+        return artist;
+    } catch (error) {
+        console.error("Error in getArtistDetails:", error.message);
+        throw error;
+    }
+};
 
 export const getAlbumTracksHandler = async (req, res) => {
     try {

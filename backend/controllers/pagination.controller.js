@@ -7,6 +7,8 @@ import Likes from "../models/likes.model.js";
 import Listened from "../models/listened.model.js";
 import Comment from "../models/comment.model.js";
 import { getNewReleasesHandler } from "./song.controller.js";
+import Artist from "../models/artist.model.js";
+import { getArtistDetails } from "./song.controller.js";
 
 // Get user's reviews with pagination 
 // ✅ tested
@@ -516,6 +518,42 @@ export const getTrackPage = async (req, res) => {
 
     } catch (error) {
         console.error("Error in getTrackPage:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
+export const getArtistPage = async (req, res) => {
+    try {
+        const { artistId } = req.params;
+
+        // Use the getArtistDetails controller to fetch/create artist
+        const artist = await getArtistDetails(artistId);
+        
+        // Update lastAccessed timestamp
+        artist.lastAccessed = new Date();
+        await artist.save();
+
+        // Format and return response according to model schema
+        res.json({
+            artist: {
+                id: artist.artistId,
+                name: artist.name,
+                followers: artist.followers,
+                genres: artist.genres,
+                href: artist.href,
+                images: artist.images,
+                popularity: artist.popularity,
+                type: artist.type,
+                uri: artist.uri,
+                external_urls: artist.external_urls,
+                lastAccessed: artist.lastAccessed,
+                createdAt: artist.createdAt,
+                updatedAt: artist.updatedAt
+            }
+        });
+
+    } catch (error) {
+        console.error("Error in getArtistPage:", error);
         res.status(500).json({ message: "Internal Server Error" });
     }
 };

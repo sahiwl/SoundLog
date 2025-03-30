@@ -55,7 +55,7 @@ const getDetailLink = (item, type) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-base-200 bg-opacity-95 z-50 overflow-auto p-8">
+    <div className="fixed inset-0 bg-base-100 bg-opacity-95 z-50 overflow-auto p-8">
       <button
         className="btn btn-circle absolute top-4 right-4"
         onClick={onClose}

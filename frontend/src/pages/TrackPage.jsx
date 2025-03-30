@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { axiosInstance } from "../lib/axios";
 
 const TrackPage = () => {
-  const { itemId } = useParams();
+  const { trackId } = useParams();
   const [trackData, setTrackData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -12,7 +12,7 @@ const TrackPage = () => {
     try {
       setLoading(true);
       setError("");  // Reset error state
-      const response = await axiosInstance.get(`/pages/tracks/${itemId}`, {
+      const response = await axiosInstance.get(`/pages/tracks/${trackId}`, {
         withCredentials: true,
       });
       if (response.data && response.data.track) {
@@ -29,8 +29,8 @@ const TrackPage = () => {
   };
 
   useEffect(() => {
-    if (itemId) fetchTrackDetails();
-  }, [itemId]);
+    if (trackId) fetchTrackDetails();
+  }, [trackId]);
 
   if (loading) return <p>Loading track details...</p>;
   if (error) return <p>{error}</p>;
@@ -43,9 +43,9 @@ const TrackPage = () => {
   }
 
   return (
-    <div className="bg-gray-950 text-white min-h-screen">
+    <div className="bg-background pt-28 text-white min-h-screen">
       {/* Navigation Tabs */}
-      <div className="border-b border-gray-700">
+      {/* <div className="border-b border-gray-700">
         <div className="container mx-auto">
           <nav className="flex">
             <a href="#" className="px-5 py-4 font-medium text-white">OVERVIEW</a>
@@ -54,7 +54,7 @@ const TrackPage = () => {
             <a href="#" className="px-5 py-4 font-medium text-gray-400">CREDITS</a>
           </nav>
         </div>
-      </div>
+      </div> */}
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-6">
@@ -86,17 +86,17 @@ const TrackPage = () => {
                 />
                 {/* Streaming Links */}
                 <div className="flex mt-4 space-x-2">
-                  <a href="#" className="bg-gray-800 text-white px-3 py-2 rounded flex items-center space-x-2">
+                  <a href="#" className="bg-grids text-white px-3 py-2 rounded flex items-center space-x-2">
                     <span>Amazon</span>
                   </a>
-                  <a href="#" className="bg-gray-800 text-white px-3 py-2 rounded flex items-center space-x-2">
+                  <a href="#" className="bg-grids text-white px-3 py-2 rounded flex items-center space-x-2">
                     <span>Apple Music</span>
                   </a>
                   <a 
                     href={trackData.external_urls?.spotify} 
                     target="_blank" 
                     rel="noreferrer" 
-                    className="bg-gray-800 text-white px-3 py-2 rounded flex items-center space-x-2"
+                    className="bg-grids text-white px-3 py-2 rounded flex items-center space-x-2"
                   >
                     <span>Spotify</span>
                   </a>
@@ -105,7 +105,7 @@ const TrackPage = () => {
 
               {/* Scores */}
               <div className="flex-grow">
-                <div className="bg-gray-800 p-4 rounded">
+                <div className="bg-grids p-4 rounded">
                   <h3 className="text-sm font-medium mb-2">USER SCORE</h3>
                   <div className="flex items-end mb-2">
                     <span className="text-6xl font-bold">92</span>
@@ -120,7 +120,7 @@ const TrackPage = () => {
             </div>
 
             {/* User Rating Section */}
-            <div className="mt-8 bg-gray-800 rounded p-4">
+            <div className="mt-8 bg-grids rounded p-4">
               <div className="flex items-center mb-4">
                 <div className="w-12 h-12 bg-gray-600 rounded-full mr-4"></div>
                 <div>
@@ -147,7 +147,7 @@ const TrackPage = () => {
           {/* Right Column - Additional Details */}
           <div>
             {/* Details Section */}
-            <div className="bg-gray-800 p-4 rounded mb-6">
+            <div className="bg-grids p-4 rounded mb-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-medium">SONG INFO</h3>
               </div>
@@ -192,7 +192,7 @@ const TrackPage = () => {
 
               <div className="space-y-4">
                 {trackData.ratings?.map(rating => (
-                  <div key={rating._id} className="bg-gray-800 p-4 rounded">
+                  <div key={rating._id} className="bg-grids p-4 rounded">
                     <div className="flex justify-between items-center">
                       <div>
                         <p className="font-medium">{rating.user?.username}</p>
@@ -208,7 +208,7 @@ const TrackPage = () => {
                 ))}
 
                 {(!trackData.ratings || trackData.ratings.length === 0) && (
-                  <div className="bg-gray-800 p-4 rounded text-center">
+                  <div className="bg-grids p-4 rounded text-center">
                     <p className="text-gray-400">No ratings yet. Be the first to rate this track!</p>
                   </div>
                 )}

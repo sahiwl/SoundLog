@@ -40,7 +40,7 @@ export const GetSpecificTrack = async (itemId, params={}) =>{
     })
     return response.data
   } catch (error) {
-    console.error("Error in searchTracks:", error.message); 
+    console.error("Error in GetSpecificTrack:", error.message); 
     throw error;
   }
 }
@@ -58,7 +58,25 @@ export const GetSpecificAlbum = async (itemId, params={}) =>{
     })
     return response.data
   } catch (error) {
-    console.error("Error in searchAlbums:", error.message);
+    console.error("Error in GetSpecificAlbum:", error.message);
+    throw error;
+  }
+}
+
+export const GetSpecificArtist = async (itemId, params = {})=>{
+  try {
+    const token = await getSpotifyAccessToken()
+    const url = `https://api.spotify.com/v1/artists/${itemId}`
+
+    const response = await axios.get(url, {
+      headers:{
+        "Authorization": `Bearer ${token}`
+      },
+      params
+    })
+    return response.data
+  } catch (error) {
+    console.error("Error in GetSpecificArtist: ", error.message);
     throw error;
   }
 }

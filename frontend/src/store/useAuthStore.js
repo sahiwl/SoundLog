@@ -5,20 +5,33 @@ const useAuthStore = create((set)=>({
     authUser: null,
     isSigningUp: false,
     isLoggingUp: false,
-    isCheckingAuth: false,
+    isCheckingAuth: true, // Set initial value to true
     isAuthenticated: false,
-
     isUpdatingProfile: false,
 
     checkAuth: async ()=>{
+        set({isCheckingAuth: true});
         try {
-            const res = await axiosInstance.get("/auth/check")
-            set({authUser: res.data, isAuthenticated: res.data.isAuthenticated})
+            const res = await axiosInstance.get("/auth/check");
+            if (res.data) {
+                set({
+                    authUser: res.data,
+                    isAuthenticated: true
+                });
+            } else {
+                set({
+                    authUser: null,
+                    isAuthenticated: false
+                });
+            }
         } catch (error) {
-            console.error("Error in checkAuth: ", error.message)
-            set({authUser: null, isAuthenticated: false})
-        }finally{
-            set({isCheckingAuth: false})
+            console.error("Error in checkAuth: ", error.message);
+            set({
+                authUser: null,
+                isAuthenticated: false
+            });
+        } finally {
+            set({isCheckingAuth: false});
         }
     },
 
