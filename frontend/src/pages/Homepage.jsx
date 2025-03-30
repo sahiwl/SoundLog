@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react'
 import { axiosInstance } from '../lib/axios'
 import { ToastContainer, toast } from 'react-toastify'
-import NewReleases2 from '../components/NewReleases2'
 import clsx from 'clsx'
+import NewReleases from '../components/NewReleases'
 
 const Homepage = () => {
   return (
     <div className="text-white pt-28">
       <div className="container mx-auto px-4 py-6">
         {/* New Releases Section */}
-        <NewReleases2 />
+        <NewReleases />
 
         {/* Popular This Week */}
         <section className="mt-12">
@@ -90,60 +90,5 @@ const Homepage = () => {
     </div>
   );
 };
-
-export const NewReleases1 = () => {
-    const [newReleases, setNewReleases] = useState([])
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState(null)
-    
-    useEffect(() => {
-        const fetchNewReleases = async () => {
-            try {
-                const response = await axiosInstance.get('/music/newreleases')
-                setNewReleases(response.data.albums.items)
-                setLoading(false)
-            } catch (error) {
-                toast.error('Error fetching new releases:', error)
-                setError('Failed to load new releases')
-                setLoading(false)
-            }
-        }
-        
-        fetchNewReleases()
-    }, [])
-    
-    if (loading) return <div className="flex justify-center items-center min-h-screen loading loading-infinity loading-xl"> </div>
-    if (error) return <div className="text-red-500 text-center">{error}</div>
-    
-    return (
-        <div className="min-h-screen bg- text-white p-8">
-      <h1 className="text-3xl font-bold mb-8">New Releases</h1>
-      
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-        {newReleases.map((album) => (
-            <div 
-            key={album.id} 
-            className="group relative aspect-square overflow-hidden rounded-lg hover:opacity-75 transition-opacity"
-            >
-            <img
-              src={album.images[2]?.url}
-              alt={album.name}
-              className="h-full w-full object-cover"
-              />
-            <div className="absolute inset-0 bg- bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-300">
-              <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                <p className="text-sm font-medium truncate">{album.name}</p>
-                <p className="text-xs text-gray-300 truncate">
-                  {album.artists.map(artist => artist.name).join(', ')}
-                </p>
-                <ToastContainer stacked position='top-right'/>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
 
 export default Homepage

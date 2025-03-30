@@ -116,18 +116,6 @@ const ActionForm = ({ albumId, onActionComplete }) => {
     }
   };
 
-  // const handleRatingInputChange = (e) => {
-  //   setInputRating(e.target.value);
-  // };
-
-  // const handleKeyDown = (e) => {
-  //   // Only handle Enter key, allow other keys to work normally
-  //   if (e.key === 'Enter') {
-  //     e.preventDefault();
-  //     handleSubmitRating();
-  //   }
-  // };
-
   return (
     <div className="mt-8 bg-grids rounded p-4">
       <div className="flex items-center mb-4">

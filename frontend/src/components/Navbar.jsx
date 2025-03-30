@@ -33,7 +33,7 @@ const Navbar = memo(() => {
   const [showSearchOverlay, setShowSearchOverlay] = useState(false);
   const navigate = useNavigate();
 
-  // Change this useEffect to run only once when component mounts
+
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
@@ -43,7 +43,7 @@ const Navbar = memo(() => {
       }
     };
     checkAuthStatus();
-  }, []); // Empty dependency array
+  }, []); 
 
   const handleLogout = useCallback(async () => {
     await logout();
@@ -73,43 +73,43 @@ const Navbar = memo(() => {
           </a>
           <div className="flex items-center space-x-6 overflow-x-auto">
             {/* Full-screen search input */}
-            <div className="relative w-80">
-              <input
-                type="text"
-                placeholder="Search..."
-                className="input input-bordered w-full"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onFocus={handleSearchFocus}
-              />
-              <Search
-                className="absolute right-2 top-2 text-gray-400"
-                size={18}
-              />
-            </div>
-            <Link to="/reviews" className="nav-link whitespace-nowrap">
-              Reviews
-            </Link>
-            <Link to="/albums" className="nav-link whitespace-nowrap">
-              Albums
-            </Link>
-            <Link to="/listen-later" className="nav-link whitespace-nowrap">
-              ListenLater
-            </Link>
-            <Link to="/likes" className="nav-link whitespace-nowrap">
-              Likes
-            </Link>
-            <UserSection
-              isAuthenticated={isAuthenticated}
-              onLogout={handleLogout}
-              username={authUser?.username}
-            />
-          </div>
-        </div>
-        <ToastContainer transition={Zoom} />
-      </nav>
-      
-      {/* Full-screen search overlay */}
+                  <div className="relative w-80">
+                    <input
+                    type="text"
+                    placeholder="Search..."
+                    className="input input-bordered w-full"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onFocus={handleSearchFocus}
+                    />
+                    <Search
+                    className="absolute right-2 top-2 text-gray-400"
+                    size={18}
+                    />
+                  </div>
+                  <Link to={`/${authUser?.username}/reviews`} className="nav-link whitespace-nowrap">
+                    Reviews
+                  </Link>
+                  <Link to={`/${authUser?.username}/albums`} className="nav-link whitespace-nowrap">
+                    Albums
+                  </Link>
+                  <Link to={`/${authUser?.username}/listenlater`} className="nav-link whitespace-nowrap">
+                    ListenLater
+                  </Link>
+                  <Link to="/likes" className="nav-link whitespace-nowrap">
+                    Likes
+                  </Link>
+                  <UserSection
+                    isAuthenticated={isAuthenticated}
+                    onLogout={handleLogout}
+                    username={authUser?.username}
+                  />
+                  </div>
+                </div>
+                <ToastContainer transition={Zoom} />
+                </nav>
+                
+                {/* Full-screen search overlay */}
       {showSearchOverlay && (
         <FullScreenSearch
           query={searchQuery}

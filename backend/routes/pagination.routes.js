@@ -7,7 +7,8 @@ import {
     getAlbumPage,
     getTrackPage,
     getNewReleasesPage,
-    getArtistPage
+    getArtistPage,
+    getUserListenLater
 } from '../controllers/pagination.controller.js';
 
 
@@ -22,10 +23,9 @@ router.get('/newreleases', protectRoute, getNewReleasesPage);
 // router.get('/reviews', protectRoute, getUserReviews);
 
 // User-specific pages for individual items
-  router.get('/reviews', protectRoute, getUserReviews);
-  router.get('/likes', protectRoute, getUserLikes);
-  router.get('/albums', protectRoute, getUserAlbums);
-  //getUserListenlater
+router.get('/:username/reviews', protectRoute, getUserReviews);
+router.get('/:username/likes', protectRoute, getUserLikes);
+router.get('/:username/albums', protectRoute, getUserAlbums);
+router.get('/:username/listenlater', protectRoute, getUserListenLater);
 
-
-export default router; 
+export default router;

@@ -4,7 +4,7 @@ import { axiosInstance } from '../lib/axios'
 import { ToastContainer, toast } from 'react-toastify'
 import { Link } from 'react-router-dom'
 
-const NewReleases2 = () => {
+const NewReleases = () => {
 
     const [newReleases, setNewReleases] = useState([])
     const [loading, setLoading] = useState(true)
@@ -65,4 +65,4 @@ const NewReleases2 = () => {
   }
   
 
-export default NewReleases2
+export default NewReleases

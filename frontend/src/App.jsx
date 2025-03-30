@@ -13,6 +13,9 @@ import AlbumPage from './pages/AlbumPage';
 import TrackPage from './pages/TrackPage';
 import ArtistPage from './pages/ArtistPage';
 import AuthRoute from './components/AuthRoute';
+import UserListenLater from './pages/UserListenLater';
+import UserReviews from './pages/UserReviews';
+import UserAlbums from './pages/UserAlbums';
 
 function App() {
   return (
@@ -34,6 +37,9 @@ function App() {
           <Route path="/album/:albumId" element={<AlbumPage />} />
           <Route path="/artist/:artistId" element={<ArtistPage />} />
           <Route path="/tracks/:trackId" element={<TrackPage />} />
+          <Route path="/:username/albums" element={<UserAlbums />} />
+          <Route path="/:username/listenlater" element={<UserListenLater />} />
+          <Route path="/:username/reviews" element={<UserReviews />} />
         </Route>
       </Routes>
     </div>

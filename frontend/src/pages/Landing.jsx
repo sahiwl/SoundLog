@@ -69,9 +69,6 @@ const Hero = () => {
               Start Logging
             </Link>
 
-            {/* <Link to={authUser ? "/home" : "/signup"} className="button-primary text-center">
-              Start Logging
-            </Link> */}
             <a href="#features" className="button-secondary text-center">
               Explore Features
             </a>

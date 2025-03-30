@@ -6,14 +6,20 @@ import Likes from "../models/likes.model.js";
 import Listened from "../models/listened.model.js";
 import Comment from "../models/comment.model.js";
 import { getAlbumDetails, getNewReleasesHandler, getTrackDetails } from "./song.controller.js";
-import Artist from "../models/artist.model.js";
 import { getArtistDetails } from "./song.controller.js";
+import User from "../models/user.model.js";
+import ListenLater from "../models/listenlater.model.js";
 
 // Get user's reviews with pagination 
 // ✅ tested
 export const getUserReviews = async (req, res) => {
     try {
-        const userId = req.user._id;
+        const { username } = req.params;
+        const user = await User.findOne({ username }).select('_id');
+        if (!user) {
+            return res.status(404).json({ message: "User not found." });
+        }
+        const userId = user._id;
         const page = parseInt(req.query.page) || 1;
         const limit = 10;
         const skip = (page - 1) * limit;
@@ -26,11 +32,33 @@ export const getUserReviews = async (req, res) => {
             .limit(limit)
             .populate('userId', 'username');
 
-        // Get total count for pagination
+        // Fetch album details and ratings for each review
+        const reviewsWithAlbumDetails = await Promise.all(
+            reviews.map(async (review) => {
+                const album = await Album.findOne({ albumId: review.albumId });
+                const rating = await Rating.findOne({ 
+                    userId, 
+                    itemId: review.albumId,
+                    itemType: 'albums'
+                });
+
+                return {
+                    _id: review._id,
+                    reviewText: review.reviewText,
+                    rating: rating ? rating.rating : "NA",  
+                    createdAt: review.createdAt,
+                    albumId: review.albumId,
+                    albumTitle: album?.name || "Unknown Album",
+                    releaseDate: album?.release_date || "Unknown Year",
+                    albumImage: album?.images?.[0]?.url || null
+                };
+            })
+        );
+
         const total = await Review.countDocuments({ userId });
 
         res.json({
-            reviews: reviews,
+            reviews: reviewsWithAlbumDetails,
             currentPage: page,
             totalPages: Math.ceil(total / limit),
             total
@@ -45,7 +73,12 @@ export const getUserReviews = async (req, res) => {
 // ✅ tested
 export const getUserAlbums = async (req, res) => {
     try {
-        const userId = req.user._id;
+        const { username } = req.params; // Accept username from params
+        const user = await User.findOne({ username }).select('_id'); // Find user by username
+        if (!user) {
+            return res.status(404).json({ message: "User not found." });
+        }
+        const userId = user._id;
         const page = parseInt(req.query.page) || 1;
         const limit = 10;
         const skip = (page - 1) * limit;
@@ -176,7 +209,12 @@ export const getUserAlbums = async (req, res) => {
 // ✅ tested
 export const getUserLikes = async (req, res) => {
     try {
-        const userId = req.user._id;
+        const { username } = req.params;
+        const user = await User.findOne({ username }).select('_id');
+        if (!user) {
+            return res.status(404).json({ message: "User not found." });
+        }
+        const userId = user._id;
         const page = parseInt(req.query.page) || 1;
         const limit = 10;
         const skip = (page - 1) * limit;
@@ -365,10 +403,8 @@ export const getTrackPage = async (req, res) => {
         const limit = 10;
         const skip = (page - 1) * limit;
 
-        // Use the getTrackDetails controller to fetch/create track
         const track = await getTrackDetails(trackId);
 
-        // Update lastAccessed timestamp
         track.lastAccessed = new Date();
         await track.save();
 
@@ -411,7 +447,6 @@ export const getArtistPage = async (req, res) => {
     try {
         const { artistId } = req.params;
 
-        // Use the getArtistDetails controller to fetch/create artist
         const artist = await getArtistDetails(artistId);
         
         // Update lastAccessed timestamp
@@ -456,3 +491,70 @@ export const getNewReleasesPage = async (req,res)=>{
         res.status(500).json({ message: "Internal Server Error" });
     }
 }
+
+export const getUserListenLater = async (req, res) => {
+    try {
+        const { username } = req.params; 
+        const user = await User.findOne({ username }).select('_id'); 
+        if (!user) {
+            return res.status(404).json({ message: "User not found." });
+        }
+        const userId = user._id;
+        const page = parseInt(req.query.page) || 1;
+        const limit = 20;
+        const skip = (page - 1) * limit;
+
+        // Get listenLater albums with timestamps
+        const listenLater = await ListenLater.find({ userId })
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        // Get album details
+        const albumsWithDetails = await Promise.all(
+            listenLater.map(async (item) => {
+                let album = await Album.findOne({ albumId: item.albumId });
+                
+                if (!album) {
+                    const spotifyAlbum = await GetSpecificAlbum(item.albumId);
+                    album = await Album.create({
+                        albumId: item.albumId,
+                        name: spotifyAlbum.name,
+                        album_type: spotifyAlbum.album_type,
+                        total_tracks: spotifyAlbum.total_tracks,
+                        images: spotifyAlbum.images,
+                        artists: spotifyAlbum.artists.map(artist => ({
+                            spotifyId: artist.id,
+                            name: artist.name,
+                            uri: artist.uri,
+                            external_urls: artist.external_urls
+                        })),
+                        release_date: spotifyAlbum.release_date,
+                        external_urls: spotifyAlbum.external_urls,
+                        lastAccessed: new Date()
+                    });
+                }
+
+                album.lastAccessed = new Date();
+                await album.save();
+
+                return {
+                    ...album.toObject(),
+                    addedAt: item.createdAt
+                };
+            })
+        );
+
+        const total = await ListenLater.countDocuments({ userId });
+
+        res.json({
+            albums: albumsWithDetails,
+            currentPage: page,
+            totalPages: Math.ceil(total / limit),
+            total
+        });
+    } catch (error) {
+        console.error("Error in getUserListenLater:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+};

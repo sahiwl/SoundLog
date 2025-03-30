@@ -61,7 +61,7 @@ const ArtistPage = () => {
                 <h2 className="text-sm font-semibold text-gray-400 uppercase mb-2">CRITIC SCORE</h2>
                 <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
                   <span className="text-4xl md:text-5xl font-bold">71</span>
-                  <span className="text-sm text-gray-400">Based on 228 reviews</span>
+                  <span className="text-sm text-gray-400">Based on {(Math.random()*100).toFixed(0)} reviews</span>
                 </div>
                 <div className="h-1 bg-green-500 w-1/3 mt-2"></div>
               </div>

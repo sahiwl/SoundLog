@@ -1,28 +1,23 @@
-// src/pages/AlbumPage.jsx
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { useParams, Link } from "react-router-dom";
 import { axiosInstance } from "../lib/axios";
 import ActionForm from "../components/ActionForm.jsx";
 import { toast } from 'react-toastify';
-import { Heart, Pencil, X } from "lucide-react";
 import ReviewsSection from '../components/ReviewsSection';
 
 const AlbumPage = () => {
-  const { albumId } = useParams(); // album ID
+  const { albumId } = useParams(); 
   const [albumData, setAlbumData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [reviews, setReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
   const [userId, setUserId] = useState(null);
-  const [editingReviewId, setEditingReviewId] = useState(null);
-  const [editedReviewText, setEditedReviewText] = useState("");
 
   const fetchAlbumDetails = async () => {
     try {
       setLoading(true);
-      const response = await axiosInstance.get(`/pages/albums/${albumId}`, { // Keep this API endpoint path
+      const response = await axiosInstance.get(`/pages/albums/${albumId}`, { 
         withCredentials: true,
       });
       setAlbumData(response.data.album);
@@ -39,72 +34,13 @@ const AlbumPage = () => {
       setReviewsLoading(true);
       const response = await axiosInstance.get(`/actions/review/${albumId}`);
       console.log("Reviews response:", response.data);
-      // The reviews are inside response.data.reviews
+
       setReviews(response.data.reviews || []);
     } catch (err) {
       console.error("Error fetching reviews:", err);
       toast.error("Error fetching reviews");
     } finally {
       setReviewsLoading(false);
-    }
-  };
-
-  const handleLikeReview = async (reviewId) => {
-    try {
-      const response = await axiosInstance.post(`/actions/review/like/${reviewId}`);
-      toast.success(response.data.message);
-      
-      // Immediately update the reviews state with both likes count and likedBy array
-      setReviews((prevReviews) =>
-        prevReviews.map((review) =>
-          review.reviewId === reviewId
-            ? { 
-                ...review, 
-                likes: response.data.likes,
-                likedBy: review.likedBy?.includes(userId) 
-                  ? review.likedBy.filter(id => id !== userId)
-                  : [...(review.likedBy || []), userId]
-              }
-            : review
-        )
-      );
-
-    } catch (err) {
-      console.error("Error liking review:", err);
-      toast.error("Error toggling like");
-    }
-  };
-
-  const handleEditClick = (review) => {
-    setEditingReviewId(review.reviewId);
-    setEditedReviewText(review.reviewText);
-  };
-
-  const handleCancelEdit = () => {
-    setEditingReviewId(null);
-    setEditedReviewText("");
-  };
-
-  const handleUpdateReview = async (reviewId) => {
-    try {
-      await axiosInstance.put(`/actions/review/${albumId}`, {
-        reviewText: editedReviewText.trim()
-      });
-
-      setReviews(prevReviews =>
-        prevReviews.map(review =>
-          review.reviewId === reviewId
-            ? { ...review, reviewText: editedReviewText.trim() }
-            : review
-        )
-      );
-
-      toast.success("Review updated successfully");
-      setEditingReviewId(null);
-      setEditedReviewText("");
-    } catch (err) {
-      console.error("Error updating review:", err);
-      toast.error("Error updating review");
     }
   };
 
@@ -200,36 +136,36 @@ const AlbumPage = () => {
               {/* Scores */}
               <div className="flex-grow">
                 {/* User Score (Static Example) */}
-                <div className="bg-grids p-4 rounded">
-                  <h3 className="text-sm font-medium mb-2">USER SCORE</h3>
-                  <div className="flex items-end mb-2">
-                    <span className="text-6xl font-bold">72</span>
-                    <div className="ml-4">
-                      <p className="text-sm">Based on 7,360 ratings</p>
-                      <p className="text-sm text-gray-400">2016 Rank: #581</p>
-                    </div>
-                  </div>
-                  <div className="h-1 bg-green-500 w-3/4 mt-2"></div>
-                  <button className="text-sm text-gray-400 mt-4 float-right">MORE ↓</button>
-                </div>
-              </div>
-            </div>
+                        <div className="bg-grids p-4 rounded">
+                          <h3 className="text-sm font-medium mb-2">USER SCORE</h3>
+                          <div className="flex items-end mb-2">
+                          <span className="text-6xl font-bold">{(Math.random()*1000).toFixed(0)}</span>
+                          <div className="ml-4">
+                            <p className="text-sm">Based on {(Math.random()*10000).toFixed(0)} ratings</p>
+                            <p className="text-sm text-gray-400">2016 Rank: #581</p>
+                          </div>
+                          </div>
+                          <div className="h-1 bg-green-500 w-3/4 mt-2"></div>
+                          <button className="text-sm text-gray-400 mt-4 float-right">MORE ↓</button>
+                        </div>
+                        </div>
+                      </div>
 
-            <ActionForm albumId={albumId} onActionComplete={handleActionComplete} />
+                      <ActionForm albumId={albumId} onActionComplete={handleActionComplete} />
 
-            {reviewsLoading ? (
-              <div className="text-center mt-6">Loading reviews...</div>
-            ) : (
-              <ReviewsSection 
-                reviews={reviews}
-                userId={userId}
-                albumId={albumId}
-                onReviewUpdate={fetchReviews}
-              />
-            )}
-          </div>
+                      {reviewsLoading ? (
+                        <div className="text-center mt-6">Loading reviews...</div>
+                      ) : (
+                        <ReviewsSection 
+                        reviews={reviews}
+                        userId={userId}
+                        albumId={albumId}
+                        onReviewUpdate={fetchReviews}
+                        />
+                      )}
+                      </div>
 
-          {/* Right Column - Additional Details and Track List */}
+                      {/* Right Column - Additional Details and Track List */}
           <div>
             {/* Details Section */}
             <div className="bg-grids p-4 rounded mb-6">
@@ -309,9 +245,7 @@ const AlbumPage = () => {
                   Total Length: {calculateTotalDuration(albumData.tracks ? albumData.tracks.items : [])}
                 </div>
               </div>
-            </div>
-
-           
+            </div>   
           </div>
         </div>
       </div>
