@@ -76,6 +76,10 @@ const ProfilePage = () => {
                                 <span className="text-gray-400">Following</span>
                             </p>
                         </div>
+                        {/* use a different font here */}
+                        <div className="pt-2 w-full italic text-slate-500">
+                            {userInfo.bio}
+                        </div>
                     </div>
                 </div>
                 {isOwnProfile && (

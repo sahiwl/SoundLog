@@ -1,5 +1,8 @@
 # Timelapse
 
+### 1 April 1:17AM
+- [ ] bio should have a different font 
+
 
 ### 31 Mar 6:10PM
 - Track ratings are now visible in albumPage, users can go to trackpages and rate individual tracks. 

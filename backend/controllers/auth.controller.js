@@ -94,6 +94,8 @@ export const updateProfile = async (req, res) => {
       res.status(400).json({ message: "Fields are missing" });
     }
 
+    let updateData = {}
+
     // const uploadRes = await cloudinary.uploader.upload(profilePic);
     // const updatedUser = await User.findByIdAndUpdate(
     //   userId,
