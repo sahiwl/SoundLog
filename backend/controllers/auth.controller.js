@@ -84,50 +84,57 @@ export const logout = (req, res) => {
   }
 };
 
-export const updateProfile = async (req, res) => {
+export const updateProfile = async (req,res) => {
   try {
-    //profile pic, favorites will be added later
-    const { username, email, bio} = req.body;
-    const userId = req.user._id;
+      const {profilePic, username, email, bio, favourites} = req.body;
+      const userId = req.user._id;
 
-    if (!username || !email || !bio ) {
-      res.status(400).json({ message: "Fields are missing" });
-    }
-
-    let updateData = {}
-
-    // const uploadRes = await cloudinary.uploader.upload(profilePic);
-    // const updatedUser = await User.findByIdAndUpdate(
-    //   userId,
-    //   { profilePic: uploadRes.secure_url },
-    //   { new: true }
-    // );
-    if(username){
-      const existingUser = await User.findOne({username});
-      if(existingUser && existingUser._id.toString() !== userId.toString()){
-          return res.status(400).json({message: "This username is already taken"});
+      if(!profilePic && !username && !email && !bio){
+          return res.status(400).json({message:"Nothing given to update"});
       }
-      updateData.username = username;
-  }
 
-  if(email){
-      const existingUser = await User.findOne({email});
-      if(existingUser && existingUser._id.toString() !== userId.toString()){
-          return res.status(400).json({message: "An account with this email already exists"});
+      let updateData = {};
+
+      if(profilePic){   
+          const uploadResponse = await cloudinary.uploader.upload(profilePic);
+          updateData.profilePic = uploadResponse.secure_url;
       }
-      updateData.email = email;
-  }
 
-  if(bio !== undefined){
-      updateData.bio = bio;
-  }
+      if(username){
+          const existingUser = await User.findOne({username});
+          if(existingUser && existingUser._id.toString() !== userId.toString()){
+              return res.status(400).json({message: "This username is already taken"});
+          }
+          updateData.username = username;
+      }
 
-  const updatedUser = await User.findByIdAndUpdate(userId,updateData,{new:true});
+      if(email){
+          const existingUser = await User.findOne({email});
+          if(existingUser && existingUser._id.toString() !== userId.toString()){
+              return res.status(400).json({message: "An account with this email already exists"});
+          }
+          updateData.email = email;
+      }
 
-    res.status(200).json(updatedUser);
+      if(bio !== undefined){
+          updateData.bio = bio;
+      }
+
+      if(favourites){
+          if(!Array.isArray(favourites) || favourites.length > 4){
+              return res.status(400).json({message: "Favourites must be an array of up to 4 movies"});
+          }
+          updateData.favourites = favourites;
+      }
+
+
+      const updatedUser = await User.findByIdAndUpdate(userId,updateData,{new:true});
+      
+      res.status(200).json(updatedUser);
+
   } catch (error) {
-    console.log("error in update profile: ", error);
-    res.status(500).json({ message: "Internal Server Error" });
+      console.error("Error in updated profile:",error);
+      res.status(500).json({message:"Internal Server Error3"});
   }
 };
 

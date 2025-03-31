@@ -2,11 +2,9 @@ import { searchSpotifyData } from "../lib/pullSpotifyData.js";
 import Likes from "../models/likes.model.js";
 import Listened from "../models/listened.model.js";
 import ListenLater from "../models/listenlater.model.js";
-// import Log from "../models/log.model.js";
 import Rating from "../models/rating.model.js";
 import Review from "../models/review.model.js";
 import Comment from "../models/comment.model.js";
-import user from "../models/user.model.js";
 import Album from "../models/album.model.js";
 import Track from "../models/track.model.js";
 
@@ -216,7 +214,6 @@ export const addRating = async (req, res) => {
             return res.status(400).json({ message: "Rating must be a number between 0 and 100" });
         }
             
-        // Use the utility function to get or create item data
         await getOrCreateSpotifyData(itemId, itemType);
         
         // Check for existing rating
@@ -305,7 +302,6 @@ export const toggleListened = async (req,res) => {
             return res.status(400).json({ message: "albumId is required." });
         }
         
-        // Use the utility function to get or create album data
         await getOrCreateSpotifyData(albumId, 'albums');
         
         //toggle off - remove from listened
@@ -650,13 +646,11 @@ export const likeReview = async (req, res) => {
     const userHasLiked = review.likedBy.includes(userId);
 
     if (userHasLiked) {
-      // Remove like
       review.likes = Math.max(0, review.likes - 1); // Ensure likes don't go below 0
       review.likedBy = review.likedBy.filter(id => !id.equals(userId));
       await review.save();
       return res.status(200).json({ message: "Review unliked.", likes: review.likes });
     } else {
-      // Add like
       review.likes += 1;
       review.likedBy.push(userId);
       await review.save();

@@ -27,6 +27,7 @@ router.post("/review/like/:reviewId", protectRoute, likeReview)
 router.post("/comment", protectRoute, addComment)// Expects reviewId and commentText in body
 router.delete("/comment/:commentId", protectRoute, deleteComment)
 
+//lifesavers
 router.get("/albums/:albumId", protectRoute, getActions)
 router.get("/tracks/:trackId", protectRoute, getTrackActions);
 

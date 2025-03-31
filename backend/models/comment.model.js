@@ -11,11 +11,6 @@ const commentSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    // itemId: {
-    //   type: String,
-    //   // ref: "Song",
-    //   required: true,
-    // },
     reviewId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Review",

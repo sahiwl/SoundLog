@@ -19,8 +19,7 @@ router.get('/tracks/:trackId', protectRoute, getTrackPage);
 router.get('/albums/:albumId', protectRoute, getAlbumPage);
 router.get('/artists/:artistId', protectRoute, getArtistPage);
 router.get('/newreleases', protectRoute, getNewReleasesPage);
-// router.get('/listenlater', protectRoute, getListenLaterPage);
-// router.get('/reviews', protectRoute, getUserReviews);
+
 
 // User-specific pages for individual items
 router.get('/:username/reviews', protectRoute, getUserReviews);
