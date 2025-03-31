@@ -5,7 +5,6 @@ import useAuthStore from "../store/useAuthStore";
 import { toast, ToastContainer, Zoom } from "react-toastify";
 import FullScreenSearch from "./Search";
 
-
 const UserSection = memo(({ isAuthenticated, onLogout, username }) =>
   isAuthenticated ? (
     <div className="flex items-center space-x-4">
@@ -33,7 +32,7 @@ const Navbar = memo(() => {
   const [showSearchOverlay, setShowSearchOverlay] = useState(false);
   const navigate = useNavigate();
 
-
+  // console.log("User:" , user);
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
@@ -43,7 +42,7 @@ const Navbar = memo(() => {
       }
     };
     checkAuthStatus();
-  }, []); 
+  }, []);
 
   const handleLogout = useCallback(async () => {
     await logout();
@@ -73,48 +72,68 @@ const Navbar = memo(() => {
           </a>
           <div className="flex items-center space-x-6 overflow-x-auto">
             {/* Full-screen search input */}
-                  <div className="relative w-80">
-                    <input
-                    type="text"
-                    placeholder="Search..."
-                    className="input input-bordered w-full"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onFocus={handleSearchFocus}
-                    />
-                    <Search
-                    className="absolute right-2 top-2 text-gray-400"
-                    size={18}
-                    />
-                  </div>
-                  <Link to={`/${authUser?.username}/reviews`} className="nav-link whitespace-nowrap">
-                    Reviews
-                  </Link>
-                  <Link to={`/${authUser?.username}/albums`} className="nav-link whitespace-nowrap">
-                    Albums
-                  </Link>
-                  <Link to={`/${authUser?.username}/listenlater`} className="nav-link whitespace-nowrap">
-                    ListenLater
-                  </Link>
-                  <Link to={`/${authUser?.username}/likes`}className="nav-link whitespace-nowrap">
-                    Likes
-                  </Link>
-                  <UserSection
-                    isAuthenticated={isAuthenticated}
-                    onLogout={handleLogout}
-                    username={authUser?.username}
-                  />
-                  </div>
+            <div className="relative w-80">
+              <input
+                type="text"
+                placeholder="Search..."
+                className="input input-bordered w-full"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={handleSearchFocus}
+              />
+              <Search
+                className="absolute right-2 top-2 text-gray-400"
+                size={18}
+              />
+            </div>
+            {authUser && (
+              <>
+                <Link
+                  to={`/${authUser.username}/reviews`}
+                  className="nav-link whitespace-nowrap"
+                >
+                  Reviews
+                </Link>
+                <Link
+                  to={`/${authUser.username}/albums`}
+                  className="nav-link whitespace-nowrap"
+                >
+                  Albums
+                </Link>
+                <Link
+                  to={`/${authUser.username}/listenlater`}
+                  className="nav-link whitespace-nowrap"
+                >
+                  ListenLater
+                </Link>
+                <Link
+                  to={`/${authUser.username}/likes`}
+                  className="nav-link whitespace-nowrap"
+                >
+                  Likes
+                </Link>
+                <div className="flex items-center gap-2 cursor-pointer"
+                  onClick={() => navigate(`/${authUser.username}/profile`)}
+                >
+                  <User className="text-white" size={24} />
+                  <span className="text-white">{authUser.username}</span>
                 </div>
-                <ToastContainer transition={Zoom} />
-                </nav>
-                
-                {/* Full-screen search overlay */}
+                <button
+                  onClick={handleLogout}
+                  className="text-white hover:text-purple-400 transition-colors"
+                >
+                  <LogOut size={20} />
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+        <ToastContainer transition={Zoom} />
+      </nav>
+
+      {/* Full-screen search overlay */}
       {showSearchOverlay && (
-        <FullScreenSearch
-          query={searchQuery}
-          onClose={handleCloseSearch}
-        />
+        <FullScreenSearch query={searchQuery} onClose={handleCloseSearch} />
       )}
     </>
   );

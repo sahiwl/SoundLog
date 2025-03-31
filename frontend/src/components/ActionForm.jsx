@@ -21,7 +21,7 @@ const ActionForm = ({ albumId, onActionComplete }) => {
   useEffect(() => {
     const fetchActions = async () => {
       try {
-        const response = await axiosInstance.get(`/actions/${albumId}`);
+        const response = await axiosInstance.get(`/actions/albums/${albumId}`);
         const { listened, liked, listenLater, rating, reviewed } = response.data;
         setListened(listened);
         setLiked(liked);

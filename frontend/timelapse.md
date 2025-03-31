@@ -8,7 +8,7 @@
 ### 31 Mar 3:03AM
 - Added user-specific albums page (`/user/:username/albums`) with pagination. Same for reviews, listenlater pages
 - [x] add user-specific likes pages
-- [ ] add profile page, profile icon
+- [x] add profile page, profile icon
 - [ ] fix navbar overflowing over other pages (sticky)
  
 

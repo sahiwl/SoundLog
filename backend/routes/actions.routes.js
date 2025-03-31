@@ -27,7 +27,7 @@ router.post("/review/like/:reviewId", protectRoute, likeReview)
 router.post("/comment", protectRoute, addComment)// Expects reviewId and commentText in body
 router.delete("/comment/:commentId", protectRoute, deleteComment)
 
-router.get("/:albumId", protectRoute, getActions)
-router.get("/actions/:trackId", protectRoute, getTrackActions);
+router.get("/albums/:albumId", protectRoute, getActions)
+router.get("/tracks/:trackId", protectRoute, getTrackActions);
 
 export default router

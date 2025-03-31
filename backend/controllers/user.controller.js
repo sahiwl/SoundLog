@@ -81,29 +81,25 @@ const unfollowUser = async (req, res) => {
   }
 };
 
-const getUserProfile = async (req, res) => {
+const getUserProfile = async (req,res) => {
   try {
-    // here, we'll allow viewing of public profiles.
-    const userId = req.params.id;
-    // Fetch the user by ID; omit the password field for security
-    const user = await User.findById(userId).select("-password");
+      
+      // const {userId} = req.params;
+      const user = await User.findById(req.userId).select("-password");      
+      if(!user){
+          return res.status(404).json({message: "User not found"});
+      }
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found." });
-    }
+      await user.populate("followers","username");
+      await user.populate("following","username");
+      
+      // console.log(`Fetched profile for user: ${req.userId}`);
+      res.status(200).json(user);
 
-    // Populate the "followers" field with the "username" of each follower
-    await user.populate("followers", "username");
-    await user.populate("following", "username");
-
-    console.log(`profile fetched for user: ${userId}`);
-    return res.status(200).json(user);
   } catch (error) {
-    console.log("Error in getUserProfile controller: ", error.message);
-    return res
-      .status(500)
-      .json({ message: "Server Error in getUserProfile controller" });
+      console.error("Error in getUserProfile controller", error.message);
+      res.status(500).json({message: "Internal Server Error"});
   }
-};
+}
 
 export { followUser, unfollowUser, getUserProfile };

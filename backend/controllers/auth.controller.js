@@ -86,19 +86,41 @@ export const logout = (req, res) => {
 
 export const updateProfile = async (req, res) => {
   try {
-    const { profilePic } = req.body;
+    //profile pic, favorites will be added later
+    const { username, email, bio} = req.body;
     const userId = req.user._id;
 
-    if (!profilePic) {
-      res.status(400).json({ message: "Profile picture required" });
+    if (!username || !email || !bio ) {
+      res.status(400).json({ message: "Fields are missing" });
     }
 
-    const uploadRes = await cloudinary.uploader.upload(profilePic);
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { profilePic: uploadRes.secure_url },
-      { new: true }
-    );
+    // const uploadRes = await cloudinary.uploader.upload(profilePic);
+    // const updatedUser = await User.findByIdAndUpdate(
+    //   userId,
+    //   { profilePic: uploadRes.secure_url },
+    //   { new: true }
+    // );
+    if(username){
+      const existingUser = await User.findOne({username});
+      if(existingUser && existingUser._id.toString() !== userId.toString()){
+          return res.status(400).json({message: "This username is already taken"});
+      }
+      updateData.username = username;
+  }
+
+  if(email){
+      const existingUser = await User.findOne({email});
+      if(existingUser && existingUser._id.toString() !== userId.toString()){
+          return res.status(400).json({message: "An account with this email already exists"});
+      }
+      updateData.email = email;
+  }
+
+  if(bio !== undefined){
+      updateData.bio = bio;
+  }
+
+  const updatedUser = await User.findByIdAndUpdate(userId,updateData,{new:true});
 
     res.status(200).json(updatedUser);
   } catch (error) {

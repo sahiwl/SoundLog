@@ -50,7 +50,7 @@ const AlbumPage = () => {
       const ratings = await Promise.all(
         tracks.map(async (track) => {
           try {
-            const response = await axiosInstance.get(`/actions/actions/${track.trackId}`);
+            const response = await axiosInstance.get(`/actions/tracks/${track.trackId}`);
             return { [track.trackId]: response.data.rating };
           } catch (error) {
             console.error(`Error fetching rating for track ${track.trackId}:`, error);

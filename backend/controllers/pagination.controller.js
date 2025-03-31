@@ -478,14 +478,42 @@ export const getArtistPage = async (req, res) => {
     }
 };
 
-export const getNewReleasesPage = async (req,res)=>{
+export const getNewReleasesPage = async (req, res) => {
     try {
-        const limit = parseInt(req.query.limit) || 20
-        const offset = parseInt(req.query.offset) || 0
+        const page = parseInt(req.query.page) || 1;
+        const limit = 20;
+        const skip = (page - 1) * limit;
 
+        const spotifyData = await getNewReleases({ 
+            limit,
+            offset: skip  // Using skip instead of offset for consistency
+        });
 
-        const response = await getNewReleases({limit, offset})
-        res.status(200).json(response)
+        // Ensure we have the data we need
+        if (!spotifyData?.albums?.items) {
+            throw new Error('Invalid Spotify response');
+        }
+
+        const total = spotifyData.albums.total || 0;
+        
+        // Transform and sort the albums by release date
+        const albums = spotifyData.albums.items
+            .map(album => ({
+                albumId: album.id,
+                name: album.name,
+                images: album.images,
+                artists: album.artists,
+                release_date: album.release_date,
+                total_tracks: album.total_tracks,
+                album_type: album.album_type
+            }))
+            .sort((a, b) => new Date(b.release_date) - new Date(a.release_date));
+
+        res.status(200).json({
+            totalAlbums: total, 
+            albums: albums,     
+            currentPage: page
+        });
     } catch (error) {
         console.error("Error in getNewReleasesPage:", error.message);
         res.status(500).json({ message: "Internal Server Error" });
