@@ -1,9 +1,13 @@
 # Timelapse
 
 
+### 31 Mar 6:10PM
+- Track ratings are now visible in albumPage, users can go to trackpages and rate individual tracks. 
+(yes even from searchBox ;) 
+ 
 ### 31 Mar 3:03AM
 - Added user-specific albums page (`/user/:username/albums`) with pagination. Same for reviews, listenlater pages
-- [ ] add user-specific likes pages
+- [x] add user-specific likes pages
 - [ ] add profile page, profile icon
 - [ ] fix navbar overflowing over other pages (sticky)
  

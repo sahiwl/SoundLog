@@ -96,7 +96,7 @@ const Navbar = memo(() => {
                   <Link to={`/${authUser?.username}/listenlater`} className="nav-link whitespace-nowrap">
                     ListenLater
                   </Link>
-                  <Link to="/likes" className="nav-link whitespace-nowrap">
+                  <Link to={`/${authUser?.username}/likes`}className="nav-link whitespace-nowrap">
                     Likes
                   </Link>
                   <UserSection

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { axiosInstance } from "../lib/axios";
 
 const UserAlbums = () => {
@@ -45,14 +45,24 @@ const UserAlbums = () => {
       <div className="container mx-auto px-4 py-6">
         <h1 className="text-3xl font-bold mb-6">{username}'s Albums</h1>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          {albums.map((album) => (
-            <div key={album.albumId} className="bg-grids rounded-lg overflow-hidden">
+          {albums.map((albums) => (
+            <Link 
+              to={`/album/${albums.albumId}`}
+              key={albums.albumId} 
+              className="bg-grids rounded-lg overflow-hidden hover:opacity-75 transition-opacity"
+            >
               <img
-                src={album.images?.[0]?.url || "/placeholder.svg"}
-                alt={album.name}
+                src={albums.images?.[0]?.url || "/placeholder.svg"}
+                alt={albums.name}
                 className="w-full h-48 object-cover"
               />
-            </div>
+              <div className="p-2">
+                <h3 className="text-sm font-medium truncate">{albums.name}</h3>
+                <p className="text-xs text-gray-400 truncate">
+                  {albums.artists?.[0]?.name}
+                </p>
+              </div>
+            </Link>
           ))}
         </div>
         <div className="flex justify-between items-center mt-6">

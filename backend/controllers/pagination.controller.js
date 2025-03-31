@@ -356,7 +356,7 @@ export const getAlbumPage = async (req, res) => {
                             id: comment.userId._id,
                             username: comment.userId.username
                         }
-                    })),
+                    })),   
                     ratings: ratings.map(rating => ({
                         ratingId: rating._id,
                         rating: rating.rating,

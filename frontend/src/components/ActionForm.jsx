@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { axiosInstance } from "../lib/axios";
 import { toast } from "react-toastify";
 import useAuthStore from "../store/useAuthStore";
-import { Headphones, Heart, HeartOff, PlusCircle, Save, Check, BookmarkIcon } from "lucide-react";
+import { Headphones, Heart, HeartOff, PlusCircle, Save, Check, BookmarkIcon, Trash2 } from "lucide-react";
 
 const ActionForm = ({ albumId, onActionComplete }) => {
   const { authUser } = useAuthStore();
@@ -21,7 +21,7 @@ const ActionForm = ({ albumId, onActionComplete }) => {
   useEffect(() => {
     const fetchActions = async () => {
       try {
-        const response = await axiosInstance.get(`/actions/actions/${albumId}`);
+        const response = await axiosInstance.get(`/actions/${albumId}`);
         const { listened, liked, listenLater, rating, reviewed } = response.data;
         setListened(listened);
         setLiked(liked);
@@ -116,6 +116,43 @@ const ActionForm = ({ albumId, onActionComplete }) => {
     }
   };
 
+  const handleDeleteRating = () => {
+    const toastId = toast.info(
+      <div>
+        <p>Delete this rating?</p>
+        <div className="mt-2 flex justify-end gap-2">
+          <button
+            onClick={() => {
+              deleteRating();
+              toast.dismiss(toastId);
+            }}
+            className="px-3 py-1 bg-red-500 text-white rounded text-sm"
+          >
+            Delete
+          </button>
+          <button
+            onClick={() => toast.dismiss(toastId)}
+            className="px-3 py-1 bg-gray-500 text-white rounded text-sm"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>,
+      { autoClose: false, closeButton: false }
+    );
+  };
+
+  const deleteRating = async () => {
+    try {
+      await axiosInstance.delete(`/actions/rate/albums/${albumId}`);
+      setRating(null);
+      setIsEditingRating(false);
+      toast.success("Rating deleted successfully!");
+    } catch (error) {
+      toast.error(error?.response?.data?.message || "Failed to delete rating");
+    }
+  };
+
   return (
     <div className="mt-8 bg-grids rounded p-4">
       <div className="flex items-center mb-4">
@@ -143,13 +180,19 @@ const ActionForm = ({ albumId, onActionComplete }) => {
                 </button>
               </div>
             ) : (
-              <div className="flex items-center">
+              <div className="flex items-center gap-2.5">
                 <span className="font-bold text-white">{rating}</span>
                 <button
                   onClick={() => setIsEditingRating(true)}
-                  className="ml-2 px-2 py-1 bg-gray-700 text-xs"
+                  className="ml-2 px-2 py-1 bg-gray-700 text-xs rounded-md"
                 >
                   EDIT
+                </button>
+                <button
+                  onClick={handleDeleteRating}
+                  className="p-1.5 bg-red-900/50 hover:bg-red-900 rounded text-red-300 transition-colors"
+                >
+                  <Trash2 size={16} />
                 </button>
               </div>
             )}

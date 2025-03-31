@@ -372,31 +372,47 @@ export const toggleListenLater = async (req, res) => {
 }
 
 /** 
-deleteRating - Explicitly delete the rating for a track. Expects: req.params.albumId
+deleteRating - Explicitly delete the rating for a track or album. Expects: req.params.itemType, req.params.itemId
 */
 // ✔️ - tested, revamped
-export const deleteRating = async (req,res)=>{
+export const deleteRating = async (req, res) => {
     try {
-        const {albumId} = req.params
-        const userId = req.user._id
+        const { itemType, itemId } = req.params;
+        const userId = req.user._id;
 
-
-        if(!albumId) return res.status(400).json({ message: "albumId is required." });
-
-        //deleting rating will also remove it from listened
-        const existingRating = await Rating.findOne({userId, itemId:albumId, itemType:"albums"})
-        if(existingRating){
-            await existingRating.deleteOne()
-            await Listened.deleteOne({userId, albumId})
-            return res.status(200).json({ message: "Rating deleted." });
+        if (!itemId || !itemType) {
+            return res.status(400).json({ message: "itemId and itemType are required." });
         }
-        return res.status(400).json({message: "No existing rating for this album."})
+
+        if (!['albums', 'tracks'].includes(itemType)) {
+            return res.status(400).json({ message: "Invalid itemType. Must be 'albums' or 'tracks'" });
+        }
+
+        // Delete rating
+        const existingRating = await Rating.findOne({
+            userId,
+            itemId,
+            itemType
+        });
+
+        if (!existingRating) {
+            return res.status(400).json({ message: "No existing rating found." });
+        }
+
+        await existingRating.deleteOne();
+
+        // If it's an album, also remove it from listened
+        // if (itemType === 'albums') {
+        //     await Listened.deleteOne({ userId, albumId: itemId });
+        // }
+
+        return res.status(200).json({ message: "Rating deleted successfully." });
 
     } catch (error) {
-        console.error("Error in deleteRating:", error.message);
-        return res.status(500).json({ message: "Internal Server Error, my boy" });
+        console.error("Error in deleteRating:", error);
+        return res.status(500).json({ message: "Internal Server Error" });
     }
-}
+};
 
 /**
 addReview - Add a review only for a album. When a review is added, automatically mark as listened and remove from Listen Later. Expects: req.params.itemType, req.params.itemId, req.body.reviewText (string)
@@ -690,6 +706,31 @@ export const getActions = async (req, res) => {
 
   } catch (error) {
     console.error("Error in getActions:", error.message);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const getTrackActions = async (req, res) => {
+  try {
+    const { trackId } = req.params;
+    const userId = req.user._id;
+
+    if (!trackId) {
+      return res.status(400).json({ message: "trackId is required." });
+    }
+
+    // Get track rating
+    const rating = await Rating.findOne(
+      { userId, itemId: trackId, itemType: 'tracks' }, 
+      { rating: 1, _id: 0 }
+    );
+
+    res.status(200).json({
+      rating: rating ? rating.rating : null
+    });
+
+  } catch (error) {
+    console.error("Error in getTrackActions:", error.message);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };

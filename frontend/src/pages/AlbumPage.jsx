@@ -13,6 +13,7 @@ const AlbumPage = () => {
   const [reviews, setReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
   const [userId, setUserId] = useState(null);
+  const [trackRatings, setTrackRatings] = useState({});
 
   const fetchAlbumDetails = async () => {
     try {
@@ -44,6 +45,26 @@ const AlbumPage = () => {
     }
   };
 
+  const fetchTrackRatings = async (tracks) => {
+    try {
+      const ratings = await Promise.all(
+        tracks.map(async (track) => {
+          try {
+            const response = await axiosInstance.get(`/actions/actions/${track.trackId}`);
+            return { [track.trackId]: response.data.rating };
+          } catch (error) {
+            console.error(`Error fetching rating for track ${track.trackId}:`, error);
+            return { [track.trackId]: "NA" };
+          }
+        })
+      );
+      
+      setTrackRatings(Object.assign({}, ...ratings));
+    } catch (error) {
+      console.error("Error fetching track ratings:", error);
+    }
+  };
+
   useEffect(() => {
     if (albumId) {
       fetchAlbumDetails();
@@ -62,6 +83,12 @@ const AlbumPage = () => {
     };
     fetchCurrentUser();
   }, []);
+
+  useEffect(() => {
+    if (albumData?.tracks?.items) {
+      fetchTrackRatings(albumData.tracks.items);
+    }
+  }, [albumData]);
 
   if (loading) return <p>Loading album details...</p>;
   if (error) return <p>{error}</p>;
@@ -213,32 +240,28 @@ const AlbumPage = () => {
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-medium">TRACK LIST</h3>
-                <span className="text-sm text-gray-400">RATE TRACKS</span>
+                {/* <span className="text-sm text-gray-400">RATE TRACKS</span> */}
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-2 ">
                 {/* Map through tracks */}
                 {albumData.tracks && albumData.tracks.items && albumData.tracks.items.map((track, index) => (
-                  <Link 
-                    to={`/tracks/${track.trackId}`} 
-                    key={track.trackId}
-                    className="flex items-center hover:bg-grids p-2 rounded transition-colors"
-                  >
-                    <span className="w-6 text-gray-400">{index + 1}</span>
-                    <div className="flex-grow">
-                      <p className="font-medium">
-                        {track.name} <span className="text-gray-400 text-sm">{formatDuration(track.duration_ms)}</span>
-                      </p>
-                      {track.artists && track.artists.length > 1 && (
-                        <p className="text-sm text-blue-400">
-                          feat. {track.artists.slice(1).map(artist => artist.name).join(", ")}
-                        </p>
-                      )}
+                  <div key={track.trackId} className="flex items-center justify-between py-2 hover:bg-">
+                    <div className="flex items-center gap-4">
+                      <span className="text-gray-400 w-8 text-right">{track.track_number}</span>
+                      <Link to={`/tracks/${track.trackId}`} className="hover:underline">
+                        {track.name}
+                      </Link>
                     </div>
-                    <span className="bg-green-500 w-10 text-center font-medium">
-                      {Math.floor(70 + Math.random() * 25)}
-                    </span>
-                  </Link>
+                    <div className="flex items-center gap-4">
+                      <span className="px-2 text-gray-400">
+                        {trackRatings[track.trackId] ? `${trackRatings[track.trackId]}` : "NA"}
+                      </span>
+                      <span className="text-gray-400">
+                        {formatDuration(track.duration_ms)}
+                      </span>
+                    </div>
+                  </div>
                 ))}
 
                 <div className="text-gray-400 text-sm text-right mt-4">

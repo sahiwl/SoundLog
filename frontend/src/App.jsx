@@ -16,6 +16,7 @@ import AuthRoute from './components/AuthRoute';
 import UserListenLater from './pages/UserListenLater';
 import UserReviews from './pages/UserReviews';
 import UserAlbums from './pages/UserAlbums';
+import UserLikes from './pages/UserLikes';
 
 function App() {
   return (
@@ -40,6 +41,7 @@ function App() {
           <Route path="/:username/albums" element={<UserAlbums />} />
           <Route path="/:username/listenlater" element={<UserListenLater />} />
           <Route path="/:username/reviews" element={<UserReviews />} />
+          <Route path="/:username/likes" element={<UserLikes />} />
         </Route>
       </Routes>
     </div>

@@ -32,7 +32,7 @@ connectDB();
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes)
 app.use("/api/releases", searchRoutes)
-app.use("/api/actions", actionsRoutes, rateLimiter)
+app.use("/api/actions", actionsRoutes)
 app.use("/api/pages", paginationRoutes)
 app.use("/api/music", songRoutes)
 

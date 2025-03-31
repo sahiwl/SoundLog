@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { axiosInstance } from "../lib/axios";
+import RatingForm from "../components/RatingForm";
 
 const TrackPage = () => {
   const { trackId } = useParams();
@@ -120,7 +121,11 @@ const TrackPage = () => {
             </div>
 
             {/* User Rating Section */}
-            <div className="mt-8 bg-grids rounded p-4">
+            <RatingForm 
+            trackId={trackId}
+            // onActionComplete={handleRatingComplete}
+            />
+            {/* <div className="mt-8 bg-grids rounded p-4">
               <div className="flex items-center mb-4">
                 <div className="w-12 h-12 bg-gray-600 rounded-full mr-4"></div>
                 <div>
@@ -141,7 +146,7 @@ const TrackPage = () => {
                   </button>
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
 
           {/* Right Column - Additional Details */}
