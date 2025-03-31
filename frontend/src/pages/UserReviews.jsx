@@ -37,7 +37,7 @@ const UserReviews = () => {
     }
   };
 
-  if (loading) return <p>Loading reviews...</p>;
+  if (loading) return <div className="flex justify-center items-center min-h-screen "> <div className="loading loading-infinity loading-xl"></div> </div>
   if (error) return <p>{error}</p>;
 
   return (

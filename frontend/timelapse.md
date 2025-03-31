@@ -1,7 +1,9 @@
 # Timelapse
 
-### 1 April 1:17AM
+### 1 April 4:31AM
 - [ ] bio should have a different font 
+- [ ] font schema change kar sahil 😡
+- [ ] umami ananlytics
 
 
 ### 31 Mar 6:10PM
@@ -12,7 +14,7 @@
 - Added user-specific albums page (`/user/:username/albums`) with pagination. Same for reviews, listenlater pages
 - [x] add user-specific likes pages
 - [x] add profile page, profile icon
-- [ ] fix navbar overflowing over other pages (sticky)
+- [x] fix navbar overflowing over other pages (sticky)
  
 
 ### 30Mar 3:15AM

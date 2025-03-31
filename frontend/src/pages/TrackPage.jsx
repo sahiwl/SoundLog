@@ -33,7 +33,7 @@ const TrackPage = () => {
     if (trackId) fetchTrackDetails();
   }, [trackId]);
 
-  if (loading) return <p>Loading track details...</p>;
+  if (loading) return <div className="flex justify-center items-center min-h-screen "> <div className="loading loading-infinity loading-xl"></div> </div>
   if (error) return <p>{error}</p>;
   if (!trackData) return <p>No track data found.</p>;
 

@@ -9,4 +9,4 @@
  - also spotify gives free 3calls/sec so we don't really need ratelimiting. 
 
 
-[ ] - feature -> edit review
+[x] - feature -> edit review

@@ -92,7 +92,15 @@ const RatingForm = ({ trackId, onActionComplete }) => {
   return (
     <div className="mt-8 bg-grids rounded p-4">
       <div className="flex items-center mb-4">
-        <div className="w-12 h-12 bg-gray-600 rounded-full mr-4"></div>
+        <div className="w-12 h-12 bg-gray-600 rounded-full mr-4">
+          {authUser.profilePic ? (
+              <img src={authUser.profilePic} alt="" className="w-full h-full rounded-full object-cover" />
+          ): (
+<div className="w-full h-full flex items-center justify-center text-gray-400">
+          {authUser?.username?.charAt(0).toUpperCase()}
+  </div>
+          )}
+        </div>
         <div className="flex-grow">
         <p className="font-medium">{authUser?.username || "Anonymous"}</p>
           <div className="flex items-center">

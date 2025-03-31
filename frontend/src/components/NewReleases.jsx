@@ -26,14 +26,14 @@ const NewReleases = () => {
       fetchNewReleases()
     }, [])
   
-    if (loading) return <div className="flex justify-center items-center min-h-screen loading loading-infinity loading-xl"> </div>
-    if (error) return <div className="text-red-500 text-center">{error}</div>
+    if (loading) return <div className="flex justify-center items-center min-h-screen "> <div className="loading loading-infinity loading-xl"></div> </div>
+    if (error) return <div className="text-red-500 text-center">{error}{toast.error(error)}</div>
   
     return (
-      <div className="min-h-content py-20 bg- text-white p-8">
-        <h1 className="text-3xl font-bold mb-8">New Releases</h1>
+      <div className="min-h-content -28 bg- text-white">
+        <h1 className="text-4xl font-bold mb-8">New Releases</h1>
         
-        <div className="carousel carousel-center w-full p-4 space-x-4 rounded-box gap-4">
+        <div className="carousel carousel-center w-full p-4 gap-6 space-x-6 rounded-box">
           {newReleases.map((album) => (
             <div 
               key={album.id} 

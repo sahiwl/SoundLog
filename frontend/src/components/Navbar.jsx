@@ -80,7 +80,7 @@ const Navbar = () => {
             {/* Logo and Desktop Menu */}
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <Link to="/" className="flex items-center">
+                <Link to={isAuthenticated ? "/home" : "/"}className="flex items-center">
                   <span className="text-xl font-bold">
                     Sound<span className="text-purple-400">Log</span>
                   </span>

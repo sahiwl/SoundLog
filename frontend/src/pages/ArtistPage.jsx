@@ -33,7 +33,7 @@ const ArtistPage = () => {
     if (artistId) fetchArtistDetails()
   }, [artistId])
 
-  if (loading) return <p className="text-white">Loading artist details...</p>
+  if (loading) return <div className="flex justify-center items-center min-h-screen "> <div className="loading loading-infinity loading-xl"></div> </div>
   if (error) return <p className="text-white">{error}</p>
   if (!artistData) return <p className="text-white">No artist data found.</p>
 
