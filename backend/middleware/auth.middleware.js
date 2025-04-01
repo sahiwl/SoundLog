@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import User from "../models/user.model.js";
-import { refreshToken } from "../lib/utils.js";
+// import { refreshToken } from "../lib/utils.js";
 
 export const protectRoute = async (req, res, next) => {
   try {
@@ -22,13 +22,13 @@ export const protectRoute = async (req, res, next) => {
     }
 
     // Refresh token if it's close to expiring
-    const now = Math.floor(Date.now() / 1000);
-    const exp = decoded.exp;
-    const timeLeft = exp - now;
-    if (timeLeft < 15 * 60) {
-      // If less than 15 minutes left
-      refreshToken(user._id, res);
-    }
+    // const now = Math.floor(Date.now() / 1000);
+    // const exp = decoded.exp;
+    // const timeLeft = exp - now;
+    // if (timeLeft < 15 * 60) {
+    //   // If less than 15 minutes left
+    //   refreshToken(user._id, res);
+    // }
 
     req.user = user;
     next();

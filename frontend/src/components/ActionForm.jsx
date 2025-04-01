@@ -3,6 +3,7 @@ import { axiosInstance } from "../lib/axios";
 import { showToast } from '../lib/toastConfig';
 import useAuthStore from "../store/useAuthStore";
 import { Headphones, Heart, HeartOff, PlusCircle, Save, Check, BookmarkIcon, Trash2 } from "lucide-react";
+import { toast, ToastContainer } from "react-toastify";
 
 const ActionForm = ({ albumId, onActionComplete }) => {
 
@@ -68,9 +69,9 @@ const ActionForm = ({ albumId, onActionComplete }) => {
       }
 
       const response = await axiosInstance.post(endpoint);
-      toast.success(response.data.message);
+      showToast.success(response.data.message);
     } catch (error) {
-      toast.error(error.response?.data?.message || `Error updating ${actionType}`);
+      showToast.error(error.response?.data?.message || `Error updating ${actionType}`);
       // Revert state on error
       switch (actionType) {
         case 'like': setLiked(!liked); break;
@@ -272,6 +273,7 @@ const ActionForm = ({ albumId, onActionComplete }) => {
           </button>
         </div>
       </div>
+      <ToastContainer />
     </div>
   );
 };
