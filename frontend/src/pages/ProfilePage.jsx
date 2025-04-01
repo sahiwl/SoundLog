@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import useAuthStore from '../store/useAuthStore';
 import { axiosInstance } from '../lib/axios';
+import Background from '../components/Background';
 
 const ProfilePage = () => {
     const { username } = useParams();
@@ -52,6 +53,7 @@ const ProfilePage = () => {
     }
 
     return (
+        <Background imageUrl={"https://imgix.bustle.com/uploads/image/2021/8/31/9043e78c-a96c-49c5-a19d-e4efde485bcf-drake-certified-lover-boy.jpeg?w=374&h=285&fit=crop&crop=faces&dpr=2"}>
         <div className="max-w-3xl min-h-dvh mx-auto p-6 pt-28">
             {/* Desktop Layout */}
             <div className="hidden sm:flex items-center justify-between">
@@ -138,6 +140,7 @@ const ProfilePage = () => {
                 </nav>
             </div>
         </div>
+        </Background>
     );
 };
 

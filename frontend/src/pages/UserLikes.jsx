@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { axiosInstance } from "../lib/axios";
+import Background from "../components/Background";
 
 const UserLikes = () => {
   const { username } = useParams();
@@ -41,7 +42,7 @@ const UserLikes = () => {
   if (error) return <p className="pt-28">{error}</p>;
 
   return (
-    <div className="bg-background text-white pt-28 min-h-screen">
+    <Background imageUrl={"https://c4.wallpaperflare.com/wallpaper/896/440/837/music-album-covers-the-beatles-abbey-road-wallpaper-preview.jpg"} className={"text-white pt-28 min-h-screen"}>
       <div className="container mx-auto px-4 py-6">
         <h1 className="text-3xl font-bold mb-6">{username}'s Liked Albums</h1>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -87,7 +88,7 @@ const UserLikes = () => {
           </button>
         </div>
       </div>
-    </div>
+    </Background>
   );
 };
 

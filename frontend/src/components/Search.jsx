@@ -4,6 +4,7 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import { axiosInstance } from "../lib/axios";
 import { toast } from "react-toastify";
+import Background from "./Background";
 
 const FullScreenSearch = ({ query, onClose }) => {
   const [results, setResults] = useState({ tracks: [], albums: [], artists: [] });
@@ -55,9 +56,9 @@ const getDetailLink = (item, type) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-base-100 bg-opacity-95 z-50 overflow-auto p-8">
+    <Background imageUrl={"https://upload.wikimedia.org/wikipedia/en/d/dd/The_Weeknd_-_Thursday.png"} className="fixed inset-0  bg-opacity-95  z-50 overflow-auto p-8"> 
       <button
-        className="btn btn-circle absolute top-4 right-4"
+        className="btn btn-circle bg-grids absolute top-4 right-4"
         onClick={onClose}
       >
         ✕
@@ -70,7 +71,7 @@ const getDetailLink = (item, type) => {
           {results.tracks.length > 0 && (
             <div className="mb-6">
               <h2 className="text-xl font-semibold mb-2">Tracks</h2>
-              <ul className="menu bg-base-100 rounded-box p-2">
+              <ul className="menu bg-grids rounded-box p-2">
                 {results.tracks.map((track) => (
                   <li key={track.id}>
                     <Link to={getDetailLink(track, "track")} onClick={onClose}>
@@ -84,7 +85,7 @@ const getDetailLink = (item, type) => {
           {results.albums.length > 0 && (
             <div className="mb-6">
               <h2 className="text-xl font-semibold mb-2">Albums</h2>
-              <ul className="menu bg-base-100 rounded-box p-2">
+              <ul className="menu bg-grids rounded-box p-2">
                 {results.albums.map((album) => (
                   <li key={album.id}>
                     <Link to={getDetailLink(album, "album")} onClick={onClose}>
@@ -98,7 +99,7 @@ const getDetailLink = (item, type) => {
           {results.artists.length > 0 && (
             <div className="mb-6">
               <h2 className="text-xl font-semibold mb-2">Artists</h2>
-              <ul className="menu bg-base-100 rounded-box p-2">
+              <ul className="menu bg-grids rounded-box p-2">
                 {results.artists.map((artist) => (
                   <li key={artist.id}>
                     <Link to={getDetailLink(artist, "artist")} onClick={onClose}>
@@ -109,18 +110,18 @@ const getDetailLink = (item, type) => {
               </ul>
             </div>
           )}
-          <div className="mt-4">
+          {/* <div className="mt-4">
             <Link
               to={`/search?query=${encodeURIComponent(query)}`}
               onClick={onClose}
-              className="btn btn-outline w-full"
+              className="btn btn-outline bg-grids w-full"
             >
               See All Results
             </Link>
-          </div>
+          </div> */}
         </div>
       )}
-    </div>
+    </Background>
   );
 };
 

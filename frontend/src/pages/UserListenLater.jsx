@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { axiosInstance } from "../lib/axios";
 import { Link, useParams } from "react-router-dom";  
+import Background from "../components/Background";
 
 const UserListenLater = () => {
   const { username } = useParams();  
@@ -42,7 +43,7 @@ const UserListenLater = () => {
   if (error) return <p>{error}</p>;
 
   return (
-    <div className="bg-background text-white pt-28 min-h-screen">
+    <Background imageUrl={"https://images.complex.com/complex/image/upload/v1723827899/sanity-new/future-and-metro-boomin-turn-up-the-heat-with-we--5-2896-1712972245-0_16x9-7653775.jpg"} className={"text-white pt-28 min-h-screen"}>
       <div className="container mx-auto px-4 py-6">
         <h1 className="text-3xl font-bold mb-6">Listen Later</h1>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -89,7 +90,7 @@ const UserListenLater = () => {
           </button>
         </div>
       </div>
-    </div>
+    </Background>
   );
 };
 
