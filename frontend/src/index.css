@@ -33,21 +33,25 @@
 
 @layer base {
   :root {
-    --background: rgb(23 23 23); /* Define the background color */
+    --background: rgb(23 23 23); 
     --foreground: rgb(255, 255, 255); 
     --primary: rgb(114, 46, 209); 
     --secondary: rgb(40, 40, 40); 
     --accent: rgb(114, 46, 209); 
-    --grids: rgb(30,30,30);
+    --grids: rgba(30, 30, 30, 0.3); 
   }
 }
 
 .bg-background {
-  background-color: var(--background); /* Use the defined background color */
+  background-color: var(--background); 
 }
 
 .bg-grids {
   background-color: var(--grids);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 0.5rem;
 }
 
 @layer components {

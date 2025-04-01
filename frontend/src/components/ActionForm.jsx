@@ -181,12 +181,12 @@ const ActionForm = ({ albumId, onActionComplete }) => {
                   min="0"
                   max="100"
                   placeholder="1-100"
-                  className="bg-gray-700 rounded p-2 w-20 text-white"
+                  className=" bg-grids rounded p-2 w-20 text-white"
                 />
                 <button
                   onClick={handleSubmitRating}
                   disabled={loading}
-                  className="ml-2 px-2 py-1 bg-gray-700 text-xs"
+                  className="ml-2 px-2 py-1 bg-grids text-xs"
                 >
                   {loading ? "Saving..." : "RATE"}
                 </button>
@@ -256,7 +256,7 @@ const ActionForm = ({ albumId, onActionComplete }) => {
       <textarea
         value={reviewText}
         onChange={(e) => setReviewText(e.target.value)}
-        className="w-full bg-gray-700 rounded p-3 text-white"
+        className="w-full bg-gra-700 rounded p-3 bg-grids text-white"
         rows="4"
         placeholder="Add a Review"
       />
@@ -266,7 +266,7 @@ const ActionForm = ({ albumId, onActionComplete }) => {
           <button
             onClick={handleSubmitReview}
             disabled={loading}
-            className="bg-gray-700 px-3 py-1 text-sm hover:bg-gray-600"
+            className="bg-grids px-3 py-1 text-sm hover:bg-gray-600"
           >
             {loading ? "Posting..." : "POST"}
           </button>

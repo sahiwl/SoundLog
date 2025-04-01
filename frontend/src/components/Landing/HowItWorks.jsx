@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Search, ThumbsUp, Bookmark } from "lucide-react";
+import { Search, ThumbsUp, Bookmark, UsersRound } from "lucide-react";
 
 const Step = ({ number, title, description, icon, direction }) => {
   return (
@@ -32,13 +32,22 @@ const HowItWorks = () => {
             How It Works
           </h2>
           <p className="text-lg text-zinc-400 max-w-2xl mx-auto">
-            Start your music journey in three simple steps
+            Start your music journey in four simple steps
           </p>
         </div>
 
         <div className="space-y-20">
-          <Step
+
+        <Step
             number={1}
+            title="Create an account, join the club ;)"
+            description="Show us your taste, and what you vibe with!"
+            icon={<UsersRound size={32} />}
+            direction="right"
+          />
+
+          <Step
+            number={2}
             title="Search for an album or track"
             description="Find music from Spotify's vast catalog using our powerful search feature."
             icon={<Search size={32} />}
@@ -46,15 +55,15 @@ const HowItWorks = () => {
           />
           
           <Step
-            number={2}
+            number={3}
             title="Rate or review"
-            description="Share your thoughts and give a rating from 1-5 stars to help others discover great music."
+            description="Share your thoughts and give a rating on a scale of 1-100 to help others discover great music."
             icon={<ThumbsUp size={32} />}
             direction="right"
           />
           
           <Step
-            number={3}
+            number={4}
             title="Add to Listen Later"
             description="Save albums and tracks to your personal queue to revisit when you have time."
             icon={<Bookmark size={32} />}

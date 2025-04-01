@@ -4,6 +4,7 @@ import useAuthStore from '../store/useAuthStore';
 import { Eye, EyeOff, X } from "lucide-react";
 import { ToastContainer, toast } from 'react-toastify';
 import { Link, useNavigate } from 'react-router-dom';
+import Background from '../components/Background';
 
 const Signup = () => {
   const navigate = useNavigate()
@@ -60,8 +61,9 @@ const Signup = () => {
   }
   
   return (
-    <div className="flex min-h-screen items-center justify-center bg-black px-4">
-    <div className="w-full max-w-md rounded-lg bg-zinc-900 p-6 shadow-md">
+    // <div className="flex min-h-screen items-center justify-center bg-black px-4">
+    <Background imageUrl={"https://images.unsplash.com/photo-1741620979760-bccef3bb5b17?q=80&w=3540&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"} className={"flex items-center justify-center"}>
+    <div className="max-w-md mx-auto p-8 bg-black/50 backdrop-blur-sm rounded-lg shadow-xl">
       <h2 className="text-2xl font-semibold text-white">Sign-up</h2>
       <p className="mt-1 text-sm text-gray-400">
       Enter your email below to create an account
@@ -131,9 +133,10 @@ const Signup = () => {
       </Link>
 
       </p>
-    </div>
+    {/* </div> */}
     <ToastContainer stacked />
     </div>
+    </Background>
   )
   }
 

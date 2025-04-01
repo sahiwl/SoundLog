@@ -4,7 +4,7 @@ import { Star, FileText, Clock, Music } from "lucide-react";
 
 const Feature = ({ title, description, icon }) => {
   return (
-    <div className="feature-card">
+    <div className="feature-card bg-grids">
       <div className="mb-4 inline-flex items-center justify-center w-12 h-12 rounded-full bg-purple-500/20 text-purple-400">
         {icon}
       </div>
@@ -16,7 +16,7 @@ const Feature = ({ title, description, icon }) => {
 
 const Features = () => {
   return (
-    <section id="features" className="py-20 bg-zin-900">
+    <section id="features" className="py-20 bg-zi-900">
       <div className="section-container">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
@@ -30,7 +30,7 @@ const Features = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           <Feature
             title="Rate Your Music"
-            description="Add numeric ratings from 1-5 to tracks and albums you've listened to."
+            description="Add numeric ratings from 0-100 to tracks and albums you've listened to."
             icon={<Star size={24} />}
           />
           <Feature

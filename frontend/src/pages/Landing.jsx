@@ -11,11 +11,11 @@ import { Link } from 'react-router-dom'
 const Landing = () => {
 
   return (    
-    <div className=' text-white bg-gray-950'>
+    <div className=' text-white bg-gry-950'>
       <Hero />
       <Features/>
       <HowItWorks/>
-      <Footer/>
+
     </div>
   )
 }

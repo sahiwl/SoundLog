@@ -22,10 +22,11 @@ import NewReleasesPage from './pages/NewReleasesPage';
 import SettingsPage from './pages/SettingsPage';
 import ProfilePage from './pages/ProfilePage';
 import LetterboxdNavbar from './components/nav2';
+import Footer from './components/Landing/Footer';
 
 function App() {
   return (
-    <div className="bg-background min-h-screen text-white">
+    <div className="min-h-screen text-white">
       <Navbar />
 
       <Routes>
@@ -53,6 +54,8 @@ function App() {
           <Route path="/:username/settings" element={<SettingsPage />} />
         </Route>
       </Routes>
+
+      <Footer/>
     </div>
   );
 }

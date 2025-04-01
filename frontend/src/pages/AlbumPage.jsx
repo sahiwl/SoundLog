@@ -4,6 +4,7 @@ import { axiosInstance } from "../lib/axios";
 import ActionForm from "../components/ActionForm.jsx";
 import { toast } from 'react-toastify';
 import ReviewsSection from '../components/ReviewsSection';
+import Background from '../components/Background';
 
 const AlbumPage = () => {
   const { albumId } = useParams(); 
@@ -122,22 +123,28 @@ const AlbumPage = () => {
   }
 
   return (
-    <div className="bg-background text-white pt-28 min-h-screen">
-
-      {/* Main Content */}
-      <div className="container  mx-auto px-4 py-6">
+    <Background imageUrl={albumData?.images?.[0]?.url}>
+      <div className="container mx-auto px-4 py-6 pt-28">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Album Info */}
           <div className="lg:col-span-2">
             {/* Artist and Album Title */}
             <div className="mb-6">
               <h1 className="text-2xl font-medium">
-                Artists: {albumData.artists.map((a) => a.name).join(", ")}
+                {albumData.artists.map((artist, i) => (
+                  <Link 
+                    key={artist.id}
+                    to={`/artist/${artist.spotifyId}`} 
+                    className="hover:text-purple-400 transition-colors"
+                  >
+                    {i > 0 ? ', ' : ''}{artist.name}
+                  </Link>
+                ))}
               </h1>
               <h2 className="text-4xl font-bold">{albumData.name}</h2>
             </div>
 
-            {/* Album Cover and Scores */}
+
             <div className="flex flex-col md:flex-row gap-6">
               {/* Album Cover */}
               <div className="flex-shrink-0">
@@ -146,7 +153,7 @@ const AlbumPage = () => {
                   alt={`${albumData.name} cover`}
                   className="w-full max-w-[350px]"
                 />
-                {/* Streaming Links */}
+
                 <div className="flex mt-4 space-x-2">
                   <a href="#" className="bg-grids text-white px-3 py-2 rounded flex items-center space-x-2">
                     <span>Amazon</span>
@@ -162,7 +169,7 @@ const AlbumPage = () => {
 
               {/* Scores */}
               <div className="flex-grow">
-                {/* User Score (Static Example) */}
+
                         <div className="bg-grids p-4 rounded">
                           <h3 className="text-sm font-medium mb-2">USER SCORE</h3>
                           <div className="flex items-end mb-2">
@@ -173,7 +180,6 @@ const AlbumPage = () => {
                           </div>
                           </div>
                           <div className="h-1 bg-green-500 w-3/4 mt-2"></div>
-                          <button className="text-sm text-gray-400 mt-4 float-right">MORE ↓</button>
                         </div>
                         </div>
                       </div>
@@ -237,16 +243,16 @@ const AlbumPage = () => {
             </div>
 
             {/* Track List Section */}
-            <div>
+            <div className="bg-grids">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-medium">TRACK LIST</h3>
+                <h3 className="text-xl font-bold px-4 pt-4">TRACK LIST</h3>
                 {/* <span className="text-sm text-gray-400">RATE TRACKS</span> */}
               </div>
 
               <div className="space-y-2 ">
                 {/* Map through tracks */}
                 {albumData.tracks && albumData.tracks.items && albumData.tracks.items.map((track, index) => (
-                  <div key={track.trackId} className="flex items-center justify-between py-2 hover:bg-">
+                  <div key={track.trackId} className="flex items-center justify-between py-2 px-6 hover:bg-">
                     <div className="flex items-center gap-4">
                       <span className="text-gray-400 w-8 text-right">{track.track_number}</span>
                       <Link to={`/tracks/${track.trackId}`} className="hover:underline">
@@ -264,7 +270,7 @@ const AlbumPage = () => {
                   </div>
                 ))}
 
-                <div className="text-gray-400 text-sm text-right mt-4">
+                <div className="text-gray-400 text-sm text-right m-4">
                   Total Length: {calculateTotalDuration(albumData.tracks ? albumData.tracks.items : [])}
                 </div>
               </div>
@@ -272,7 +278,7 @@ const AlbumPage = () => {
           </div>
         </div>
       </div>
-    </div>
+    </Background>
   );
 };
 

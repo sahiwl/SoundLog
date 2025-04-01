@@ -4,7 +4,7 @@
 - [ ] bio should have a different font 
 - [ ] font schema change kar sahil 😡
 - [ ] umami ananlytics
-
+- [x] backdrop blur walls behind as background of pages (experimental)
 
 ### 31 Mar 6:10PM
 - Track ratings are now visible in albumPage, users can go to trackpages and rate individual tracks. 
