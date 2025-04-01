@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { axiosInstance } from "../lib/axios";
-import { showToast } from '../lib/toastConfig';
+import { axiosInstance } from "../lib/axios.js";
+import { showToast } from '../lib/toastConfig.js';
 import useAuthStore from "../store/useAuthStore";
-import { Headphones, Heart, HeartOff, PlusCircle, Save, Check, BookmarkIcon, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 
 const RatingForm = ({ trackId, onActionComplete }) => {
   const { authUser } = useAuthStore();

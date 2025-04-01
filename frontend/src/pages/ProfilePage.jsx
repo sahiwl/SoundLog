@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import useAuthStore from '../store/useAuthStore';
-import { axiosInstance } from '../lib/axios';
-import Background from '../components/Background';
+import useAuthStore from '../store/useAuthStore.js';
+import { axiosInstance } from '../lib/axios.js';
+import Background from '../components/Background.jsx';
 
 const ProfilePage = () => {
     const { username } = useParams();

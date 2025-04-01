@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { axiosInstance } from '../lib/axios';
+import { axiosInstance } from '../lib/axios.js';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 
 const NewReleasesPage = () => {

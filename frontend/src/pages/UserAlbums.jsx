@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { axiosInstance } from "../lib/axios";
-import Background from '../components/Background';
+import { axiosInstance } from "../lib/axios.js";
+import Background from '../components/Background.jsx';
 
 const UserAlbums = () => {
   const { username } = useParams();

@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
-import { axiosInstance } from '../lib/axios'
-import NewReleases from '../components/NewReleases'
-import { useParams, Link } from 'react-router-dom'
-import useAuthStore from '../store/useAuthStore'
+import { axiosInstance } from '../lib/axios.js'
+import NewReleases from '../components/NewReleases.jsx'
+import { Link } from 'react-router-dom'
+import useAuthStore from '../store/useAuthStore.js'
 
 const Homepage = () => {
   const [userLikedAlbums, setUserLikedAlbums] = useState([]);

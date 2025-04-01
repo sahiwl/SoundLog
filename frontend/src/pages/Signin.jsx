@@ -1,10 +1,10 @@
 import React, { useState } from 'react'
-import useAuthStore from '../store/useAuthStore'
+import useAuthStore from '../store/useAuthStore.js'
 import { Eye, EyeOff, X } from "lucide-react";
 import { ToastContainer, toast } from 'react-toastify';
 import { Link, useNavigate } from 'react-router-dom';
-import Background from '../components/Background';
-import { showToast } from '../lib/toastConfig';
+import Background from '../components/Background.jsx';
+import { showToast } from '../lib/toastConfig.js';
 
 const Signin = () => {
   const [formData, setformData] = useState({username: '', password: ''})  // Change email to username

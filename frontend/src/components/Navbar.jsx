@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Search, User, LogOut } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import useAuthStore from "../store/useAuthStore";
-import { showToast } from "../lib/toastConfig";
-import FullScreenSearch from "./Search";
+import useAuthStore from "../store/useAuthStore.js";
+import { showToast } from "../lib/toastConfig.js";
+import FullScreenSearch from "./Search.jsx";
 
 const UserSection = ({ isAuthenticated, onLogout, user }) => {
   const navigate = useNavigate();

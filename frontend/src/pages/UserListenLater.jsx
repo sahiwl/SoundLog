@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { axiosInstance } from "../lib/axios";
+import { axiosInstance } from "../lib/axios.js";
 import { Link, useParams } from "react-router-dom";  
-import Background from "../components/Background";
+import Background from "../components/Background.jsx";
 
 const UserListenLater = () => {
   const { username } = useParams();  

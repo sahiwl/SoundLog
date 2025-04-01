@@ -1,6 +1,6 @@
 import {create} from 'zustand'
-import { axiosInstance } from '../lib/axios';
-import { showToast } from '../lib/toastConfig';
+import { axiosInstance } from '../lib/axios.js';
+import { showToast } from '../lib/toastConfig.js';
 
 const useAuthStore = create((set)=>({
     authUser: null,

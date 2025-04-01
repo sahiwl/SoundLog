@@ -1,7 +1,7 @@
 import React from 'react'
 import { useState, useEffect } from 'react'
-import { axiosInstance } from '../lib/axios'
-import { showToast } from '../lib/toastConfig'
+import { axiosInstance } from '../lib/axios.js'
+import { showToast } from '../lib/toastConfig.js'
 import { Link } from 'react-router-dom'
 
 const NewReleases = () => {

@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { axiosInstance } from "../lib/axios";
+import { axiosInstance } from "../lib/axios.js";
 import ActionForm from "../components/ActionForm.jsx";
-import { showToast } from "../lib/toastConfig";
-import ReviewsSection from '../components/ReviewsSection';
-import Background from '../components/Background';
+import { showToast } from "../lib/toastConfig.js";
+import ReviewsSection from '../components/ReviewsSection.jsx';
+import Background from '../components/Background.jsx';
 
 const AlbumPage = () => {
   const { albumId } = useParams(); 

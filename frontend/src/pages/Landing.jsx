@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react'
 import clsx from 'clsx'
-import Navbar from '../components/Navbar'
-import Features from '../components/Landing/Features'
-import HowItWorks from '../components/Landing/HowItWorks'
-import Footer from '../components/Landing/Footer'
-import useAuthStore from '../store/useAuthStore'
+
+import Features from '../components/Landing/Features.jsx'
+import HowItWorks from '../components/Landing/HowItWorks.jsx'
+
+import useAuthStore from '../store/useAuthStore.js'
 import { Link } from 'react-router-dom'
 
 

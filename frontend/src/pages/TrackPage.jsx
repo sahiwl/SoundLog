@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { axiosInstance } from "../lib/axios";
-import RatingForm from "../components/RatingForm";
-import Background from '../components/Background';
+import { axiosInstance } from "../lib/axios.js";
+import RatingForm from "../components/RatingForm.jsx";
+import Background from '../components/Background.jsx';
 
 const TrackPage = () => {
   const { trackId } = useParams();

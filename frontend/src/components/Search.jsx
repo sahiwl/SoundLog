@@ -1,10 +1,9 @@
 // src/components/FullScreenSearch.jsx
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { Link } from "react-router-dom";
-import { axiosInstance } from "../lib/axios";
-import { showToast } from "../lib/toastConfig";
-import Background from "./Background";
+import { axiosInstance } from "../lib/axios.js";
+import { showToast } from "../lib/toastConfig.js";
+import Background from "./Background.jsx";
 
 const FullScreenSearch = ({ query, onClose }) => {
   const [results, setResults] = useState({ tracks: [], albums: [], artists: [] });

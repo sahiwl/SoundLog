@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react'
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import './App.css'
 import Landing from './pages/Landing';
 import Signup from './pages/Signup';
@@ -19,7 +18,7 @@ import NewReleasesPage from './pages/NewReleasesPage';
 
 import SettingsPage from './pages/SettingsPage';
 import ProfilePage from './pages/ProfilePage';
-import LetterboxdNavbar from './components/nav2';
+
 import Footer from './components/Landing/Footer';
 import { ToastContainer } from 'react-toastify';
 import toastConfig from './lib/toastConfig';
