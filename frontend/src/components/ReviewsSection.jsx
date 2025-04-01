@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Heart, Pencil, Trash2, X } from "lucide-react";
 import { axiosInstance } from "../lib/axios";
-import { toast } from 'react-toastify';
+import { showToast } from '../lib/toastConfig';
 
 const ReviewsSection = ({ reviews, userId, albumId, onReviewUpdate }) => {
   const [editingReviewId, setEditingReviewId] = useState(null);
@@ -20,11 +20,11 @@ const ReviewsSection = ({ reviews, userId, albumId, onReviewUpdate }) => {
   const handleDeleteReview = async () =>{
     try {
         const resp = await axiosInstance.delete(`/actions/review/${albumId}`)
-        toast.success(resp.data.message)
+        showToast.success(resp.data.message)
         onReviewUpdate(); // refresh reviews
     } catch (error) {
-        console.error("Error deleting review:", err);
-        toast.error(resp.data.error)
+        console.error("Error deleting review:", error);
+        showToast.error("Failed to delete review");
     }
   }
 
@@ -35,23 +35,23 @@ const ReviewsSection = ({ reviews, userId, albumId, onReviewUpdate }) => {
       });
 
       onReviewUpdate();
-      toast.success("Review updated successfully");
+      showToast.success("Review updated successfully");
       setEditingReviewId(null);
       setEditedReviewText("");
     } catch (err) {
       console.error("Error updating review:", err);
-      toast.error("Error updating review");
+      showToast.error("Error updating review");
     }
   };
 
   const handleLikeReview = async (reviewId) => {
     try {
       const response = await axiosInstance.post(`/actions/review/like/${reviewId}`);
-      toast.success(response.data.message);
+      showToast.success(response.data.message);
       onReviewUpdate();
     } catch (err) {
       console.error("Error liking review:", err);
-      toast.error("Error toggling like");
+      showToast.error("Error toggling like");
     }
   };
 

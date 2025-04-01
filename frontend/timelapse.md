@@ -1,5 +1,8 @@
 # Timelapse
 
+### 1 April 2:07PM
+- fixed search component not being mounted over children components
+
 ### 1 April 4:31AM
 - [ ] bio should have a different font 
 - [ ] font schema change kar sahil 😡

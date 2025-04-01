@@ -1,7 +1,7 @@
 import React from 'react'
 import { useState, useEffect } from 'react'
 import { axiosInstance } from '../lib/axios'
-import { ToastContainer, toast } from 'react-toastify'
+import { showToast } from '../lib/toastConfig'
 import { Link } from 'react-router-dom'
 
 const NewReleases = () => {
@@ -17,7 +17,7 @@ const NewReleases = () => {
           setNewReleases(response.data.albums.items)
           setLoading(false)
         } catch (error) {
-          toast.error('Error fetching new releases:', error)
+          showToast.error('Error fetching new releases')
           setError('Failed to load new releases')
           setLoading(false)
         }
@@ -27,7 +27,7 @@ const NewReleases = () => {
     }, [])
   
     if (loading) return <div className="flex justify-center items-center min-h-screen "> <div className="loading loading-infinity loading-xl"></div> </div>
-    if (error) return <div className="text-red-500 text-center">{error}{toast.error(error)}</div>
+    if (error) return <div className="text-red-500 text-center">{error}</div>
   
     return (
       <div className="min-h-content -28 bg- text-white">
@@ -53,7 +53,6 @@ const NewReleases = () => {
                   <p className="text-xs text-gray-300 truncate">
                     {album.artists.map(artist => artist.name).join(', ')}
                   </p>
-                  <ToastContainer stacked position='top-right'/>
                 </div>
               </Link>
             </div>

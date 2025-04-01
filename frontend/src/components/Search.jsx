@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { axiosInstance } from "../lib/axios";
-import { toast } from "react-toastify";
+import { showToast } from "../lib/toastConfig";
 import Background from "./Background";
 
 const FullScreenSearch = ({ query, onClose }) => {
@@ -28,7 +28,7 @@ const FullScreenSearch = ({ query, onClose }) => {
         //   artists: response.data.artists?.items || [],
         // });
       } catch (err) {
-      toast.error("Search error:", err);
+        showToast.error("Error fetching search results")
         setError("Error fetching search results.");
       } finally {
         setLoading(false);
@@ -36,6 +36,13 @@ const FullScreenSearch = ({ query, onClose }) => {
     };
     fetchSearchResults();
   }, [query]);
+
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, []);
 
   // Identify top result (could be track or album or artist). 
   // For demo, let's pick the first track if available, else first album, else first artist.
@@ -56,14 +63,14 @@ const getDetailLink = (item, type) => {
   };
 
   return (
-    <Background imageUrl={"https://upload.wikimedia.org/wikipedia/en/d/dd/The_Weeknd_-_Thursday.png"} className="fixed inset-0  bg-opacity-95  z-50 overflow-auto p-8"> 
+    <Background imageUrl={"https://upload.wikimedia.org/wikipedia/en/d/dd/The_Weeknd_-_Thursday.png"} className="fixed inset-0 bg-opacity-95 z-50 p-8 overflow-hidden"> 
       <button
         className="btn btn-circle bg-grids absolute top-4 right-4"
         onClick={onClose}
       >
         ✕
       </button>
-      <h1 className="text-3xl font-bold mb-4">Search Results for "{query}"</h1>
+      <h1 className="text-3xl font-bold mb-4">Search Results for {query}</h1>
       {loading && <p>Loading...</p>}
       {error && <p className="text-red-500">{error}</p>}
       {!loading && !error && (

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { Search, User, LogOut } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import useAuthStore from "../store/useAuthStore";
-import { toast, ToastContainer, Zoom } from "react-toastify";
+import { showToast } from "../lib/toastConfig";
 import FullScreenSearch from "./Search";
 
 const UserSection = ({ isAuthenticated, onLogout, user }) => {
@@ -57,7 +57,7 @@ const Navbar = () => {
 
   const handleLogout = useCallback(async () => {
     await logout();
-    toast.success("Logging you out, redirecting...");
+    showToast.success("Logging you out, redirecting...");
     setTimeout(() => {
       navigate("/");
     }, 2500);
@@ -193,7 +193,6 @@ const Navbar = () => {
       {showSearchOverlay && (
         <FullScreenSearch query={searchQuery} onClose={handleCloseSearch} />
       )}
-      <ToastContainer transition={Zoom} />
     </>
   );
 };

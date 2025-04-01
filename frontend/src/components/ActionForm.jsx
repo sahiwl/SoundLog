@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { axiosInstance } from "../lib/axios";
-import { toast } from "react-toastify";
+import { showToast } from '../lib/toastConfig';
 import useAuthStore from "../store/useAuthStore";
 import { Headphones, Heart, HeartOff, PlusCircle, Save, Check, BookmarkIcon, Trash2 } from "lucide-react";
 
@@ -85,7 +85,7 @@ const ActionForm = ({ albumId, onActionComplete }) => {
   const handleSubmitRating = async () => {
     const ratingNum = parseInt(inputRating);
     if (isNaN(ratingNum) || ratingNum < 0 || ratingNum > 100) {
-      toast.warn("Rating must be a number between 0 and 100");
+      showToast.warn("Rating must be a number between 0 and 100");
       return;
     }
     setLoading(true);
@@ -95,7 +95,7 @@ const ActionForm = ({ albumId, onActionComplete }) => {
       setInputRating('');
       setIsEditingRating(false);
     } catch (error) {
-      toast.error(error.response?.data?.message || "Error rating album");
+      showToast.error(error.response?.data?.message || "Error rating album");
     } finally {
       setLoading(false);
     }
@@ -103,7 +103,7 @@ const ActionForm = ({ albumId, onActionComplete }) => {
 
   const handleSubmitReview = async () => {
     if (!reviewText.trim()) {
-      toast.warn("Cannot send an empty review");
+      showToast.warn("Cannot send an empty review");
       return;
     }
 
@@ -112,11 +112,11 @@ const ActionForm = ({ albumId, onActionComplete }) => {
       const resp = await axiosInstance.post(`/actions/review/${albumId}`, {
         reviewText: reviewText.trim(),
       });
-      toast.success(resp.data.message);
+      showToast.success(resp.data.message);
       setReviewText("");
       onActionComplete?.();
     } catch (error) {
-      toast.error(error.response?.data?.message || "Error posting review");
+      showToast.error(error.response?.data?.message || "Error posting review");
     } finally {
       setLoading(false);
     }
@@ -153,9 +153,9 @@ const ActionForm = ({ albumId, onActionComplete }) => {
       await axiosInstance.delete(`/actions/rate/albums/${albumId}`);
       setRating(null);
       setIsEditingRating(false);
-      toast.success("Rating deleted successfully!");
+      showToast.success("Rating deleted successfully!");
     } catch (error) {
-      toast.error(error?.response?.data?.message || "Failed to delete rating");
+      showToast.error(error?.response?.data?.message || "Failed to delete rating");
     }
   };
 

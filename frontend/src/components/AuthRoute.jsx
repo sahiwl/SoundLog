@@ -1,6 +1,6 @@
 import { Navigate, Outlet } from "react-router-dom";
 import useAuthStore from "../store/useAuthStore";
-import { toast } from 'react-toastify';
+import { showToast } from '../lib/toastConfig';
 
 const AuthRoute = ({ routeType }) => {
   const { isAuthenticated, isCheckingAuth } = useAuthStore();
@@ -17,7 +17,7 @@ const AuthRoute = ({ routeType }) => {
   // need to logout before going to auth pages
   if (routeType === "auth") {
     if (isAuthenticated) {
-      toast.warning('Please logout first to access this page');
+      showToast.warning('Please logout first to access this page');
       return <Navigate to="/home" />;
     }
     return <Outlet />;
@@ -26,7 +26,7 @@ const AuthRoute = ({ routeType }) => {
   // Protected routes - Redirect to signin if not logged in
   if (routeType === "protected") {
     if (!isAuthenticated) {
-      toast.warning('Please login to access this page');
+      showToast.warning('Please login to access this page');
       return <Navigate to="/signin" />;
     }
     return <Outlet />;

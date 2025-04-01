@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { axiosInstance } from "../lib/axios";
 import ActionForm from "../components/ActionForm.jsx";
-import { toast } from 'react-toastify';
+import { showToast } from "../lib/toastConfig";
 import ReviewsSection from '../components/ReviewsSection';
 import Background from '../components/Background';
 
@@ -40,7 +40,7 @@ const AlbumPage = () => {
       setReviews(response.data.reviews || []);
     } catch (err) {
       console.error("Error fetching reviews:", err);
-      toast.error("Error fetching reviews");
+      showToast.error("Error fetching reviews");
     } finally {
       setReviewsLoading(false);
     }

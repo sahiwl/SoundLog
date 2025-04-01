@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { axiosInstance } from "../lib/axios";
-import { toast } from "react-toastify";
+import { showToast } from '../lib/toastConfig';
 import useAuthStore from "../store/useAuthStore";
 import { Headphones, Heart, HeartOff, PlusCircle, Save, Check, BookmarkIcon, Trash2 } from "lucide-react";
 
@@ -15,7 +15,7 @@ const RatingForm = ({ trackId, onActionComplete }) => {
   const handleSubmitRating = async () => {
     const ratingNum = parseInt(inputRating);
     if (isNaN(ratingNum) || ratingNum < 0 || ratingNum > 100) {
-      toast.warn("Rating must be a number between 0 and 100");
+      showToast.warn("Rating must be a number between 0 and 100");
       return;
     }
     setLoading(true);
@@ -24,10 +24,10 @@ const RatingForm = ({ trackId, onActionComplete }) => {
       setRating(ratingNum);
       setInputRating('');
       setIsEditingRating(false);
-      toast.success("Rating updated successfully!");
+      showToast.success("Rating updated successfully!");
       if (onActionComplete) onActionComplete();
     } catch (error) {
-      toast.error(error?.response?.data?.message || "Failed to update rating");
+      showToast.error(error?.response?.data?.message || "Failed to update rating");
     } finally {
       setLoading(false);
     }
@@ -36,21 +36,21 @@ const RatingForm = ({ trackId, onActionComplete }) => {
   const handleDeleteRating = async () => {
     if (!rating) return;
     
-    const toastId = toast.info(
+    const toastId = showToast.info(
       <div>
         <p>Delete this rating?</p>
         <div className="mt-2 flex justify-end gap-2">
           <button
             onClick={() => {
               deleteRating();
-              toast.dismiss(toastId);
+              showToast.dismiss(toastId);
             }}
             className="px-3 py-1 bg-red-500 text-white rounded text-sm"
           >
             Delete
           </button>
           <button
-            onClick={() => toast.dismiss(toastId)}
+            onClick={() => showToast.dismiss(toastId)}
             className="px-3 py-1 bg-gray-500 text-white rounded text-sm"
           >
             Cancel
@@ -67,10 +67,10 @@ const RatingForm = ({ trackId, onActionComplete }) => {
       await axiosInstance.delete(`/actions/rate/tracks/${trackId}`);
       setRating(null);
       setIsEditingRating(false);
-      toast.success("Rating deleted successfully!");
+      showToast.success("Rating deleted successfully!");
       if (onActionComplete) onActionComplete();
     } catch (error) {
-      toast.error(error?.response?.data?.message || "Failed to delete rating");
+      showToast.error(error?.response?.data?.message || "Failed to delete rating");
     } finally {
       setLoading(false);
     }

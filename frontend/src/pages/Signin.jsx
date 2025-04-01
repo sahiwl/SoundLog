@@ -4,6 +4,7 @@ import { Eye, EyeOff, X } from "lucide-react";
 import { ToastContainer, toast } from 'react-toastify';
 import { Link, useNavigate } from 'react-router-dom';
 import Background from '../components/Background';
+import { showToast } from '../lib/toastConfig';
 
 const Signin = () => {
   const [formData, setformData] = useState({username: '', password: ''})  // Change email to username
@@ -24,17 +25,17 @@ const navigate = useNavigate()
   const handleSubmit = async(e)=>{
     e.preventDefault()
     if(validateForm()){
-      toast.warn("Please enter in all the fields")
+      showToast.warn("Please enter in all the fields")
       return;
     }
     try {
       const result = await signin(formData);
       if (!result.success) {
-          toast.error(`Signin error: ${result.error}`, {
+          showToast.error(`Signin error: ${result.error}`, {
             autoClose: 5000
           });
       } else {
-        toast.success('🦄 Signin Successful!', {
+        showToast.success('🦄 Signin Successful!', {
         position: "top-right",
         autoClose: 5000,
         hideProgressBar: false,
@@ -49,20 +50,20 @@ const navigate = useNavigate()
           // Clear form
           setformData({username: '', password: ''});
 
-          // Redirect after toast completes
+          // Redirect after showToast completes
           setTimeout(() => {
               navigate('/home');
           }, 2500);
       }
   } catch (error) {
       console.error("signin error2:", error);
-      toast.error("An unexpected error occurred");
+      showToast.error("An unexpected error occurred");
   }
     }
 
   return (
     <Background imageUrl="https://images.unsplash.com/photo-1571330735066-03aaa9429d89?q=80&w=2070&auto=format&fit=crop" className="flex items-center justify-center">
-      <div className="max-w-md mx-auto p-8 bg-black/50 backdrop-blur-sm rounded-lg shadow-xl">
+      <div className="max-w-md mx-auto p-8 bg-grids rounded-lg shadow-xl">
         <h2 className="text-2xl font-semibold text-white">Sign in</h2>
         <p className="mt-1 text-sm text-gray-400">
             Enter your username below to sign in to your account

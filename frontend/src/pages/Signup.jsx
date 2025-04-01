@@ -1,8 +1,7 @@
-
 import React, { useState } from 'react';
 import useAuthStore from '../store/useAuthStore';
 import { Eye, EyeOff, X } from "lucide-react";
-import { ToastContainer, toast } from 'react-toastify';
+import { showToast } from '../lib/toastConfig';
 import { Link, useNavigate } from 'react-router-dom';
 import Background from '../components/Background';
 
@@ -25,48 +24,33 @@ const Signup = () => {
   const handleSubmit = async (e)=>{
     e.preventDefault()
     if(validateForm()){
-      toast.warn("Please fill in all the fields!")
+      showToast.warn("Please fill in all the fields!")
       return;
     }
-    await signup(formData)
     try {
       const result = await signup(formData);
       if (!result.success) {
-          toast.error(`Signup error: ${result.error}`);
+          showToast.error(`Signup error: ${result.error}`);
       } else {
-            toast.success('🦄 Signup Successful!', {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: false,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "dark",
-        });
-          console.log("Login successful:", result.data);
-
-          // Clear form
+          showToast.success('Signup Successful!');
           setformData({username: '', email: '', password: ''});
-
-          // Redirect after toast completes
           setTimeout(() => {
               navigate('/');
           }, 2500);
       }
-  } catch (error) {
+    } catch (error) {
       console.error("Signup error:", error);
-      toast.error("An unexpected error occurred");
+      showToast.error("An unexpected error occurred");
     }
   }
   
   return (
     // <div className="flex min-h-screen items-center justify-center bg-black px-4">
     <Background imageUrl={"https://images.unsplash.com/photo-1741620979760-bccef3bb5b17?q=80&w=3540&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"} className={"flex items-center justify-center"}>
-    <div className="max-w-md mx-auto p-8 bg-black/50 backdrop-blur-sm rounded-lg shadow-xl">
+    <div className="max-w-md mx-auto p-8 bg-grids rounded-lg shadow-xl">
       <h2 className="text-2xl font-semibold text-white">Sign-up</h2>
       <p className="mt-1 text-sm text-gray-400">
-      Enter your email below to create an account
+      Enter the fields below to create an account
       </p>
 
       <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
