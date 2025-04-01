@@ -8,7 +8,7 @@ import Comment from "../models/comment.model.js";
 import { getAlbumDetails, getNewReleasesHandler, getTrackDetails } from "./song.controller.js";
 import { getArtistDetails } from "./song.controller.js";
 import User from "../models/user.model.js";
-import ListenLater from "../models/listenlater.model.js";
+import ListenLater from "../models/listenLater.model.js";
 
 // Get user's reviews with pagination 
 // ✅ tested

@@ -1,7 +1,7 @@
 import { searchSpotifyData } from "../lib/pullSpotifyData.js";
 import Likes from "../models/likes.model.js";
 import Listened from "../models/listened.model.js";
-import ListenLater from "../models/listenlater.model.js";
+import ListenLater from "../models/listenLater.model.js";
 import Rating from "../models/rating.model.js";
 import Review from "../models/review.model.js";
 import Comment from "../models/comment.model.js";
