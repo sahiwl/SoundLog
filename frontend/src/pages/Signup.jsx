@@ -4,6 +4,7 @@ import { Eye, EyeOff, X } from "lucide-react";
 import { showToast } from '../lib/toastConfig.js';
 import { Link, useNavigate } from 'react-router-dom';
 import Background from '../components/Background.jsx';
+import { ToastContainer } from 'react-toastify';
 
 const Signup = () => {
   const navigate = useNavigate()
