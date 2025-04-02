@@ -41,6 +41,8 @@ function App() {
         {/* Protected Routes */}
         <Route element={<AuthRoute routeType="protected" />}>
           <Route path="/home" element={<Homepage />} />
+
+          
           <Route path="/newreleases" element={<NewReleasesPage />} />
           <Route path="/album/:albumId" element={<AlbumPage />} />
           <Route path="/artist/:artistId" element={<ArtistPage />} />
