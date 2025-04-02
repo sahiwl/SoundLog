@@ -42,5 +42,7 @@ pnpm-debug.log*
 dist/  
 build/  
 out/  
+
 SearchDropdown1.jsx
 nav2.jsx
+Auth

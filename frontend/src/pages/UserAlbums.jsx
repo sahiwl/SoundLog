@@ -17,7 +17,17 @@ const UserAlbums = () => {
       const response = await axiosInstance.get(`/pages/${username}/albums`, {
         params: { page },
       });
-      setAlbums(response.data.albums);
+      
+      // Add check and log for debugging
+      console.log('Albums response:', response.data);
+      
+      // Make sure we're setting all album data including listened ones
+      setAlbums(response.data.albums.map(album => ({
+        ...album,
+        images: album.images || [],
+        artists: album.artists || []
+      })));
+      
       setCurrentPage(response.data.currentPage);
       setTotalPages(response.data.totalPages);
     } catch (err) {

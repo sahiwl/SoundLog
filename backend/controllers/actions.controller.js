@@ -14,7 +14,7 @@ import Track from "../models/track.model.js";
  * @param {string} itemType - Either 'albums' or 'tracks'
  * @returns {Promise<Object>} The album or track data
  */
-const getOrCreateSpotifyData = async (itemId, itemType) => {
+export const getOrCreateSpotifyData = async (itemId, itemType) => {
     try {
         // Check if item exists in database
         let item;
@@ -163,27 +163,34 @@ export const toggleLike = async(req,res)=>{
             return res.status(400).json({ message: "albumId is required." });
         }
 
-        // Use the utility function to get or create album data
         await getOrCreateSpotifyData(albumId, 'albums');
 
         const existingLike = await Likes.findOne({ userId, albumId });
+        
         if (existingLike) {
             await Likes.deleteOne({ _id: existingLike._id });
             return res.status(200).json({ message: "Like removed." });
         } else {
+            // Create like entry
             await Likes.create({ userId, albumId });
-            // also mark it as listened here.
-            const existingListened = await Listened.findOne({ userId, albumId });
-            if (!existingListened) {
-                await Listened.create({ userId, albumId });
-            }
-            // and same track will be removed from listenLater (if it exists there)
+            
+            // Always create a listened entry when liking
+            await Listened.findOneAndUpdate(
+                { userId, albumId },
+                { userId, albumId },
+                { upsert: true, new: true }
+            );
+            
+            // Remove from listen later if exists
             await ListenLater.deleteOne({ userId, albumId });
-            return res.status(200).json({ message: `Album liked, marked as listened, and removed from Listen Later (if it existed).` });
+            
+            return res.status(200).json({ 
+                message: "Album liked, marked as listened, and removed from Listen Later."
+            });
         }
     } catch (error) {
         console.error("Error in toggleLike:", error.message);
-        return res.status(500).json({ message: "Internal Server Error, my boy" });
+        return res.status(500).json({ message: "Internal Server Error" });
     }
 }
 
