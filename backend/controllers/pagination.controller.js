@@ -80,7 +80,7 @@ export const getUserAlbums = async (req, res) => {
         }
         const userId = user._id;
         const page = parseInt(req.query.page) || 1;
-        const limit = 10;
+        const limit = 12;
         const skip = (page - 1) * limit;
 
         // Get rated albums with timestamps and ratings
@@ -90,12 +90,29 @@ export const getUserAlbums = async (req, res) => {
             .skip(skip)
             .limit(limit);
 
-        // Get listened albums with timestamps
-        const listened = await Listened.find({ userId, itemType: "albums" })
+        // Get listened albums with timestamps - Remove itemType filter and change select
+        const listened = await Listened.find({ userId })
             .sort({ createdAt: -1 })
             .select('albumId createdAt')
             .skip(skip)
             .limit(limit);
+
+        // Get liked albums to include them in listened
+        const likedAlbums = await Likes.find({ userId })
+            .select('albumId createdAt');
+
+        // Combine listened and liked albums
+        const allAlbums = [...listened];
+        
+        // Add liked albums that aren't already in listened
+        likedAlbums.forEach(liked => {
+            if (!allAlbums.some(album => album.albumId === liked.albumId)) {
+                allAlbums.push({
+                    albumId: liked.albumId,
+                    createdAt: liked.createdAt
+                });
+            }
+        });
 
         // Combine and deduplicate albums while preserving timestamps and ratings
         const albumData = new Map();
@@ -216,7 +233,7 @@ export const getUserLikes = async (req, res) => {
         }
         const userId = user._id;
         const page = parseInt(req.query.page) || 1;
-        const limit = 10;
+        const limit = 12;
         const skip = (page - 1) * limit;
 
         // Get liked albums with timestamps
