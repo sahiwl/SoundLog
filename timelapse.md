@@ -1,5 +1,10 @@
 # Timelapse
 
+### 3 April 3:54AM
+- fixed pages crashing on every reload (vercel issue)
+
+> after scratching my head for 36hrs, i figured why my logout was not working. I should've read carefully about cookie management, but wtv ~ `sameSite: lax` this was the culprit. this basically doesn't allow cross-site requests for cookies, only same-site. just keep it `sameSite:None; secure: true` for when your backend and frontend are on different domains :)
+
 ### 1 April 2:07PM
 - fixed search component not being mounted over children components
 
