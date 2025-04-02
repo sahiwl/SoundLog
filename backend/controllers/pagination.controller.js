@@ -73,8 +73,8 @@ export const getUserReviews = async (req, res) => {
 // ✅ tested
 export const getUserAlbums = async (req, res) => {
     try {
-        const { username } = req.params; // Accept username from params
-        const user = await User.findOne({ username }).select('_id'); // Find user by username
+        const { username } = req.params;
+        const user = await User.findOne({ username }).select('_id');
         if (!user) {
             return res.status(404).json({ message: "User not found." });
         }
@@ -83,36 +83,17 @@ export const getUserAlbums = async (req, res) => {
         const limit = 12;
         const skip = (page - 1) * limit;
 
-        // Get rated albums with timestamps and ratings
-        const ratings = await Rating.find({ userId, itemType: "albums" })
-            .sort({ createdAt: -1 })
-            .select('itemId rating createdAt')
-            .skip(skip)
-            .limit(limit);
-
-        // Get listened albums with timestamps - Remove itemType filter and change select
-        const listened = await Listened.find({ userId })
-            .sort({ createdAt: -1 })
-            .select('albumId createdAt')
-            .skip(skip)
-            .limit(limit);
-
-        // Get liked albums to include them in listened
-        const likedAlbums = await Likes.find({ userId })
-            .select('albumId createdAt');
-
-        // Combine listened and liked albums
-        const allAlbums = [...listened];
-        
-        // Add liked albums that aren't already in listened
-        likedAlbums.forEach(liked => {
-            if (!allAlbums.some(album => album.albumId === liked.albumId)) {
-                allAlbums.push({
-                    albumId: liked.albumId,
-                    createdAt: liked.createdAt
-                });
-            }
-        });
+        // First, get all album IDs from both ratings and listened
+        const [ratings, listened, likedAlbums] = await Promise.all([
+            Rating.find({ userId, itemType: "albums" })
+                .select('itemId rating createdAt')
+                .sort({ createdAt: -1 }),
+            Listened.find({ userId })
+                .select('albumId createdAt')
+                .sort({ createdAt: -1 }),
+            Likes.find({ userId })
+                .select('albumId createdAt')
+        ]);
 
         // Combine and deduplicate albums while preserving timestamps and ratings
         const albumData = new Map();
@@ -134,9 +115,25 @@ export const getUserAlbums = async (req, res) => {
             }
         });
 
-        // Get album details from database or Spotify API
+        likedAlbums.forEach(l => {
+            if (!albumData.has(l.albumId)) {
+                albumData.set(l.albumId, {
+                    albumId: l.albumId,
+                    timestamp: l.createdAt
+                });
+            }
+        });
+
+        // Convert to array and sort by timestamp
+        const sortedAlbums = Array.from(albumData.values())
+            .sort((a, b) => b.timestamp - a.timestamp);
+
+        // Apply pagination
+        const paginatedAlbums = sortedAlbums.slice(skip, skip + limit);
+
+        // Get album details for paginated items only
         const albumsWithDetails = await Promise.all(
-            Array.from(albumData.values()).map(async (data) => {
+            paginatedAlbums.map(async (data) => {
                 // Check if album exists in database
                 let album = await Album.findOne({ albumId: data.albumId });
                 
@@ -204,17 +201,11 @@ export const getUserAlbums = async (req, res) => {
             })
         );
 
-        // Get total count for pagination
-        const total = await Promise.all([
-            Rating.countDocuments({ userId, itemType: "albums" }),
-            Listened.countDocuments({ userId, itemType: "albums" })
-        ]);
-
         res.json({
             albums: albumsWithDetails,
             currentPage: page,
-            totalPages: Math.ceil(Math.max(...total) / limit),
-            total: Math.max(...total)
+            totalPages: Math.ceil(albumData.size / limit),
+            total: albumData.size
         });
     } catch (error) {
         console.error("Error in getUserAlbums:", error.message);
@@ -546,7 +537,7 @@ export const getUserListenLater = async (req, res) => {
         }
         const userId = user._id;
         const page = parseInt(req.query.page) || 1;
-        const limit = 20;
+        const limit = 12;
         const skip = (page - 1) * limit;
 
         // Get listenLater albums with timestamps

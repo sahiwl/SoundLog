@@ -22,12 +22,12 @@ const UserAlbums = () => {
       console.log('Albums response:', response.data);
       
       // Make sure we're setting all album data including listened ones
-      setAlbums(response.data.albums.map(album => ({
-        ...album,
-        images: album.images || [],
-        artists: album.artists || []
-      })));
-      
+      // setAlbums(response.data.albums.map(album => ({
+      //   ...album,
+      //   images: album.images || [],
+      //   artists: album.artists || []
+      // })));
+      setAlbums(response.data.albums);
       setCurrentPage(response.data.currentPage);
       setTotalPages(response.data.totalPages);
     } catch (err) {
