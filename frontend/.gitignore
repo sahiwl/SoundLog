@@ -43,11 +43,5 @@ dist/
 build/  
 out/  
 
-SearchDropdown1.jsx
 nav2.jsx
-<<<<<<< HEAD
-
-Auth
-=======
-Auth
->>>>>>> fae7ec0478b6099bb9bbff12c74801921e5d3a37
+RecentActivity.jsx

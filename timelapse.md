@@ -1,5 +1,13 @@
 # Timelapse
 
+### 4 April 2:41AM
+ 
+- [ ] add get artist's individual albums, top-tracks, related artists
+- [ ] add userRatings.jsx on track page (different user's ratings)
+- [ ] add recent reviews on homepage
+
+
+
 ### 3 April 3:54AM
 - fixed pages crashing on every reload (vercel issue)
 

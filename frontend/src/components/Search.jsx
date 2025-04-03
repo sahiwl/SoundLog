@@ -1,132 +1,112 @@
-// src/components/FullScreenSearch.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from 'react';
 import { Link } from "react-router-dom";
 import { axiosInstance } from "../lib/axios.js";
 import { showToast } from "../lib/toastConfig.js";
-import Background from "./Background.jsx";
+import { X } from 'lucide-react';
+import Background from "./Background";
 
-const FullScreenSearch = ({ query, onClose }) => {
-  const [results, setResults] = useState({ tracks: [], albums: [], artists: [] });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    const fetchSearchResults = async () => {
-      if (!query) return;
-      try {
-        setLoading(true);
-        setError("");
-        // Combined search endpoint returning tracks, albums, artists
-        const response = await axiosInstance.get("/releases/search", {
-          params: { query: query, limit: 10 }, // Changed from 'name' to 'query'
-        });
-        setResults(response.data);
-        // setResults({
-        //   tracks: response.data.tracks?.items || [],
-        //   albums: response.data.albums?.items || [],
-        //   artists: response.data.artists?.items || [],
-        // });
-      } catch (err) {
-        showToast.error("Error fetching search results")
-        setError("Error fetching search results.");
-      } finally {
-        setLoading(false);
-      }
+// Result section component
+const ResultSection = ({ title, items, type, onClose }) => {
+  if (!items?.length) return null;
+  
+  const getLink = (item) => {
+    const paths = {
+      track: `/tracks/${item.id}`,
+      album: `/album/${item.id}`,
+      artist: `/artist/${item.id}`
     };
-    fetchSearchResults();
-  }, [query]);
-
-  useEffect(() => {
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = "auto";
-    };
-  }, []);
-
-  // Identify top result (could be track or album or artist). 
-  // For demo, let's pick the first track if available, else first album, else first artist.
-//   let topResult = null;
-//   if (results.tracks.length > 0) {
-//     topResult = { ...results.tracks[0], type: "track" };
-//   } else if (results.albums.length > 0) {
-//     topResult = { ...results.albums[0], type: "album" };
-//   } else if (results.artists.length > 0) {
-//     topResult = { ...results.artists[0], type: "artist" };
-//   }
-
-const getDetailLink = (item, type) => {
-    if (type === "track") return `/tracks/${item.id}`;
-    if (type === "album") return `/album/${item.id}`;
-    if (type === "artist") return `/artist/${item.id}`;
-    return "#";
+    return paths[type];
   };
 
   return (
-    <Background imageUrl={"https://upload.wikimedia.org/wikipedia/en/d/dd/The_Weeknd_-_Thursday.png"} className="fixed inset-0 bg-opacity-95 z-50 p-8 overflow-hidden"> 
-      <button
-        className="btn btn-circle bg-grids absolute top-4 right-4"
-        onClick={onClose}
-      >
-        ✕
-      </button>
-      <h1 className="text-3xl font-bold mb-4">Search Results for {query}</h1>
-      {loading && <p>Loading...</p>}
-      {error && <p className="text-red-500">{error}</p>}
-      {!loading && !error && (
-        <div>
-          {results.tracks.length > 0 && (
-            <div className="mb-6">
-              <h2 className="text-xl font-semibold mb-2">Tracks</h2>
-              <ul className="menu bg-grids rounded-box p-2">
-                {results.tracks.map((track) => (
-                  <li key={track.id}>
-                    <Link to={getDetailLink(track, "track")} onClick={onClose}>
-                      {track.name} - {track.artists.map(a => a.name).join(", ")}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-          {results.albums.length > 0 && (
-            <div className="mb-6">
-              <h2 className="text-xl font-semibold mb-2">Albums</h2>
-              <ul className="menu bg-grids rounded-box p-2">
-                {results.albums.map((album) => (
-                  <li key={album.id}>
-                    <Link to={getDetailLink(album, "album")} onClick={onClose}>
-                      {album.name} - {album.artists.map(a => a.name).join(", ")}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-          {results.artists.length > 0 && (
-            <div className="mb-6">
-              <h2 className="text-xl font-semibold mb-2">Artists</h2>
-              <ul className="menu bg-grids rounded-box p-2">
-                {results.artists.map((artist) => (
-                  <li key={artist.id}>
-                    <Link to={getDetailLink(artist, "artist")} onClick={onClose}>
-                      {artist.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-          {/* <div className="mt-4">
-            <Link
-              to={`/search?query=${encodeURIComponent(query)}`}
-              onClick={onClose}
-              className="btn btn-outline bg-grids w-full"
-            >
-              See All Results
-            </Link>
-          </div> */}
+    <div className="mb-8">
+      <h2 className="text-xl font-semibold mb-4 text-soundlog-purple">{title}</h2>
+      <div className="space-y-2">
+        {items.map((item) => (
+          <Link
+            key={item.id}
+            to={getLink(item)}
+            onClick={onClose}
+            className="block p-3 hover:bg-purple-400/10 rounded-lg transition-colors"
+          >
+            <div className="text-white">{item.name}</div>
+            {(type !== 'artist' && item.artists) && (
+              <div className="text-gray-400 text-sm">
+                {item.artists.map(a => a.name).join(', ')}
+              </div>
+            )}
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const FullScreenSearch = ({ query = '', onClose }) => {
+  const [searchQuery, setSearchQuery] = useState(query);
+  const [results, setResults] = useState({ tracks: [], albums: [], artists: [] });
+  const [loading, setLoading] = useState(false);
+  const searchRef = useRef(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchQuery.trim()) {
+        setLoading(true);
+        axiosInstance.get("/releases/search", {
+          params: { query: searchQuery, limit: 10 }
+        })
+          .then(response => setResults(response.data))
+          .catch(() => showToast.error("Search failed. Please try again."))
+          .finally(() => setLoading(false));
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    searchRef.current?.focus();
+    return () => document.body.style.overflow = 'unset';
+  }, []);
+
+  return (
+    <Background imageUrl="/thursday.jpg" className="fixed inset-0 z-50">
+      <div className="container mx-auto px-4 pt-24">
+        <div className="relative flex items-center">
+          <input
+            ref={searchRef}
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search for albums, artists, or tracks..."
+            className="w-full p-4 bg-grids border rounded-lg text-gray-300 text-xl focus:outline-none"
+            onKeyDown={(e) => e.key === 'Escape' && onClose()}
+          />
+          <button onClick={onClose} className="absolute right-4 text-gray-400 hover:text-white">
+            <X size={24} />
+          </button>
         </div>
-      )}
+        
+        <div className="mt-8 max-h-[70vh] overflow-y-auto">
+          {loading ? (
+            <div className="text-center text-gray-400">Searching...</div>
+          ) : (
+            <div className="flex flex-col md:flex-row md:gap-8">
+              <div className="flex-1">
+                <ResultSection title="Tracks" items={results.tracks} type="track" onClose={onClose} />
+                <ResultSection title="Albums" items={results.albums} type="album" onClose={onClose} />
+                <div className="md:hidden">
+                  <ResultSection title="Artists" items={results.artists} type="artist" onClose={onClose} />
+                </div>
+              </div>
+              <div className="hidden md:block w-140">
+                <ResultSection title="Artists" items={results.artists} type="artist" onClose={onClose} />
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </Background>
   );
 };

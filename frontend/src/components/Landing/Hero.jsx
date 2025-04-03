@@ -1,8 +1,22 @@
 import clsx from "clsx";
-import React from "react";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
+import useAuthStore from "../../store/useAuthStore";
 
 const Hero = () => {
+  const {checkAuth, authUser, isCheckingAuth} = useAuthStore()
+
+  useEffect(()=>{
+    checkAuth()
+  }, [checkAuth])
+
+  // console.log({authUser});
+
+  if(isCheckingAuth && !authUser) return(
+    <div className='flex items-center justify-center h-screen'>
+        <div className="loading loading-infinity loading-xl"></div>
+    </div>
+  )
   return (
     <div className="min-h-max bg-gray-900 relative">
       {/* Hero Section */}
@@ -32,9 +46,11 @@ const Hero = () => {
             library.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 mb-12">
-            <Link to="/signup" className="button-primary text-center">
-              Start Logging
+            
+            <Link to={authUser ? "/home" : "/signin"} className="button-primary text-center">
+              Start Here
             </Link>
+
             <a href="#features" className="button-secondary text-center">
               Explore Features
             </a>

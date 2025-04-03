@@ -47,3 +47,5 @@ validateTrackID.middleware.js
 log.model.js
 findExactSong.js
 pagination2.controller.js 
+fetch.controller.js
+fetch.routes.js

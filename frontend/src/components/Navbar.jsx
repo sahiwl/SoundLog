@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Search, User, LogOut } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Search, User, LogOut, Menu, X } from "lucide-react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import useAuthStore from "../store/useAuthStore.js";
 import { showToast } from "../lib/toastConfig.js";
 import FullScreenSearch from "./Search.jsx";
@@ -37,18 +37,20 @@ const UserSection = ({ isAuthenticated, onLogout, user }) => {
       </button>
     </div>
   ) : (
-    <Link to="/signin" className="button-primary text-center">
-      SIGN IN
+    <Link to="/signup" className="button-primary text-center">
+      SIGN UP
     </Link>
   );
 };
 
 const Navbar = () => {
   const { checkAuth, logout, isAuthenticated, authUser } = useAuthStore();
-  const [searchQuery, setSearchQuery] = useState("");
   const [showSearchOverlay, setShowSearchOverlay] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation(); // Get current route
+
+  const hideSearchIcon = ["/", "/signup", "/signin"].includes(location.pathname);
 
   useEffect(() => {
     const checkAuthStatus = async () => {
@@ -69,19 +71,10 @@ const Navbar = () => {
     }, 2500);
   }, [logout]);
 
-  const handleSearchFocus = () => {
-    setShowSearchOverlay(true);
-  };
-
-  const handleCloseSearch = () => {
-    setShowSearchOverlay(false);
-    setSearchQuery("");
-  };
-
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-base-100/95  border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-4 ">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-grids border-b border-white/10 w-full">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           <div className="flex items-center justify-between h-16">
             {/* Logo and Desktop Menu */}
             <div className="flex items-center">
@@ -111,19 +104,17 @@ const Navbar = () => {
               )}
             </div>
 
-            {/* Right Side Menu - Search and User Section */}
-            <div className="hidden md:flex items-center gap-4">
-              <div className="relative w-80">
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  className="input input-bordered w-full bg-gray-800/50"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onFocus={handleSearchFocus}
-                />
-                <Search className="absolute right-2 top-2 text-gray-400" size={18} />
-              </div>
+            {/* Right Side Menu - Search Icon and User Section */}
+            <div className="hidden md:flex items-center gap-4 flex-shrink-0">
+              {!hideSearchIcon && (
+                <button
+                  onClick={() => setShowSearchOverlay(true)}
+                  className="p-2 rounded-md text-gray-400 hover:text-white transition-colors"
+                  aria-label="Search"
+                >
+                  <Search size={20} />
+                </button>
+              )}
 
               <UserSection
                 isAuthenticated={isAuthenticated}
@@ -133,35 +124,25 @@ const Navbar = () => {
             </div>
 
             {/* Mobile menu button */}
-            <div className="md:hidden flex items-center space-x-2">
-              <div className="relative w-40">
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  className="input input-bordered w-full"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onFocus={handleSearchFocus}
-                />
-                <Search className="absolute right-2 top-2 text-gray-400" size={18} />
-              </div>
-              
+            <div className="md:hidden flex items-center gap-2 flex-shrink-0">
+              {!hideSearchIcon && (
+                <button
+                  onClick={() => setShowSearchOverlay(true)}
+                  className="p-2 rounded-md text-gray-400 hover:text-white"
+                  aria-label="Search"
+                >
+                  <Search size={20} />
+                </button>
+              )}
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 className="p-2 rounded-md text-gray-400 hover:text-white"
               >
-                <svg
-                  className="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
                   {isMobileMenuOpen ? (
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    <X />
                   ) : (
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                    <Menu/>
                   )}
-                </svg>
               </button>
             </div>
           </div>
@@ -171,7 +152,10 @@ const Navbar = () => {
         {isMobileMenuOpen && authUser && (
           <div className="md:hidden bg-base-100/95 border-t border-gray-800">
             <div className="px-4 py-3 space-y-2">
-              <div className="flex items-center gap-2">
+              <Link 
+                to={`/${authUser.username}/profile`}
+                className="flex items-center gap-2 hover:text-white cursor-pointer"
+              >
                 {authUser.profilePic ? (
                   <img
                     src={authUser.profilePic}
@@ -184,7 +168,7 @@ const Navbar = () => {
                   </div>
                 )}
                 <span className="text-gray-300">{authUser.username.toUpperCase()}</span>
-              </div>
+              </Link>
               {['reviews', 'albums', 'listenlater', 'likes'].map((path) => (
                 <Link
                   key={path}
@@ -206,7 +190,7 @@ const Navbar = () => {
       </nav>
 
       {showSearchOverlay && (
-        <FullScreenSearch query={searchQuery} onClose={handleCloseSearch} />
+        <FullScreenSearch onClose={() => setShowSearchOverlay(false)} />
       )}
     </>
   );

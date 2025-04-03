@@ -55,15 +55,15 @@ const ArtistPage = () => {
             <div className="space-y-4 md:space-y-6">
               <div className="bg-grids p-4 md:p-6 rounded-md">
                 <div className="mb-4 md:mb-6">
-                  <h2 className="text-sm font-semibold text-gray-400 uppercase mb-2">CRITIC SCORE</h2>
+                  <h2 className="text-sm font-semibold text-gray-400 uppercase mb-2">POPULARITY</h2>
                   <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
-                    <span className="text-4xl md:text-5xl font-bold">71</span>
-                    <span className="text-sm text-gray-400">Based on {(Math.random()*100).toFixed(0)} reviews</span>
+                    <span className="text-4xl md:text-5xl font-bold">{artistData?.popularity}</span>
+                    <span className="text-sm text-gray-400">among 11 million artists on spotify</span>
                   </div>
                   <div className="h-1 bg-green-500 w-1/3 mt-2"></div>
                 </div>
 
-                <div>
+                {/* <div>
                   <h2 className="text-sm font-semibold text-gray-400 uppercase mb-2">USER SCORE</h2>
                   <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
                     <span className="text-4xl md:text-5xl font-bold">78</span>
@@ -72,7 +72,7 @@ const ArtistPage = () => {
                     </span>
                   </div>
                   <div className="h-1 bg-green-500 w-1/3 mt-2"></div>
-                </div>
+                </div> */}
               </div>
 
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
@@ -108,7 +108,8 @@ const ArtistPage = () => {
                       rel="noopener noreferrer"
                       className="text-white hover:underline break-words"
                     >
-                      {artistData.external_urls?.spotify?.replace("https://", "")}
+                      {/* {artistData.external_urls?.spotify?.replace("https://", "")} */}
+                      spotify
                     </a>
                     <p className="text-gray-400 text-sm">/ website</p>
                   </div>

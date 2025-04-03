@@ -25,7 +25,7 @@ import toastConfig from './lib/toastConfig';
 
 function App() {
   return (
-    <div className="min-h-screen text-white">
+    <div className="min-h-screen overflow-x-hidden">
       <Navbar />
 
       <Routes>

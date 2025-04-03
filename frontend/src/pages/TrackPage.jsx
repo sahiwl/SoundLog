@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { axiosInstance } from "../lib/axios.js";
 import RatingForm from "../components/RatingForm.jsx";
 import Background from '../components/Background.jsx';
@@ -47,18 +47,7 @@ const TrackPage = () => {
   return (
     <Background imageUrl={trackData?.album?.images?.[0]?.url}>
       <div className="container mx-auto px-4 py-6 pt-28">
-        {/* Navigation Tabs */}
-        {/* <div className="border-b border-gray-700">
-          <div className="container mx-auto">
-            <nav className="flex">
-              <a href="#" className="px-5 py-4 font-medium text-white">OVERVIEW</a>
-              <a href="#" className="px-5 py-4 font-medium text-gray-400">USER REVIEWS</a>
-              <a href="#" className="px-5 py-4 font-medium text-gray-400">LISTS</a>
-              <a href="#" className="px-5 py-4 font-medium text-gray-400">CREDITS</a>
-            </nav>
-          </div>
-        </div> */}
-
+        
         {/* Main Content */}
         <div className="container mx-auto px-4 py-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -67,11 +56,20 @@ const TrackPage = () => {
               {/* Artist and Track Title */}
               <div className="mb-6">
                 <h1 className="text-2xl font-medium">
-                  {trackData.artists?.map(artist => artist.name).join(", ")}
+                {trackData.artists.map((artist, i) => (
+                  <Link 
+                    key={artist.id}
+                    to={`/artist/${artist.spotifyId}`} 
+                    className="hover:text-purple-400 transition-colors"
+                  >
+                    {i > 0 ? ', ' : ''}{artist.name}
+                  </Link>
+                )
+              )}
                 </h1>
                 <h2 className="text-4xl font-bold">{trackData.name}</h2>
                 <p className="text-gray-400 mt-2">
-                  Track #{trackData.track_number} on{" "}
+                  Track {trackData.track_number} on{" "}
                   <a href={`/album/${trackData.album?.spotifyId}`} className="text-blue-400 hover:underline">
                     {trackData.album?.name}
                   </a>
@@ -85,16 +83,16 @@ const TrackPage = () => {
                   <img
                     src={trackData.album?.images?.[0]?.url}
                     alt={`${trackData.name} cover`}
-                    className="w-full max-w-[350px]"
+                    className="w-full max-w-[350px] rounded-lg"
                   />
                   {/* Streaming Links */}
                   <div className="flex mt-4 space-x-2">
-                    <a href="#" className="bg-grids text-white px-3 py-2 rounded flex items-center space-x-2">
+                    {/* <a href="#" className="bg-grids text-white px-3 py-2 rounded flex items-center space-x-2">
                       <span>Amazon</span>
                     </a>
                     <a href="#" className="bg-grids text-white px-3 py-2 rounded flex items-center space-x-2">
                       <span>Apple Music</span>
-                    </a>
+                    </a> */}
                     <a 
                       href={trackData.external_urls?.spotify} 
                       target="_blank" 
@@ -109,12 +107,12 @@ const TrackPage = () => {
                 {/* Scores */}
                 <div className="flex-grow">
                   <div className="bg-grids p-4 rounded">
-                    <h3 className="text-sm font-medium mb-2">USER SCORE</h3>
+                    <h3 className="text-sm font-medium mb-2">Popularity</h3>
                     <div className="flex items-end mb-2">
-                      <span className="text-6xl font-bold">92</span>
+                      <span className="text-6xl font-bold">{trackData.popularity}</span>
                       <div className="ml-4">
-                        <p className="text-sm">Based on {trackData.ratings?.length || 0} ratings</p>
-                        <p className="text-sm text-gray-400">#{trackData.track_number} on album</p>
+                        <p className="text-sm">out of 100</p>
+                        <p className="text-sm text-gray-400">Track {trackData.track_number} on album</p>
                       </div>
                     </div>
                     <div className="h-1 bg-green-500 w-3/4 mt-2"></div>
@@ -160,9 +158,6 @@ const TrackPage = () => {
                     <span className="text-white">{trackData.explicit ? 'Yes' : 'No'}</span>
                     <span className="text-gray-400"> / explicit</span>
                   </p>
-                  <div className="text-right mt-2">
-                    <button className="text-gray-400">FULL CREDITS</button>
-                  </div>
                 </div>
               </div>
 

@@ -151,16 +151,10 @@ const AlbumPage = () => {
                 <img
                   src={albumData.images[0]?.url}
                   alt={`${albumData.name} cover`}
-                  className="w-full max-w-[350px]"
+                  className="w-full max-w-[350px] rounded-lg"
                 />
 
                 <div className="flex mt-4 space-x-2">
-                  <a href="#" className="bg-grids text-white px-3 py-2 rounded flex items-center space-x-2">
-                    <span>Amazon</span>
-                  </a>
-                  <a href="#" className="bg-grids text-white px-3 py-2 rounded flex items-center space-x-2">
-                    <span>Apple Music</span>
-                  </a>
                   <a href={albumData.external_urls.spotify} target="_blank" rel="noreferrer" className="bg-grids text-white px-3 py-2 rounded flex items-center space-x-2">
                     <span>Spotify</span>
                   </a>
@@ -171,12 +165,12 @@ const AlbumPage = () => {
               <div className="flex-grow">
 
                         <div className="bg-grids p-4 rounded">
-                          <h3 className="text-sm font-medium mb-2">USER SCORE</h3>
+                          <h3 className="text-sm font-medium mb-2">Popularity</h3>
                           <div className="flex items-end mb-2">
-                          <span className="text-6xl font-bold">{(Math.random()*1000).toFixed(0)}</span>
+                          <span className="text-6xl font-bold">{albumData?.popularity}</span>
                           <div className="ml-4">
-                            <p className="text-sm">Based on {(Math.random()*10000).toFixed(0)} ratings</p>
-                            <p className="text-sm text-gray-400">2016 Rank: #581</p>
+                            <p className="text-sm">out of 100</p>
+                            {/* <p className="text-sm text-gray-400">2016 Rank: #581</p> */}
                           </div>
                           </div>
                           <div className="h-1 bg-green-500 w-3/4 mt-2"></div>
