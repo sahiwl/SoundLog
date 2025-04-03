@@ -107,9 +107,9 @@ const Signup = () => {
       </button>
       </form>
 
-      <button className="mt-4 w-full rounded border border-gray-700 bg-zinc-800 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700">
+      {/* <button className="mt-4 w-full rounded border border-gray-700 bg-zinc-800 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700">
       Signup with Google
-      </button>
+      </button> */}
 
       <p className="mt-4 text-center text-sm text-gray-400">
       been here already?{' '}

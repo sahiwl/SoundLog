@@ -10,15 +10,21 @@ const UserSection = ({ isAuthenticated, onLogout, user }) => {
 
   return isAuthenticated ? (
     <div className="flex items-center space-x-4">
-      <div 
+      <div
         className="flex items-center gap-2 cursor-pointer"
         onClick={() => navigate(`/${user.username}/profile`)}
       >
-        <img
-          src={user.profilePic || "/placeholder.svg"}
-          alt="Profile"
-          className="w-7 h-7 rounded-full object-cover"
-        />
+        {user.profilePic ? (
+          <img
+            src={user.profilePic}
+            alt="Profile"
+            className="w-7 h-7 rounded-full object-cover"
+          />
+        ) : (
+          <div className="w-7 h-7 rounded-full bg-gray-500 flex items-center justify-center text-sm font-medium text-white">
+            {user.username.charAt(0).toUpperCase()}
+          </div>
+        )}
         <span className="text-gray-300 hover:text-white">
           {user.username.toUpperCase()}
         </span>
@@ -74,8 +80,8 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur border-b border-white/5 bg-blck/80">
-        <div className="max-w-7xl mx-auto px-4">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-base-100/95  border-b border-white/10">
+        <div className="max-w-7xl mx-auto px-4 ">
           <div className="flex items-center justify-between h-16">
             {/* Logo and Desktop Menu */}
             <div className="flex items-center">
@@ -163,28 +169,37 @@ const Navbar = () => {
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && authUser && (
-          <div className="md:hidden bg-gray-900/95 border-t border-gray-800">
-            <div className="px-2 pt-2 pb-3 space-y-1">
-              <Link
-                to={`/${authUser.username}/profile`}
-                className="flex items-center text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
-              >
-                <img
-                  src={authUser.profilePic || "/placeholder.svg"}
-                  alt="Profile"
-                  className="w-6 h-6 rounded-full mr-2"
-                />
-                {authUser.username.toUpperCase()}
-              </Link>
+          <div className="md:hidden bg-base-100/95 border-t border-gray-800">
+            <div className="px-4 py-3 space-y-2">
+              <div className="flex items-center gap-2">
+                {authUser.profilePic ? (
+                  <img
+                    src={authUser.profilePic}
+                    alt="Profile"
+                    className="w-6 h-6 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-6 h-6 rounded-full bg-gray-500 flex items-center justify-center text-sm font-medium text-white">
+                    {authUser.username.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <span className="text-gray-300">{authUser.username.toUpperCase()}</span>
+              </div>
               {['reviews', 'albums', 'listenlater', 'likes'].map((path) => (
                 <Link
                   key={path}
                   to={`/${authUser.username}/${path}`}
-                  className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
+                  className="block text-gray-300 hover:text-white px-3 py-2 rounded-md text-base font-medium"
                 >
                   {path.charAt(0).toUpperCase() + path.slice(1)}
                 </Link>
               ))}
+              <button
+                onClick={handleLogout}
+                className="block w-full text-left text-gray-300 hover:text-white px-3 py-2 rounded-md text-base font-medium"
+              >
+                Logout
+              </button>
             </div>
           </div>
         )}

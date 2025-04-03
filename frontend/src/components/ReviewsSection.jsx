@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Heart, Pencil, Trash2, X } from "lucide-react";
 import { axiosInstance } from "../lib/axios.js";
 import { showToast } from '../lib/toastConfig.js';
+import { Link } from "react-router-dom";
 
 const ReviewsSection = ({ reviews, userId, albumId, onReviewUpdate }) => {
   const [editingReviewId, setEditingReviewId] = useState(null);
@@ -68,32 +69,46 @@ const ReviewsSection = ({ reviews, userId, albumId, onReviewUpdate }) => {
         {reviews.length > 0 ? (
           reviews.map(review => (
             <div key={review.reviewId} className="bg-grids p-4 rounded">
-            {/* Review Header */}
-                          <div className="flex justify-between items-center mb-2">
-                            <div>
-                              <p className="font-medium">{review.user.username}</p>
-                              <p className="text-xs text-gray-400">User ID: {review.user.id}</p>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              {review.user.id === userId && (
-                                <button
-                                  onClick={() => editingReviewId === review.reviewId ? handleCancelEdit() : handleEditClick(review)}
-                                  className="text-gray-400 hover:text-white flex items-center gap-1"
-                                >
-                                  {editingReviewId === review.reviewId ? (
-                                    <> <X size={16} /><span>Cancel</span> </>
-                                  ) : (
-                                    <><Pencil size={16} /><span>Edit</span> </>
-                                  )}
-                                </button>
-                              )}
-                              <p className="text-gray-400 text-sm">
-                                {new Date(review.createdAt).toLocaleDateString()}
-                              </p>
-                            </div>
-                          </div>
+              <div className="flex justify-between items-center mb-2">
+                <div className="flex items-center gap-2">
+                  {/* {review.user.profilePic ? (
+                    <img
+                      src={review.user.profilePic}
+                      alt=""
+                      className="w-8 h-8 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-gray-500 flex items-center justify-center text-white">
+                      {review.user.username.charAt(0).toUpperCase()}
+                    </div>
+                  )} */}
+                  <Link 
+                    to={`/${review.user.username}/profile`}
+                    className="font-medium hover:text-purple-400 transition-colors"
+                  >
+                    {review.user.username}
+                  </Link>
+                </div>
+                <div className="flex items-center gap-2">
+                  {review.user.id === userId && (
+                    <button
+                      onClick={() => editingReviewId === review.reviewId ? handleCancelEdit() : handleEditClick(review)}
+                      className="text-gray-400 hover:text-white flex items-center gap-1"
+                    >
+                      {editingReviewId === review.reviewId ? (
+                        <> <X size={16} /><span>Cancel</span> </>
+                      ) : (
+                        <><Pencil size={16} /><span>Edit</span> </>
+                      )}
+                    </button>
+                  )}
+                  <p className="text-gray-400 text-sm">
+                    {new Date(review.createdAt).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
 
-                          {/* Review Content */}
+              {/* Review Content */}
               {editingReviewId === review.reviewId ? (
                 <div className="mt-2">
                   <textarea

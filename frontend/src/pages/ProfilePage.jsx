@@ -58,11 +58,17 @@ const ProfilePage = () => {
             {/* Desktop Layout */}
             <div className="hidden sm:flex items-center justify-between">
                 <div className="flex items-center gap-6">
-                    <img
-                        src={userInfo.profilePic || "/placeholder.svg"}
-                        alt="Profile"
-                        className="w-24 h-24 rounded-full object-cover"
-                    />
+                    {userInfo.profilePic ? (
+                        <img
+                            src={userInfo.profilePic}
+                            alt="Profile"
+                            className="w-24 h-24 rounded-full object-cover"
+                        />
+                    ) : (
+                        <div className="w-24 h-24 rounded-full bg-gray-500 flex items-center justify-center text-2xl font-medium text-white">
+                            {userInfo.username.charAt(0).toUpperCase()}
+                        </div>
+                    )}
                     <div>
                         <h1 className="text-2xl font-bold">{userInfo.username}</h1>
                         <p className="text-gray-500 text-sm">
@@ -96,11 +102,17 @@ const ProfilePage = () => {
 
             {/* Mobile Layout */}
             <div className="sm:hidden flex flex-col items-center text-center">
-                <img
-                    src={userInfo.profilePic || "/placeholder.svg"}
-                    alt="Profile"
-                    className="w-24 h-24 rounded-full object-cover mb-4"
-                />
+                {userInfo.profilePic ? (
+                    <img
+                        src={userInfo.profilePic}
+                        alt="Profile"
+                        className="w-24 h-24 rounded-full object-cover mb-4"
+                    />
+                ) : (
+                    <div className="w-24 h-24 rounded-full bg-gray-500 flex items-center justify-center text-2xl font-medium text-white mb-4">
+                        {userInfo.username.charAt(0).toUpperCase()}
+                    </div>
+                )}
                 <h1 className="text-xl font-bold">{userInfo.username}</h1>
                 <p className="text-gray-500 text-sm mt-1">
                     Joined {new Date(userInfo.createdAt).toLocaleDateString()}

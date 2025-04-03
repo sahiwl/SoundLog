@@ -35,7 +35,7 @@ const AlbumPage = () => {
     try {
       setReviewsLoading(true);
       const response = await axiosInstance.get(`/actions/review/${albumId}`);
-      console.log("Reviews response:", response.data);
+      // console.log("Reviews response:", response.data);
 
       setReviews(response.data.reviews || []);
     } catch (err) {

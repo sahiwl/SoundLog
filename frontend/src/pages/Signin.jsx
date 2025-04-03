@@ -45,7 +45,7 @@ const navigate = useNavigate()
         progress: undefined,
         theme: "dark",
         });
-          console.log("signin successful:", result.data);
+          // console.log("signin successful:", result.data);
 
           // Clear form
           setformData({username: '', password: ''});
@@ -85,9 +85,9 @@ const navigate = useNavigate()
             <div className="text-left relative">
                 <label className="flex justify-between text-sm font-medium text-gray-300">
                     <span>Password</span>
-                    <a href="#" className="text-gray-400 hover:underline">
+                    {/* <a href="#" className="text-gray-400 hover:underline">
                         Forgot your password?
-                    </a>
+                    </a> */}
                 </label>
                 <input
                     type={showPassword? "text" : "password"}
@@ -111,9 +111,9 @@ const navigate = useNavigate()
             </button>
         </form>
 
-        <button className="mt-4 w-full rounded border border-gray-700 bg-zinc-800 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700">
+        {/* <button className="mt-4 w-full rounded border border-gray-700 bg-zinc-800 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700">
             Sign in with Google
-        </button>
+        </button> */}
 
         <p className="mt-4 text-center text-sm text-gray-400">
             Don't have an account?{' '}
