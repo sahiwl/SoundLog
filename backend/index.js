@@ -24,7 +24,7 @@ app.use(cookieParser());
 
 
 const corsOptions = {
-  origin: [process.env.ORIGIN, process.env.LOCAL], 
+  origin: [process.env.ORIGIN, process.env.LOCAL, process.env.ORIGIN_MAIN], 
   methods: ['GET','POST','PUT','DELETE','PATCH'],
   allowedHeaders: ['Content-Type','Authorization'],
   credentials: true, 
@@ -32,7 +32,7 @@ const corsOptions = {
 
 
 app.use(cors(corsOptions))
-app.options("*", cors(corsOptions));
+// app.options("*", cors(corsOptions)); 
 
 const PORT = process.env.PORT;
 connectDB();
