@@ -46,15 +46,15 @@
   background-color: var(--background); 
 }
 
-.bg-grids {
-  background-color: var(--grids);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 0.5rem;
-}
 
 @layer components {
+  .bg-grids {
+    background-color: var(--grids);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 0.5rem;
+  }
   .glass {
     background-color: rgb(24, 24, 27, 0.6); /* bg-zinc-900/60 */
     backdrop-filter: blur(8px);
@@ -100,7 +100,7 @@
   }
 
   .nav-link:hover {
-    color: rgb(192, 132, 252); /* hover:text-purple-400 */
+    color: #c084fc; /* hover:text-purple-400 */
   }
 
   .feature-card {

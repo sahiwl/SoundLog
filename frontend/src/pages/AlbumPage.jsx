@@ -237,7 +237,7 @@ const AlbumPage = () => {
             </div>
 
             {/* Track List Section */}
-            <div className="bg-grids">
+            <div className="bg-grids rounded-lg">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xl font-bold px-4 pt-4">TRACK LIST</h3>
                 {/* <span className="text-sm text-gray-400">RATE TRACKS</span> */}
@@ -246,7 +246,7 @@ const AlbumPage = () => {
               <div className="space-y-2 ">
                 {/* Map through tracks */}
                 {albumData.tracks && albumData.tracks.items && albumData.tracks.items.map((track, index) => (
-                  <div key={track.trackId} className="flex items-center justify-between py-2 px-6 hover:bg-">
+                  <div key={track.trackId} className="flex items-center justify-between py-2 px-6">
                     <div className="flex items-center gap-4">
                       <span className="text-gray-400 w-8 text-right">{track.track_number}</span>
                       <Link to={`/tracks/${track.trackId}`} className="hover:underline">

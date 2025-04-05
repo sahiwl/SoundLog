@@ -5,7 +5,7 @@
 - [ ] add get artist's individual albums, top-tracks, related artists
 - [ ] add userRatings.jsx on track page (different user's ratings)
 - [ ] add recent reviews on homepage
-
+- [ ] newreleases specific page
 
 
 ### 3 April 3:54AM
