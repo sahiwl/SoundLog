@@ -2,7 +2,7 @@
   <h1>Soundlog</h1>
   <div style="display: flex; flex-direction: column; align-items: center;">
     <span style="font-size: 0.7em;">time spent building this~</span>
-    <a href="https://wakatime.com/badge/user/018dc268-cd1f-405a-abd9-12f1bce09a2f/project/bff578b6-95d4-4ede-9217-079339ba6e0e">
+    <a href="https://wakatime.com/@saahiil/projects/smjymepjrl">
       <img src="https://wakatime.com/badge/user/018dc268-cd1f-405a-abd9-12f1bce09a2f/project/bff578b6-95d4-4ede-9217-079339ba6e0e.svg?" alt="wakatime">
     </a>
   </div>

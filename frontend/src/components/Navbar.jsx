@@ -73,7 +73,7 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-soundlog-dark-gray/20 border-b border-white/10 w-full">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#1D232A]/95 border-b border-white/10 w-full">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           <div className="flex items-center justify-between h-16">
             {/* Logo and Desktop Menu */}
@@ -94,7 +94,7 @@ const Navbar = () => {
                       <Link
                         key={path}
                         to={`/${authUser.username}/${path}`}
-                        className="nav-link px-3 py-2 text-sm font-medium"
+                        className="nav-link px-3 py-2 text-sm text-white font-medium"
                       >
                         {path.charAt(0).toUpperCase() + path.slice(1)}
                       </Link>
@@ -150,7 +150,7 @@ const Navbar = () => {
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && authUser && (
-          <div className="md:hidden bg-soundlog-dark-gray/60 border-t border-gray-800">
+          <div className="md:hidden bg-[#1D232A]/95 border-t border-gray-800">
             <div className="px-4 py-3 space-y-2">
               <Link 
                 to={`/${authUser.username}/profile`}

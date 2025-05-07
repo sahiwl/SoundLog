@@ -1,5 +1,15 @@
 # Timelapse
 
+### 7 May 7:48PM
+- ui changes
+- fixed wakatime link 
+- added analytics support using umami
+
+
+### 10 April 1:38AM
+- [ ] add google auth
+
+
 ### 4 April 2:41AM
  
 - [ ] add get artist's individual albums, top-tracks, related artists

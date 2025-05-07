@@ -9,9 +9,9 @@ const toastConfig = {
     draggable: true,
     progress: undefined,
     theme: "dark",
-      // Ensure proper stacking behavior
+
       newestOnTop: false,
-      // Optional: Add some spacing between stacked toasts
+
       style: { marginTop: '-100px' }
 }
 

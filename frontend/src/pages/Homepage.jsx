@@ -70,7 +70,7 @@ const Homepage = () => {
         )}
 
         {/* Popular This Week */}
-        <section className="mt-12">
+        {/* <section className="mt-12">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold">POPULAR THIS WEEK</h2>
             <span className="text-sm text-gray-400">VIEW ALL</span>
@@ -94,10 +94,10 @@ const Homepage = () => {
               </div>
             ))}
           </div>
-        </section>
+        </section> */}
 
         {/* Recent Activity */}
-        <section className="mt-12">
+        {/* <section className="mt-12">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-medium">RECENT ACTIVITY</h2>
             <span className="text-sm text-gray-400">VIEW ALL</span>
@@ -122,10 +122,10 @@ const Homepage = () => {
               </div>
             ))}
           </div>
-        </section>
+        </section> */}
 
         {/* Staff Picks */}
-        <section className="mt-12 mb-12">
+        {/* <section className="mt-12 mb-12">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-medium">STAFF PICKS</h2>
             <span className="text-sm text-gray-400">VIEW ALL</span>
@@ -145,7 +145,7 @@ const Homepage = () => {
               </div>
             ))}
           </div>
-        </section>
+        </section> */}
       </div>
     </div>
   );
