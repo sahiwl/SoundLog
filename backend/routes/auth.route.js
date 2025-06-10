@@ -22,7 +22,7 @@ router.get("/google",
 );
 
 router.get("/google/callback",
-  passport.authenticate("google", { failureRedirect: `${process.env.ORIGIN}` }),
+  passport.authenticate("google", { failureRedirect: `${process.env.ORIGIN_MAIN}` }),
   (req, res) => { 
     if(!req.user){
       // res.redirect("/"); // or frontend URL
@@ -36,7 +36,7 @@ router.get("/google/callback",
         sameSite: "None",
       })
       // return res.redirect(`${process.env.LOCAL}/auth-success?token=${token}`)
-      return res.redirect(`${process.env.ORIGIN}/auth-success?token=${token}`)
+      return res.redirect(`${process.env.ORIGIN_MAIN}/auth-success?token=${token}`)
   });
 
 router.patch("/update-profile", protectRoute, updateProfile);
