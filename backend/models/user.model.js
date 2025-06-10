@@ -26,6 +26,10 @@ const userSchema = new mongoose.Schema(
             type: String,
             default: ""
         },
+        googleId:{
+            type: String,
+            unique: true
+        },
         followers: [{
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
