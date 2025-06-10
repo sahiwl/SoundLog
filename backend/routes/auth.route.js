@@ -8,6 +8,7 @@ import {
 } from "../controllers/auth.controller.js";
 import { protectRoute } from "../middleware/auth.middleware.js";
 import passport from "passport";
+import { generateToken } from "../lib/utils.js";
 const router = express.Router();
 
 router.post("/signup", signup);
@@ -21,7 +22,7 @@ router.get("/google",
 );
 
 router.get("/google/callback",
-  passport.authenticate("google", { failureRedirect: "/login" }),
+  passport.authenticate("google", { failureRedirect: `${process.env.ORIGIN}` }),
   (req, res) => { 
     if(!req.user){
       // res.redirect("/"); // or frontend URL
@@ -34,7 +35,8 @@ router.get("/google/callback",
         secure: true,
         sameSite: "None",
       })
-      return res.redirect(`http://localhost:5173/auth-success?token=${token}`)
+      // return res.redirect(`${process.env.LOCAL}/auth-success?token=${token}`)
+      return res.redirect(`${process.env.ORIGIN}/auth-success?token=${token}`)
   });
 
 router.patch("/update-profile", protectRoute, updateProfile);

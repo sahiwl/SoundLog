@@ -107,13 +107,6 @@ const Signup = () => {
       </button>
       </form>
 
-      {/* <button className="mt-4 w-full rounded border border-gray-700 bg-zinc-800 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700">
-      Signup with Google
-      </button> */}
-
-
-{/*  Add this button inside your form, before the "Don't have an account?" text */}
-
 <div className="relative my-4 flex items-center">
   <div className="flex-grow border-t border-gray-700"></div>
   <span className="mx-4 flex-shrink text-gray-500">or</span>
@@ -122,7 +115,13 @@ const Signup = () => {
 
 <button 
   type="button"
-  onClick={() => window.location.href = `${import.meta.env.VITE_BE_DEV_URL.replace('/api', '')}/auth/google`}
+  onClick={() => {
+// const baseUrl = import.meta.env.VITE_BE_DEV_URL;
+const baseURL = import.meta.env.VITE_BE_PROD_URL || 
+                import.meta.env.VITE_BE_ALT_URL || 
+                import.meta.env.VITE_BE_DEV_URL
+    window.location.href = `${baseURL}/auth/google`;
+  }}
   className="mt-4 w-full flex items-center justify-center gap-3 rounded border border-gray-700 bg-zinc-800 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700"
 >
   <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">

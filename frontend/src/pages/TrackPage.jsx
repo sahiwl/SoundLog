@@ -13,7 +13,7 @@ const TrackPage = () => {
   const fetchTrackDetails = async () => {
     try {
       setLoading(true);
-      setError("");  // Reset error state
+      setError("");  
       const response = await axiosInstance.get(`/pages/tracks/${trackId}`, {
         withCredentials: true,
       });
