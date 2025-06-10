@@ -22,6 +22,7 @@ import ProfilePage from './pages/ProfilePage';
 import Footer from './components/Landing/Footer';
 import { ToastContainer } from 'react-toastify';
 import toastConfig from './lib/toastConfig';
+import AuthSuccess from "./components/AuthSuccess";
 
 function App() {
   return (
@@ -53,6 +54,7 @@ function App() {
           <Route path="/:username/likes" element={<UserLikes />} />
           <Route path="/:username/profile" element={<ProfilePage />} />
           <Route path="/:username/settings" element={<SettingsPage />} />
+          <Route path="/auth-success" element={<AuthSuccess/>} />
         </Route>
       </Routes>
       <ToastContainer {...toastConfig} />

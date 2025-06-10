@@ -12,6 +12,8 @@ import songRoutes from "./routes/song.routes.js"
 import { rateLimiter } from "./middleware/rateLimiter.js";
 import cors from "cors";
 import { cleanupInactiveDocuments } from "./lib/cleanup.js";
+import passport from "./lib/passport.js";
+import session from "express-session";
 
 dotenv.config();
 const app = express();
@@ -36,6 +38,15 @@ app.use(cors(corsOptions))
 
 const PORT = process.env.PORT;
 connectDB();
+
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false
+}));
+app.use(passport.initialize())
+app.use(passport.session())
+
 
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes)

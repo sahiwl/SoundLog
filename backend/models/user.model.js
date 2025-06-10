@@ -19,12 +19,15 @@ const userSchema = new mongoose.Schema(
         },
         password:{
             type: String,
-            required: true,
             minlength: 6,
         },
         profilePic: {
             type: String,
             default: ""
+        },
+        googleId:{
+            type: String,
+            unique: true
         },
         followers: [{
             type: mongoose.Schema.Types.ObjectId,
