@@ -44,7 +44,9 @@ const Signup = () => {
       showToast.error("An unexpected error occurred");
     }
   }
-  
+   const handleGoogleAuth = () =>{
+      window.location.href = `${import.meta.env.VITE_gAuthURL}auth/google`;
+    }
   return (
     // <div className="flex min-h-screen items-center justify-center bg-black px-4">
     <Background imageUrl={"https://images.unsplash.com/photo-1741620979760-bccef3bb5b17?q=80&w=3540&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"} className={"flex items-center justify-center"}>
@@ -115,13 +117,7 @@ const Signup = () => {
 
 <button 
   type="button"
-  onClick={() => {
-// const baseUrl = import.meta.env.VITE_BE_DEV_URL;
-const baseURL = import.meta.env.VITE_BE_PROD_URL || 
-                import.meta.env.VITE_BE_ALT_URL || 
-                import.meta.env.VITE_BE_DEV_URL
-    window.location.href = `${baseURL}/auth/google`;
-  }}
+   onClick={handleGoogleAuth}
   className="mt-4 w-full flex items-center justify-center gap-3 rounded border border-gray-700 bg-zinc-800 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700"
 >
   <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">

@@ -61,6 +61,10 @@ const navigate = useNavigate()
   }
     }
 
+    const handleGoogleAuth = () =>{
+      window.location.href = `${import.meta.env.VITE_gAuthURL}auth/google`;
+    }
+
   return (
     <Background imageUrl="https://images.unsplash.com/photo-1571330735066-03aaa9429d89?q=80&w=2070&auto=format&fit=crop" className="flex items-center justify-center">
       <div className="max-w-md mx-auto p-8 bg-grids rounded-lg shadow-xl">
@@ -119,13 +123,7 @@ const navigate = useNavigate()
 
 <button 
   type="button"
-  onClick={() => {
-// const baseUrl = import.meta.env.VITE_BE_DEV_URL;
-const baseURL = import.meta.env.VITE_BE_PROD_URL || 
-                import.meta.env.VITE_BE_ALT_URL || 
-                import.meta.env.VITE_BE_DEV_URL
-    window.location.href = `${baseURL}/auth/google`;
-  }}
+  onClick={handleGoogleAuth}
   className="mt-4 w-full flex items-center justify-center gap-3 rounded border border-gray-700 bg-zinc-800 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700"
 >
   <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">

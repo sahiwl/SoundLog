@@ -24,6 +24,11 @@ app.use(express.urlencoded({limit: '50mb', extended: true}));
 app.use(express.json()); 
 app.use(cookieParser());
 
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false
+}));
 
 const corsOptions = {
   origin: [process.env.ORIGIN, process.env.LOCAL, process.env.ORIGIN_MAIN], 
@@ -39,11 +44,6 @@ app.use(cors(corsOptions))
 const PORT = process.env.PORT;
 connectDB();
 
-app.use(session({
-  secret: process.env.SESSION_SECRET,
-  resave: false,
-  saveUninitialized: false
-}));
 app.use(passport.initialize())
 app.use(passport.session())
 
