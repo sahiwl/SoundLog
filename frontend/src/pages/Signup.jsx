@@ -45,7 +45,7 @@ const Signup = () => {
     }
   }
    const handleGoogleAuth = () =>{
-      window.location.href = `${import.meta.env.VITE_gAuthURL}auth/google`;
+      window.location.href = `${import.meta.env.VITE_BE_DEV_URL}/auth/google`;
     }
   return (
     // <div className="flex min-h-screen items-center justify-center bg-black px-4">

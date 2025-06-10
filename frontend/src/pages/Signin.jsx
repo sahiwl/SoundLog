@@ -62,7 +62,7 @@ const navigate = useNavigate()
     }
 
     const handleGoogleAuth = () =>{
-      window.location.href = `${import.meta.env.VITE_gAuthURL}auth/google`;
+      window.location.href = `${import.meta.env.VITE_gAuthURL}/auth/google`;
     }
 
   return (
