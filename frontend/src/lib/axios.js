@@ -10,7 +10,7 @@ const baseURL = import.meta.env.VITE_BE_PROD_URL ||
 
 export const axiosInstance = axios.create({
     baseURL,
-    withCredentials: true,
+    withCredentials: true, 
     headers: {
         'Content-Type': 'application/json'
     }
