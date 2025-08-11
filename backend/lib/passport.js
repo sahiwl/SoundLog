@@ -5,7 +5,7 @@ import User from "../models/user.model.js";
 import bcrypt from "bcryptjs"; 
 
 dotenv.config();
-const baseURL = process.env.B_PROD_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:5001'); 
+const baseURL = process.env.B_PROD_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:5001/api'); 
 
 passport.use(
   new GoogleStrategy(

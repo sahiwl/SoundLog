@@ -7,23 +7,28 @@ const AuthSuccess = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { checkAuth } = useAuthStore();
-  
+
   useEffect(() => {
     const handleAuthSuccess = async () => {
       try {
+        console.log('AuthSuccess component mounted, checking auth...');
         // JWT is already set as a cookie by the backend
         // We just need to check auth status to update the frontend state
         await checkAuth();
+        console.log('Auth check completed successfully');
         showToast.success('Successfully signed in with Google!');
         navigate('/home');
       } catch (error) {
         console.error('Error during Google authentication:', error);
+        console.error('Auth check failed:', error.response?.data || error.message);
         showToast.error('Authentication failed. Please try again.');
         navigate('/signin');
       }
     };
-    
-    handleAuthSuccess();
+
+    // Add a small delay to ensure cookies are set
+    const timer = setTimeout(handleAuthSuccess, 500);
+    return () => clearTimeout(timer);
   }, [checkAuth, navigate]);
 
   return (
