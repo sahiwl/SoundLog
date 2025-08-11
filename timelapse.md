@@ -1,5 +1,8 @@
 # Timelapse
 
+### 11 Aug 1:35pm
+finally shifted to vercel for backend 
+
 ### 7 May 7:48PM
 - ui changes
 - fixed wakatime link 
@@ -7,7 +10,7 @@
 
 
 ### 10 April 1:38AM
-- [ ] add google auth
+- [x] add google auth
 
 
 ### 4 April 2:41AM
@@ -27,9 +30,9 @@
 - fixed search component not being mounted over children components
 
 ### 1 April 4:31AM
-- [ ] bio should have a different font 
-- [ ] font schema change kar sahil 😡
-- [ ] umami ananlytics
+- [x] bio should have a different font 
+- [x] font schema change kar sahil 😡
+- [x] umami ananlytics
 - [x] backdrop blur walls behind as background of pages (experimental)
 
 ### 31 Mar 6:10PM
