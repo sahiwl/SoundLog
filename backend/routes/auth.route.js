@@ -35,7 +35,6 @@ router.get("/google/callback",
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
-        domain: process.env.NODE_ENV === "production" ? ".sahiwl.live" : undefined, // Allow subdomain sharing
       })
       return res.redirect(`${process.env.ORIGIN_MAIN}/auth-success?token=${token}`)
       // return res.redirect(`${process.env.LOCAL}/auth-success?token=${token}`)
