@@ -5,15 +5,14 @@ import User from "../models/user.model.js";
 import bcrypt from "bcryptjs"; 
 
 dotenv.config();
-const baseURL = process.env.B_PROD_URL 
+const baseURL = process.env.B_PROD_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:5001'); 
 
 passport.use(
   new GoogleStrategy(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    //   callbackURL: `http://localhost:5001/api/auth/google/callback`,
-      callbackURL: `${baseURL}/auth/google/callback`,
+      callbackURL: `${baseURL}/api/auth/google/callback`,
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
