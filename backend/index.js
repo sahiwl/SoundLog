@@ -74,13 +74,12 @@ app.get("/api", (req, res) => {
 
 const PORT = process.env.PORT || 5001;
 
-// For local development
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on port ${PORT}`);
+});
+
+// Schedule cleanup task only in local development
 if (process.env.NODE_ENV !== 'production') {
-  app.listen(PORT, () => {
-    console.log(`This server is running on port: ${PORT}`);
-  });
-  
-  // Schedule cleanup task only in local development
   setInterval(cleanupInactiveDocuments, 24 * 60 * 60 * 1000);
 }
 
