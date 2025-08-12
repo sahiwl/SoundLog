@@ -28,7 +28,11 @@ app.use(cookieParser());
 app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
-  saveUninitialized: false
+  saveUninitialized: false,
+  cookie: { 
+    secure: process.env.NODE_ENV === "production",
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  },
 }));
 
 const corsOptions = {
@@ -42,7 +46,6 @@ const corsOptions = {
 app.use(cors(corsOptions))
 // app.options("*", cors(corsOptions)); 
 
-const PORT = process.env.PORT;
 connectDB();
 
 app.use(passport.initialize())
@@ -59,12 +62,28 @@ app.use("/api/ai", aiRoutes)
 
 
 app.get("/", (req, res) => {
-  res.send("Server is live");
+  res.send("Server is live on Vercel");
 });
 
-// Schedule cleanup task to run daily at midnight
-setInterval(cleanupInactiveDocuments, 24 * 60 * 60 * 1000);
-
-app.listen(PORT, () => {
-  console.log(`This server is running on port: `, PORT);
+app.get("/api", (req, res) => {
+  res.json({ message: "API is working on Vercel" });
 });
+
+// Handle 404
+// app.use('*', (req, res) => {
+//   res.status(404).json({ message: 'Route not found' });
+// });
+
+const PORT = process.env.PORT || 5001;
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on port ${PORT}`);
+});
+
+// Schedule cleanup task only in local development
+if (process.env.NODE_ENV !== 'production') {
+  setInterval(cleanupInactiveDocuments, 24 * 60 * 60 * 1000);
+}
+
+// Export for Vercel
+export default app;

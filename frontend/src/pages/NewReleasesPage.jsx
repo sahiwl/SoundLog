@@ -29,7 +29,7 @@ const NewReleasesPage = () => {
         };
 
         fetchNewReleases();
-    }, [currentPage]); // Re-fetch when currentPage changes
+    }, [currentPage]); 
 
     if (loading) return <div className="flex justify-center items-center min-h-screen "> <div className="loading loading-infinity loading-xl"></div> </div>
     if (error) return <p>{error}</p>;

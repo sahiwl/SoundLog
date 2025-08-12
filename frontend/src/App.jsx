@@ -26,37 +26,38 @@ import AuthSuccess from "./components/AuthSuccess";
 
 function App() {
   return (
-    <div className="min-h-screen overflow-x-hidden">
+    <div className="min-h-screen flex flex-col overflow-x-hidden">
       <Navbar />
 
-      <Routes>
+      <main className="flex-1">
+        <Routes>
 
-        <Route path="/" element={<Landing />} />
-        
-        {/* Auth Routes */}
-        <Route element={<AuthRoute routeType="auth" />}>
-          <Route path="/signin" element={<Signin />} />
-          <Route path="/signup" element={<Signup />} />
-        </Route>
+          <Route path="/" element={<Landing />} />
 
-        {/* Protected Routes */}
-        <Route element={<AuthRoute routeType="protected" />}>
-          <Route path="/home" element={<Homepage />} />
+          <Route element={<AuthRoute routeType="auth" />}>
+            <Route path="/signin" element={<Signin />} />
+            <Route path="/signup" element={<Signup />} />
+          </Route>
 
-          
-          <Route path="/newreleases" element={<NewReleasesPage />} />
-          <Route path="/album/:albumId" element={<AlbumPage />} />
-          <Route path="/artist/:artistId" element={<ArtistPage />} />
-          <Route path="/tracks/:trackId" element={<TrackPage />} />
-          <Route path="/:username/albums" element={<UserAlbums />} />
-          <Route path="/:username/listenlater" element={<UserListenLater />} />
-          <Route path="/:username/reviews" element={<UserReviews />} />
-          <Route path="/:username/likes" element={<UserLikes />} />
-          <Route path="/:username/profile" element={<ProfilePage />} />
-          <Route path="/:username/settings" element={<SettingsPage />} />
-          <Route path="/auth-success" element={<AuthSuccess/>} />
-        </Route>
-      </Routes>
+          <Route element={<AuthRoute routeType="protected" />}>
+            <Route path="/home" element={<Homepage />} />
+
+            
+            <Route path="/newreleases" element={<NewReleasesPage />} /> 
+            <Route path="/album/:albumId" element={<AlbumPage />} />
+            <Route path="/artist/:artistId" element={<ArtistPage />} />
+            <Route path="/tracks/:trackId" element={<TrackPage />} />
+            <Route path="/:username/albums" element={<UserAlbums />} />
+            <Route path="/:username/listenlater" element={<UserListenLater />} />
+            <Route path="/:username/reviews" element={<UserReviews />} />
+            <Route path="/:username/likes" element={<UserLikes />} />
+            <Route path="/:username/profile" element={<ProfilePage />} />
+            <Route path="/:username/settings" element={<SettingsPage />} />
+            <Route path="/auth-success" element={<AuthSuccess/>} />
+          </Route>
+        </Routes>
+      </main>
+      
       <ToastContainer {...toastConfig} />
       <Footer/>
     </div>

@@ -64,12 +64,17 @@ const Navbar = () => {
   }, []);
 
   const handleLogout = useCallback(async () => {
-    await logout();
-    showToast.success("Logging you out, redirecting...");
-    setTimeout(() => {
-      navigate("/");
-    }, 2500);
-  }, [logout]);
+    try {
+      await logout();
+      showToast.success("Logging you out, redirecting...");
+      setTimeout(() => {
+        navigate("/");
+      }, 2500);
+    } catch (error) {
+      console.error("Logout failed:", error);
+      showToast.error("Logout failed. Please try again.");
+    }
+  }, [logout, navigate]);
 
   return (
     <>

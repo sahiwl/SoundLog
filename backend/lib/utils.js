@@ -8,10 +8,9 @@ export const generateToken = (userId, res) => {
   res.cookie('jwt', token, {
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     httpOnly: true,
-    secure: true, // Enable for HTTPS
-    sameSite: 'None', // Required for cross-site cookies
-    // path: '/',
-    // domain: 'soundlog-be.onrender.com' // Change to exact domain
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+    path: '/',
   });
 
   return token;

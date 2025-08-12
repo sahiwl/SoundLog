@@ -48,7 +48,7 @@ const TrackPage = () => {
     <Background imageUrl={trackData?.album?.images?.[0]?.url}>
       <div className="container mx-auto px-4 py-6 pt-28">
         
-        {/* Main Content */}
+
         <div className="container mx-auto px-4 py-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left Column - Track Info */}
@@ -76,7 +76,7 @@ const TrackPage = () => {
                 </p>
               </div>
 
-              {/* Album Cover and Scores */}
+
               <div className="flex flex-col md:flex-row gap-6">
                 {/* Album Cover */}
                 <div className="flex-shrink-0">
@@ -85,14 +85,8 @@ const TrackPage = () => {
                     alt={`${trackData.name} cover`}
                     className="w-full max-w-[350px] rounded-lg"
                   />
-                  {/* Streaming Links */}
+
                   <div className="flex mt-4 space-x-2">
-                    {/* <a href="#" className="bg-grids text-white px-3 py-2 rounded flex items-center space-x-2">
-                      <span>Amazon</span>
-                    </a>
-                    <a href="#" className="bg-grids text-white px-3 py-2 rounded flex items-center space-x-2">
-                      <span>Apple Music</span>
-                    </a> */}
                     <a 
                       href={trackData.external_urls?.spotify} 
                       target="_blank" 
@@ -120,16 +114,15 @@ const TrackPage = () => {
                 </div>
               </div>
 
-              {/* User Rating Section */}
+
               <RatingForm 
               trackId={trackId}
-              // onActionComplete={handleRatingComplete}
               />
             </div>
 
-            {/* Right Column - Additional Details */}
+            {/* Right Column */}
             <div>
-              {/* Details Section */}
+
               <div className="bg-grids p-4 rounded mb-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-medium">SONG INFO</h3>
@@ -161,7 +154,7 @@ const TrackPage = () => {
                 </div>
               </div>
 
-              {/* User Ratings Section */}
+
               <div className="mt-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-medium">USER RATINGS</h3>

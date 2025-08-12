@@ -3,11 +3,11 @@ import { useParams, Link } from "react-router-dom";
 import { axiosInstance } from "../lib/axios.js";
 import ActionForm from "../components/ActionForm.jsx";
 import { showToast } from "../lib/toastConfig.js";
-import ReviewsSection from '../components/ReviewsSection.jsx';
-import Background from '../components/Background.jsx';
+import ReviewsSection from "../components/ReviewsSection.jsx";
+import Background from "../components/Background.jsx";
 
 const AlbumPage = () => {
-  const { albumId } = useParams(); 
+  const { albumId } = useParams();
   const [albumData, setAlbumData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -19,7 +19,7 @@ const AlbumPage = () => {
   const fetchAlbumDetails = async () => {
     try {
       setLoading(true);
-      const response = await axiosInstance.get(`/pages/albums/${albumId}`, { 
+      const response = await axiosInstance.get(`/pages/albums/${albumId}`, {
         withCredentials: true,
       });
       setAlbumData(response.data.album);
@@ -51,15 +51,20 @@ const AlbumPage = () => {
       const ratings = await Promise.all(
         tracks.map(async (track) => {
           try {
-            const response = await axiosInstance.get(`/actions/tracks/${track.trackId}`);
+            const response = await axiosInstance.get(
+              `/actions/tracks/${track.trackId}`
+            );
             return { [track.trackId]: response.data.rating };
           } catch (error) {
-            console.error(`Error fetching rating for track ${track.trackId}:`, error);
+            console.error(
+              `Error fetching rating for track ${track.trackId}:`,
+              error
+            );
             return { [track.trackId]: "NA" };
           }
         })
       );
-      
+
       setTrackRatings(Object.assign({}, ...ratings));
     } catch (error) {
       console.error("Error fetching track ratings:", error);
@@ -76,10 +81,10 @@ const AlbumPage = () => {
   useEffect(() => {
     const fetchCurrentUser = async () => {
       try {
-        const response = await axiosInstance.get('/auth/check');
+        const response = await axiosInstance.get("/auth/check");
         setUserId(response.data._id);
       } catch (err) {
-        console.error('Error fetching current user:', err);
+        console.error("Error fetching current user:", err);
       }
     };
     fetchCurrentUser();
@@ -91,21 +96,25 @@ const AlbumPage = () => {
     }
   }, [albumData]);
 
-  if (loading) return <div className="flex justify-center items-center min-h-screen "> <div className="loading loading-infinity loading-xl"></div> </div>
+  if (loading)
+    return (
+      <div className="flex justify-center items-center min-h-screen ">
+        {" "}
+        <div className="loading loading-infinity loading-xl"></div>{" "}
+      </div>
+    );
   if (error) return <p>{error}</p>;
   if (!albumData) return <p>No album data found.</p>;
 
-
-  const handleActionComplete=  ()=>{
-    // Refresh album data after action is completed
+  const handleActionComplete = () => {
     fetchAlbumDetails();
-    fetchReviews(); // Refresh reviews after new action
-  }
+    fetchReviews();
+  };
 
   function formatDuration(ms) {
     const minutes = Math.floor(ms / 60000);
     const seconds = ((ms % 60000) / 1000).toFixed(0);
-    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
   }
 
   function calculateTotalDuration(tracks) {
@@ -116,9 +125,11 @@ const AlbumPage = () => {
     const minutes = Math.floor((totalMs % 3600000) / 60000);
 
     if (hours > 0) {
-      return `${hours} hour${hours > 1 ? 's' : ''}, ${minutes} minute${minutes > 1 ? 's' : ''}`;
+      return `${hours} hour${hours > 1 ? "s" : ""}, ${minutes} minute${
+        minutes > 1 ? "s" : ""
+      }`;
     } else {
-      return `${minutes} minute${minutes > 1 ? 's' : ''}`;
+      return `${minutes} minute${minutes > 1 ? "s" : ""}`;
     }
   }
 
@@ -132,18 +143,18 @@ const AlbumPage = () => {
             <div className="mb-6">
               <h1 className="text-2xl font-medium">
                 {albumData.artists.map((artist, i) => (
-                  <Link 
+                  <Link
                     key={artist.id}
-                    to={`/artist/${artist.spotifyId}`} 
+                    to={`/artist/${artist.spotifyId}`}
                     className="hover:text-purple-400 transition-colors"
                   >
-                    {i > 0 ? ', ' : ''}{artist.name}
+                    {i > 0 ? ", " : ""}
+                    {artist.name}
                   </Link>
                 ))}
               </h1>
               <h2 className="text-4xl font-bold">{albumData.name}</h2>
             </div>
-
 
             <div className="flex flex-col md:flex-row gap-6">
               {/* Album Cover */}
@@ -155,7 +166,12 @@ const AlbumPage = () => {
                 />
 
                 <div className="flex mt-4 space-x-2">
-                  <a href={albumData.external_urls.spotify} target="_blank" rel="noreferrer" className="bg-grids text-white px-3 py-2 rounded flex items-center space-x-2">
+                  <a
+                    href={albumData.external_urls.spotify}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="bg-grids text-white px-3 py-2 rounded flex items-center space-x-2"
+                  >
                     <span>Spotify</span>
                   </a>
                 </div>
@@ -163,38 +179,42 @@ const AlbumPage = () => {
 
               {/* Scores */}
               <div className="flex-grow">
+                <div className="bg-grids p-4 rounded">
+                  <h3 className="text-sm font-medium mb-2">Popularity</h3>
+                  <div className="flex items-end mb-2">
+                    <span className="text-6xl font-bold">
+                      {albumData?.popularity}
+                    </span>
+                    <div className="ml-4">
+                      <p className="text-sm">out of 100</p>
+                      {/* <p className="text-sm text-gray-400">2016 Rank: #581</p> */}
+                    </div>
+                  </div>
+                  <div className="h-1 bg-green-500 w-3/4 mt-2"></div>
+                </div>
+              </div>
+            </div>
 
-                        <div className="bg-grids p-4 rounded">
-                          <h3 className="text-sm font-medium mb-2">Popularity</h3>
-                          <div className="flex items-end mb-2">
-                          <span className="text-6xl font-bold">{albumData?.popularity}</span>
-                          <div className="ml-4">
-                            <p className="text-sm">out of 100</p>
-                            {/* <p className="text-sm text-gray-400">2016 Rank: #581</p> */}
-                          </div>
-                          </div>
-                          <div className="h-1 bg-green-500 w-3/4 mt-2"></div>
-                        </div>
-                        </div>
-                      </div>
+            <ActionForm
+              albumId={albumId}
+              onActionComplete={handleActionComplete}
+            />
 
-                      <ActionForm albumId={albumId} onActionComplete={handleActionComplete} />
+            {reviewsLoading ? (
+              <div className="text-center mt-6">Loading reviews...</div>
+            ) : (
+              <ReviewsSection
+                reviews={reviews}
+                userId={userId}
+                albumId={albumId}
+                onReviewUpdate={fetchReviews}
+              />
+            )}
+          </div>
 
-                      {reviewsLoading ? (
-                        <div className="text-center mt-6">Loading reviews...</div>
-                      ) : (
-                        <ReviewsSection 
-                        reviews={reviews}
-                        userId={userId}
-                        albumId={albumId}
-                        onReviewUpdate={fetchReviews}
-                        />
-                      )}
-                      </div>
-
-                      {/* Right Column - Additional Details and Track List */}
+          {/* Right Column - Additional Details and Track List */}
           <div>
-            {/* Details Section */}
+
             <div className="bg-grids p-4 rounded mb-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-medium">DETAILS</h3>
@@ -203,15 +223,15 @@ const AlbumPage = () => {
               <div className="space-y-2">
                 <p>
                   <span className="text-white">{albumData.release_date}</span>
-                  <span className="text-gray-400">  release date</span>
+                  <span className="text-gray-400"> release date</span>
                 </p>
                 <p>
                   <span className="text-white">{albumData.album_type}</span>
-                  <span className="text-gray-400">  format</span>
+                  <span className="text-gray-400"> format</span>
                 </p>
                 <p>
                   <span className="text-white">{albumData.label || "N/A"}</span>
-                  <span className="text-gray-400">  label</span>
+                  <span className="text-gray-400"> label</span>
                 </p>
                 {/* <p>
                   <span className="text-white">Hip-Hop/Rap, Trap</span>
@@ -219,24 +239,29 @@ const AlbumPage = () => {
                 {/* <p className="text-gray-400 text-sm">
                   Alternative Hip-Hop, Cloud Rap, Experimental
                 </p> */}
-                <p className="text-gray-400 text-sm">{albumData.genres ? albumData.genres : "N.A"}  genre</p>
+                <p className="text-gray-400 text-sm">
+                  {albumData.genres ? albumData.genres : "N.A"} genre
+                </p>
 
                 <p className="mt-4">
                   <span className="text-white">
-                    {albumData.artists && albumData.artists.map(artist => artist.name).join(", ")}
+                    {albumData.artists &&
+                      albumData.artists.map((artist) => artist.name).join(", ")}
                   </span>
-                  <span className="text-gray-400">  artist</span>
+                  <span className="text-gray-400"> artist</span>
                 </p>
                 <p>
                   <span className="text-white">
-                    {albumData.copyrights && albumData.copyrights.map(copyright => copyright.text).join(", ")}
+                    {albumData.copyrights &&
+                      albumData.copyrights
+                        .map((copyright) => copyright.text)
+                        .join(", ")}
                   </span>
-                  <span className="text-gray-400">  copyright</span>
+                  <span className="text-gray-400"> copyright</span>
                 </p>
               </div>
             </div>
 
-            {/* Track List Section */}
             <div className="bg-grids rounded-lg">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xl font-bold px-4 pt-4">TRACK LIST</h3>
@@ -245,30 +270,45 @@ const AlbumPage = () => {
 
               <div className="space-y-2 ">
                 {/* Map through tracks */}
-                {albumData.tracks && albumData.tracks.items && albumData.tracks.items.map((track, index) => (
-                  <div key={track.trackId} className="flex items-center justify-between py-2 px-6">
-                    <div className="flex items-center gap-4">
-                      <span className="text-gray-400 w-8 text-right">{track.track_number}</span>
-                      <Link to={`/tracks/${track.trackId}`} className="hover:underline">
-                        {track.name}
-                      </Link>
+                {albumData.tracks &&
+                  albumData.tracks.items &&
+                  albumData.tracks.items.map((track, index) => (
+                    <div
+                      key={track.trackId}
+                      className="flex items-center justify-between py-2 px-6"
+                    >
+                      <div className="flex items-center gap-4">
+                        <span className="text-gray-400 w-8 text-right">
+                          {track.track_number}
+                        </span>
+                        <Link
+                          to={`/tracks/${track.trackId}`}
+                          className="hover:underline"
+                        >
+                          {track.name}
+                        </Link>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <span className="px-2 text-gray-400">
+                          {trackRatings[track.trackId]
+                            ? `${trackRatings[track.trackId]}`
+                            : "NA"}
+                        </span>
+                        <span className="text-gray-400">
+                          {formatDuration(track.duration_ms)}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-4">
-                      <span className="px-2 text-gray-400">
-                        {trackRatings[track.trackId] ? `${trackRatings[track.trackId]}` : "NA"}
-                      </span>
-                      <span className="text-gray-400">
-                        {formatDuration(track.duration_ms)}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                  ))}
 
                 <div className="text-gray-400 text-sm text-right m-4">
-                  Total Length: {calculateTotalDuration(albumData.tracks ? albumData.tracks.items : [])}
+                  Total Length:{" "}
+                  {calculateTotalDuration(
+                    albumData.tracks ? albumData.tracks.items : []
+                  )}
                 </div>
               </div>
-            </div>   
+            </div>
           </div>
         </div>
       </div>

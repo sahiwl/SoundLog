@@ -76,9 +76,12 @@ const useAuthStore = create((set)=>({
     logout: async () => {
         try {
           await axiosInstance.post('/auth/logout');
-          set({ authUser: null, isAuthenticated: false });
         } catch (error) {
           console.error("Logout error: ", error.message);
+          // Even if the backend request fails, we still clear the frontend state
+        } finally {
+          // Always clear the auth state regardless of backend success/failure
+          set({ authUser: null, isAuthenticated: false });
         }
       },
 
