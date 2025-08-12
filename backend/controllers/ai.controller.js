@@ -1,4 +1,3 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import Rating from '../models/rating.model.js';
 import Review from '../models/review.model.js';
 import Track from '../models/track.model.js';
