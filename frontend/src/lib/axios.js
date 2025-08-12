@@ -8,7 +8,9 @@ const baseURL = import.meta.env.DEV
      import.meta.env.VITE_BE_ALT_URL || 
      import.meta.env.VITE_BE_DEV_URL)
 
-console.log('Axios baseURL:', baseURL);
+if (import.meta.env.DEV) {
+    console.log('Axios baseURL:', baseURL);
+}
 
 export const axiosInstance = axios.create({
     baseURL,
