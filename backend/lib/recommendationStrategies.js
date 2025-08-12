@@ -106,7 +106,7 @@ export const getAlbumsByArtists = async (mood) => {
     
     console.log(`Searching for albums by artists: ${selectedArtists.join(', ')}`);
     
-    for (const artist of selectedArtists) {
+    const albumPromises = selectedArtists.map(async (artist) => {
       try {
         const artistSearchResponse = await axiosInstance.get('/search', {
           params: {
