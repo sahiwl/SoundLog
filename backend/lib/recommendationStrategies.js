@@ -98,7 +98,7 @@ export const isRealAlbum = (album) => {
 };
 
 // Strategy 1: Search for albums by curated popular artists
-export const getAlbumsByArtists = async (mood) => {
+export const getAlbumsByArtists = async (mood, minCount = 8) => {
   const albums = [];
   
   try {
@@ -138,7 +138,9 @@ export const getAlbumsByArtists = async (mood) => {
       } catch (artistError) {
         console.error(`Failed to fetch albums for artist ${artist}:`, artistError.message);
       }
-    }
+    });
+    
+    await Promise.all(albumPromises);
   } catch (error) {
     console.error('Artist-based search failed:', error.message);
   }

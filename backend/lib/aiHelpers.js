@@ -3,7 +3,14 @@ import { MOOD_ARTISTS, getRandomArtistsFromMood } from '../data/moodArtists.js';
 import { SPOTIFY_GENRE_SEEDS, MOOD_CONFIGURATIONS } from './recommendationStrategies.js';
 import aiRateLimiter from './aiRateLimiter.js';
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+// init GenAI only when needed to avoid crashes on missing API key
+let genAI = null;
+const getGenAI = () => {
+  if (!genAI && process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== 'your_gemini_api_key_here') {
+    genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+  }
+  return genAI;
+};
 
 // analyze user's music taste using AI or basic analysis (if no ai)
 export const analyzeUserTaste = async (ratings, reviews, forceAI = false) => {
@@ -16,7 +23,7 @@ export const analyzeUserTaste = async (ratings, reviews, forceAI = false) => {
     
     // rate limiting check only use AI if forced (using a button) or if we have requests left
     if (!forceAI && !aiRateLimiter.canMakeRequest()) {
-      console.log(`⚠️  AI rate limit reached (${aiRateLimiter.getRemainingRequests()} requests left). Reset in ${aiRateLimiter.getTimeUntilReset()}s. Using basic analysis.`);
+      console.log(`AI rate limit reached. Using basic analysis. Requests left: ${aiRateLimiter.getRemainingRequests()}, Reset in: ${aiRateLimiter.getTimeUntilReset()}s`);
       return createBasicTasteProfile(ratings, reviews);
     }
     
@@ -25,7 +32,11 @@ export const analyzeUserTaste = async (ratings, reviews, forceAI = false) => {
       return createBasicTasteProfile(ratings, reviews);
     }
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = getGenAI()?.getGenerativeModel({ model: "gemini-1.5-flash" });
+    
+    if (!model) {
+      throw new Error('AI service not available: missing API key');
+    }
 
     // user data for analysis
     const highRatedItems = ratings.filter(r => r.rating >= 70).slice(0, 10);
@@ -62,7 +73,7 @@ export const analyzeUserTaste = async (ratings, reviews, forceAI = false) => {
     const text = response.text();
     
     aiRateLimiter.recordRequest();
-    console.log(`✅ AI taste analysis completed. Remaining requests: ${aiRateLimiter.getRemainingRequests()}`);
+    console.log(`AI taste analysis completed. Remaining requests: ${aiRateLimiter.getRemainingRequests()}`);
     
     // parse JSON from the res
     const jsonMatch = text.match(/\{[\s\S]*\}/);
@@ -127,7 +138,7 @@ export const generateAISearchQuery = async (tasteProfile, mood, type = 'track', 
 
   // rate limiting to prevent exhausting of api limits
     if (!forceAI && !aiRateLimiter.canMakeRequest()) {
-      console.log(`⚠️  AI rate limit reached (${aiRateLimiter.getRemainingRequests()} requests left). Reset in ${aiRateLimiter.getTimeUntilReset()}s. Using curated artist search.`);
+      console.log(`AI rate limit reached. Using curated artist search. Requests left: ${aiRateLimiter.getRemainingRequests()}, Reset in: ${aiRateLimiter.getTimeUntilReset()}s`);
       const randomArtists = getRandomArtistsFromMood(mood, 1);
       const randomArtist = randomArtists[0];
       return type === 'album' 
@@ -135,7 +146,15 @@ export const generateAISearchQuery = async (tasteProfile, mood, type = 'track', 
         : `artist:"${randomArtist}" year:2015-2024`;
     }
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = getGenAI()?.getGenerativeModel({ model: "gemini-1.5-flash" });
+    
+    if (!model) {
+      const randomArtists = getRandomArtistsFromMood(mood, 1);
+      const randomArtist = randomArtists[0];
+      return type === 'album' 
+        ? `artist:"${randomArtist}"` 
+        : `artist:"${randomArtist}" year:2015-2024`;
+    }
     
     const prompt = `
     Create a Spotify search query for a user with this music taste profile:
@@ -156,7 +175,7 @@ export const generateAISearchQuery = async (tasteProfile, mood, type = 'track', 
     let query = response.text().trim();
     
     aiRateLimiter.recordRequest();
-    console.log(`✅ AI search query generated. Remaining requests: ${aiRateLimiter.getRemainingRequests()}`);
+    console.log(`AI search query generated. Remaining requests: ${aiRateLimiter.getRemainingRequests()}`);
     
     // clean up the query and ensure it uses artist syntax
     query = query.replace(/['"]/g, '').substring(0, 100);

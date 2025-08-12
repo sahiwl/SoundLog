@@ -131,7 +131,7 @@ const SmartDiscovery = () => {
                             Discover Music for Your Mood
                         </h3>
                         <p className="text-gray-400 text-sm">
-                            Select how you're feeling above to get AI-powered music recommendations tailored to your current vibe.
+                            Select how you're feeling above to get music recommendations powered by AI, tailored to your current vibe.
                         </p>
                     </div>
                 </div>

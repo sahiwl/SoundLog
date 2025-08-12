@@ -69,10 +69,24 @@ app.get("/api", (req, res) => {
   res.json({ message: "API is working on Vercel" });
 });
 
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Error:', err);
+  
+  const message = process.env.NODE_ENV === 'production' 
+    ? 'Something went wrong!' 
+    : err.message;
+  
+  res.status(err.status || 500).json({ 
+    message,
+    error: process.env.NODE_ENV === 'production' ? {} : err
+  });
+});
+
 // Handle 404
-// app.use('*', (req, res) => {
-//   res.status(404).json({ message: 'Route not found' });
-// });
+app.use('*', (req, res) => {
+  res.status(404).json({ message: 'Route not found' });
+});
 
 const PORT = process.env.PORT || 5001;
 

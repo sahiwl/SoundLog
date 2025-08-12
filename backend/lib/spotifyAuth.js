@@ -12,7 +12,7 @@ let tokenExpiry = null;
 
 export const getSpotifyAccessToken = async () => {
   //check if we have a token and it hasn't expired, we'll return it
-  if (accessToken & (Date.now() < tokenExpiry)) {
+  if (accessToken && (Date.now() < tokenExpiry)) {
     return accessToken;
   }
 
@@ -58,6 +58,21 @@ axiosInstance.interceptors.request.use(async (config) => {
     config.headers.Authorization = `Bearer ${token}`;
     return config;
   } catch (error) {
-    return Promise.reject(error);
+    console.error('Spotify auth interceptor error:', error.message);
+    // Don't reject the request completely, let it go through
+    return config;
   }
 });
+
+// Response interceptor to handle token expiry
+axiosInstance.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.response?.status === 401) {
+      console.warn('Spotify token expired, clearing cache');
+      accessToken = null;
+      tokenExpiry = null;
+    }
+    return Promise.reject(error);
+  }
+);

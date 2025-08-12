@@ -4,12 +4,17 @@ import { protectRoute } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
 
-// recommendations based on user's taste
-router.get('/recommendations', protectRoute, getSmartRecommendations);
+// Wrapper to catch async errors
+const asyncHandler = (fn) => (req, res, next) => {
+  Promise.resolve(fn(req, res, next)).catch(next);
+};
 
-router.get('/recommendations/mood/:mood', protectRoute, getMoodRecommendations);
+// recommendations based on user's taste
+router.get('/recommendations', protectRoute, asyncHandler(getSmartRecommendations));
+
+router.get('/recommendations/mood/:mood', protectRoute, asyncHandler(getMoodRecommendations));
 
 //recommendations using AI (manual trigger, uses AI quota)
-router.get('/ai-recommendations', protectRoute, getAIRecommendations);
+router.get('/ai-recommendations', protectRoute, asyncHandler(getAIRecommendations));
 
 export default router;
