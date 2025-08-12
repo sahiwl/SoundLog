@@ -46,3 +46,18 @@ export const getSpotifyAccessToken = async () => {
     throw error;
   }
 };
+
+export const axiosInstance = axios.create({
+  baseURL: 'https://api.spotify.com/v1',
+});
+
+// request interceptor to include fresh access token
+axiosInstance.interceptors.request.use(async (config) => {
+  try {
+    const token = await getSpotifyAccessToken();
+    config.headers.Authorization = `Bearer ${token}`;
+    return config;
+  } catch (error) {
+    return Promise.reject(error);
+  }
+});

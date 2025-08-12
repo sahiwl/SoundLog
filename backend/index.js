@@ -9,6 +9,7 @@ import searchRoutes from "./routes/search.route.js"
 import actionsRoutes from "./routes/actions.routes.js"
 import paginationRoutes from "./routes/pagination.routes.js"
 import songRoutes from "./routes/song.routes.js"
+import aiRoutes from "./routes/ai.routes.js"
 import { rateLimiter } from "./middleware/rateLimiter.js";
 import cors from "cors";
 import { cleanupInactiveDocuments } from "./lib/cleanup.js";
@@ -54,6 +55,7 @@ app.use("/api/releases", searchRoutes)
 app.use("/api/actions", actionsRoutes)
 app.use("/api/pages", paginationRoutes)
 app.use("/api/music", songRoutes)
+app.use("/api/ai", aiRoutes)
 
 
 app.get("/", (req, res) => {
