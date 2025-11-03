@@ -1,8 +1,11 @@
 # Timelapse
 
+### 2 Nov 12:44pm
+gAuth disabled 
 
 ### 11 Aug 1:35pm
 finally shifted to vercel for backend 
+update: vercel supports serverless backends, so reverting back to render
 
 ### 7 May 7:48PM
 - ui changes
