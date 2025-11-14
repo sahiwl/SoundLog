@@ -11,8 +11,8 @@ const Homepage = () => {
   const { authUser } = useAuthStore();
 
   return (
-    <div className="text-white pt-28 min-h-screen">
-      <div className="container mx-auto px-4 py-6 max-w-7xl">
+    <div className="text-white pt-28 min-h-screen ">
+      <div className="container mx-auto px-4 py-6 max-w-7xl ">
         <div className="space-y-12">
 
           <NewReleases />

@@ -83,7 +83,7 @@ const Navbar = () => {
           <div className="flex items-center justify-between h-16">
             {/* Logo and Desktop Menu */}
             <div className="flex items-center">
-              <div className="flex-shrink-0">
+              <div className="shrink-0">
                 <Link to={isAuthenticated ? "/home" : "/"}className="flex items-center">
                   <span className="text-xl font-bold">
                     Sound<span className="text-purple-400">Log</span>
@@ -110,7 +110,7 @@ const Navbar = () => {
             </div>
 
             {/* Right Side Menu - Search Icon and User Section */}
-            <div className="hidden md:flex items-center gap-4 flex-shrink-0">
+            <div className="hidden md:flex items-center gap-4 shrink-0">
               {!hideSearchIcon && (
                 <button
                   onClick={() => setShowSearchOverlay(true)}
@@ -129,7 +129,7 @@ const Navbar = () => {
             </div>
 
             {/* Mobile menu button */}
-            <div className="md:hidden flex items-center gap-2 flex-shrink-0">
+            <div className="md:hidden flex items-center gap-2 shrink-0">
               {!hideSearchIcon && (
                 <button
                   onClick={() => setShowSearchOverlay(true)}
