@@ -1,11 +1,15 @@
 # Timelapse
 
+### 17 Nov 1:18AM
+fix auto api calls from ai services on every refresh/first visit on homepage
+
+
 ### 17 Nov 12:45AM
 - Major bug in ai services: the model used was deprecated long back, switched to a better model (updated to 2.5flash)
 - disabled mood buttons during cooldown
-- fixed remaining req displaying on frontend
+- fix remaining req displaying on frontend
 - if ai services fail, accoriding to Atomicity, ratelimits will be back to as it was before request was sent (for eg - initially it was 2reqs per minute, after req was made -> 1 req remaining for the rest of the minute, if req fails -> ratelimits back to 2reqs/min) 
-- fixed coutdown to show updated rate limit info from backend
+- fix coutdown to show updated rate limit info from backend
 
 
 ### 2 Nov 12:44pm

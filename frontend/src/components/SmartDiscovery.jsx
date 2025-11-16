@@ -30,7 +30,6 @@ const SmartDiscovery = () => {
     const [aiRateLimitInfo, setAiRateLimitInfo] = useState(null);
     const [countdown, setCountdown] = useState(0);
 
-    // Countdown effect for AI rate limiting
     useEffect(() => {
         if (aiRateLimitInfo && !aiRateLimitInfo.canMakeRequest && aiRateLimitInfo.timeUntilReset > 0) {
             setCountdown(aiRateLimitInfo.timeUntilReset);
@@ -39,8 +38,17 @@ const SmartDiscovery = () => {
                 setCountdown((prev) => {
                     if (prev <= 1) {
                         clearInterval(timer);
-                        // Fetch updated rate limit info from backend when countdown ends
-                        fetchMoodRecommendations(selectedMood, true);
+                        // CHANGED: Only reset countdown, don't auto-fetch
+                        // User must click button to fetch new recommendations
+                        setCountdown(0);
+                        // Update rate limit info to reflect that cooldown is over
+                        // But don't make a request - wait for user to click button
+                        setAiRateLimitInfo(prev => prev ? { 
+                            ...prev, 
+                            canMakeRequest: true, 
+                            timeUntilReset: 0,
+                            remainingRequests: prev.maxRequests 
+                        } : null);
                         return 0;
                     }
                     return prev - 1;
@@ -51,7 +59,7 @@ const SmartDiscovery = () => {
         } else if (aiRateLimitInfo?.canMakeRequest) {
             setCountdown(0);
         }
-    }, [aiRateLimitInfo, selectedMood]);
+    }, [aiRateLimitInfo]); 
 
     const fetchMoodRecommendations = async (mood, silentRefresh = false) => {
         if (!silentRefresh) {
@@ -67,15 +75,14 @@ const SmartDiscovery = () => {
             
             const data = response.data;
             setRecommendations(data);
-            
-            // Extract and store AI rate limit info
+  
             if (data.aiRateLimitInfo) {
                 setAiRateLimitInfo(data.aiRateLimitInfo);
             }
         } catch (error) {
             console.error('Error fetching mood recommendations:', error);
             
-            // Handle 429 rate limit errors specifically
+    
             if (error.response?.status === 429) {
                 const rateLimitInfo = error.response.data?.aiRateLimitInfo;
                 if (rateLimitInfo) {
@@ -95,7 +102,6 @@ const SmartDiscovery = () => {
     };
 
     const handleMoodSelect = (mood) => {
-        // Check rate limit before making request
         if (aiRateLimitInfo && !aiRateLimitInfo.canMakeRequest && countdown > 0) {
             setError(`Please wait ${countdown} seconds before requesting more AI recommendations.`);
             return;
@@ -106,7 +112,7 @@ const SmartDiscovery = () => {
     };
 
     const renderAlbumCard = (album) => (
-        <div key={album.id} className="carousel-item w-[280px] sm:w-[320px] lg:w-[330px] flex-shrink-0">
+        <div key={album.id} className="carousel-item w-[280px] sm:w-[320px] lg:w-[330px] shrink-0">
             <Link to={`/album/${album.id}`} className="group block w-full">
                 <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-800">
                     {album.images?.[0] ? (
@@ -143,7 +149,7 @@ const SmartDiscovery = () => {
                 <div className="flex items-center gap-3 mb-4">
                     <Sparkles className="text-purple-400" size={20} />
                     <h2 className="text-xl md:text-2xl font-bold text-white tracking-wide">
-                        SMART DISCOVERY USING AI ✨
+                    What’s your vibe right now? 🦥
                     </h2>
                 </div>
                 <p className="text-gray-400 text-sm mb-6">
