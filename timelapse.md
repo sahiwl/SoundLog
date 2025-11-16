@@ -1,5 +1,13 @@
 # Timelapse
 
+### 17 Nov 12:45AM
+- Major bug in ai services: the model used was deprecated long back, switched to a better model (updated to 2.5flash)
+- disabled mood buttons during cooldown
+- fixed remaining req displaying on frontend
+- if ai services fail, accoriding to Atomicity, ratelimits will be back to as it was before request was sent (for eg - initially it was 2reqs per minute, after req was made -> 1 req remaining for the rest of the minute, if req fails -> ratelimits back to 2reqs/min) 
+- fixed coutdown to show updated rate limit info from backend
+
+
 ### 2 Nov 12:44pm
 gAuth disabled 
 
@@ -22,7 +30,7 @@ update: vercel supports serverless backends, so reverting back to render
 - [ ] add get artist's individual albums, top-tracks, related artists
 - [ ] add userRatings.jsx on track page (different user's ratings)
 - [ ] add recent reviews on homepage
-- [ ] newreleases specific page
+- [x] newreleases specific page
 
 
 ### 3 April 3:54AM

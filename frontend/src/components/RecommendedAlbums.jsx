@@ -3,6 +3,7 @@ import { Music, RefreshCw } from 'lucide-react';
 import { axiosInstance } from '../lib/axios';
 import { Link } from 'react-router-dom';
 import useAuthStore from '../store/useAuthStore';
+import { showToast } from '../lib/toastConfig';
 
 const RecommendedAlbums = () => {
     const [albums, setAlbums] = useState([]);
@@ -18,14 +19,15 @@ const RecommendedAlbums = () => {
     // Countdown effect for AI rate limiting
     useEffect(() => {
         if (aiRateLimitInfo && !aiRateLimitInfo.canMakeRequest && aiRateLimitInfo.timeUntilReset > 0) {
+            // Start countdown from the timeUntilReset value
             setCountdown(aiRateLimitInfo.timeUntilReset);
 
             const timer = setInterval(() => {
                 setCountdown((prev) => {
                     if (prev <= 1) {
-                        // Reset rate limit info when countdown reaches 0
-                        setAiRateLimitInfo(prev => prev ? { ...prev, canMakeRequest: true, timeUntilReset: 0 } : null);
                         clearInterval(timer);
+                        // Fetch updated rate limit info from backend when countdown ends
+                        fetchRecommendedAlbums();
                         return 0;
                     }
                     return prev - 1;
@@ -33,6 +35,8 @@ const RecommendedAlbums = () => {
             }, 1000);
 
             return () => clearInterval(timer);
+        } else if (aiRateLimitInfo?.canMakeRequest) {
+            setCountdown(0);
         }
     }, [aiRateLimitInfo]);
 
@@ -46,15 +50,16 @@ const RecommendedAlbums = () => {
             const response = await axiosInstance.get('/ai/recommendations');
             const data = response.data;
 
-    
             if (data.recommendations && data.recommendations.albums) {
                 setAlbums(data.recommendations.albums);
                 // Check if it's personalized recommendations (user has enough data)
                 setHasUserData(data.recommendations.type === 'personalized');
                 // Check if we're using AI fallback
                 setIsUsingFallback(data.recommendations.isUsingAiFallback || false);
-                // Store AI rate limit info
-                setAiRateLimitInfo(data.aiRateLimitInfo);
+                // Store AI rate limit info - CRITICAL: Update immediately
+                if (data.aiRateLimitInfo) {
+                    setAiRateLimitInfo(data.aiRateLimitInfo);
+                }
             } else {
                 setHasUserData(false);
                 setAlbums([]);
@@ -71,6 +76,14 @@ const RecommendedAlbums = () => {
     const fetchAIRecommendations = async () => {
         if (!authUser) return;
 
+        // CRITICAL FIX: Check rate limit BEFORE making request
+        if (aiRateLimitInfo && !aiRateLimitInfo.canMakeRequest) {
+            const timeRemaining = aiRateLimitInfo.timeUntilReset || 60;
+            showToast.warn(`AI rate limit reached! Please wait ${timeRemaining} seconds before trying again.`);
+            return;
+        }
+
+        // Disable button immediately to prevent spam
         setAiLoading(true);
         setError(null);
 
@@ -83,13 +96,42 @@ const RecommendedAlbums = () => {
                 const existingIds = new Set(albums.map(album => album.id));
                 const newAlbums = data.recommendations.albums.filter(album => !existingIds.has(album.id));
                 setAlbums(prev => [...prev, ...newAlbums]);
-                setAiRateLimitInfo(data.aiRateLimitInfo);
+                
+                // CRITICAL FIX: Update rate limit info immediately from response
+                if (data.aiRateLimitInfo) {
+                    setAiRateLimitInfo(data.aiRateLimitInfo);
+                    
+                    // Show warning toast if rate limit is approaching or exhausted
+                    if (!data.aiRateLimitInfo.canMakeRequest) {
+                        showToast.warn(
+                            `AI requests exhausted! Cooldown: ${data.aiRateLimitInfo.timeUntilReset}s`
+                        );
+                    } else if (data.aiRateLimitInfo.remainingRequests === 1) {
+                        showToast.info('⚠️ Last AI request remaining! Use it wisely.');
+                    }
+                }
+                
+                showToast.success('🤖 AI recommendations loaded successfully!');
             }
         } catch (error) {
             console.error('Error fetching AI recommendations:', error);
+            
+            // Handle 429 rate limit errors with toast
             if (error.response?.status === 429) {
-                setError(`AI requests exhausted. Try again in ${error.response.data.aiRateLimitInfo?.timeUntilReset || 60} seconds.`);
+                const rateLimitInfo = error.response.data?.aiRateLimitInfo;
+                const timeRemaining = rateLimitInfo?.timeUntilReset || 60;
+                
+                // Update rate limit info from error response
+                if (rateLimitInfo) {
+                    setAiRateLimitInfo(rateLimitInfo);
+                }
+                
+                showToast.error(
+                    `🚫 AI rate limit exhausted! Try again in ${timeRemaining} seconds.`
+                );
+                setError(`AI requests exhausted. Try again in ${timeRemaining} seconds.`);
             } else {
+                showToast.error('Unable to fetch AI recommendations. Please try again.');
                 setError('Unable to fetch AI recommendations');
             }
         } finally {
@@ -139,6 +181,9 @@ const RecommendedAlbums = () => {
         return null;
     }
 
+    // Determine if AI button should be disabled
+    const isAIRateLimited = aiRateLimitInfo && (!aiRateLimitInfo.canMakeRequest || countdown > 0);
+
     return (
         <section className="mb-12">
             <div className="flex items-center justify-between mb-6">
@@ -168,24 +213,30 @@ const RecommendedAlbums = () => {
                         <span className="hidden sm:inline">Refresh</span>
                     </button>
 
-                    {hasUserData && aiRateLimitInfo?.canMakeRequest && (
-                        <button
-                            onClick={fetchAIRecommendations}
-                            disabled={aiLoading}
-                            className="flex items-center gap-2 px-3 py-2 text-sm bg-purple-600 hover:bg-purple-700 text-white rounded transition-colors disabled:opacity-50"
-                        >
-                            <span className="text-xs">🤖</span>
-                            <span className="hidden lg:inline text-xs">Discover with AI</span>
-                            <span className="lg:hidden text-xs">AI</span>
-                            {aiLoading && <div className="animate-spin rounded-full h-3 w-3 border-b border-white"></div>}
-                        </button>
-                    )}
+                    {/* AI Button - Only show if user has data and not rate limited */}
+                    {hasUserData && (
+                        <>
+                            {!isAIRateLimited && (
+                                <button
+                                    onClick={fetchAIRecommendations}
+                                    disabled={aiLoading}
+                                    className="flex items-center gap-2 px-3 py-2 text-sm bg-purple-600 hover:bg-purple-700 text-white rounded transition-colors disabled:opacity-50"
+                                >
+                                    <span className="text-xs">🤖</span>
+                                    <span className="hidden lg:inline text-xs">Discover with AI</span>
+                                    <span className="lg:hidden text-xs">AI</span>
+                                    {aiLoading && <div className="animate-spin rounded-full h-3 w-3 border-b border-white"></div>}
+                                </button>
+                            )}
 
-                    {hasUserData && (!aiRateLimitInfo?.canMakeRequest || countdown > 0) && (
-                        <div className="flex items-center gap-2 px-3 py-2 text-xs text-yellow-400 bg-yellow-400/10 rounded border border-yellow-400/20">
-                            <span>⏱️</span>
-                            <span>AI cooldown: {countdown}s</span>
-                        </div>
+                            {/* Rate Limit Cooldown Display */}
+                            {isAIRateLimited && (
+                                <div className="flex items-center gap-2 px-3 py-2 text-xs text-yellow-400 bg-yellow-400/10 rounded border border-yellow-400/20">
+                                    <span>⏱️</span>
+                                    <span>AI cooldown: {countdown}s</span>
+                                </div>
+                            )}
+                        </>
                     )}
                 </div>
             </div>

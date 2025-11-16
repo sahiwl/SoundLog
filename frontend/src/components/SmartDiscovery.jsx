@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sparkles, Music, Heart, Zap, Coffee, Focus, PartyPopper } from 'lucide-react';
 import { axiosInstance } from '../lib/axios';
 import { Link } from 'react-router-dom';
@@ -27,26 +27,80 @@ const SmartDiscovery = () => {
     const [selectedMood, setSelectedMood] = useState(null);
     const [error, setError] = useState(null);
     const [hasStarted, setHasStarted] = useState(false);
+    const [aiRateLimitInfo, setAiRateLimitInfo] = useState(null);
+    const [countdown, setCountdown] = useState(0);
 
-    const fetchMoodRecommendations = async (mood) => {
-        setLoading(true);
-        setError(null);
-        setHasStarted(true);
+    // Countdown effect for AI rate limiting
+    useEffect(() => {
+        if (aiRateLimitInfo && !aiRateLimitInfo.canMakeRequest && aiRateLimitInfo.timeUntilReset > 0) {
+            setCountdown(aiRateLimitInfo.timeUntilReset);
+
+            const timer = setInterval(() => {
+                setCountdown((prev) => {
+                    if (prev <= 1) {
+                        clearInterval(timer);
+                        // Fetch updated rate limit info from backend when countdown ends
+                        fetchMoodRecommendations(selectedMood, true);
+                        return 0;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+
+            return () => clearInterval(timer);
+        } else if (aiRateLimitInfo?.canMakeRequest) {
+            setCountdown(0);
+        }
+    }, [aiRateLimitInfo, selectedMood]);
+
+    const fetchMoodRecommendations = async (mood, silentRefresh = false) => {
+        if (!silentRefresh) {
+            setLoading(true);
+            setError(null);
+            setHasStarted(true);
+        }
 
         try {
             const response = await axiosInstance.get('/ai/recommendations', {
                 params: { mood }
             });
-            setRecommendations(response.data);
+            
+            const data = response.data;
+            setRecommendations(data);
+            
+            // Extract and store AI rate limit info
+            if (data.aiRateLimitInfo) {
+                setAiRateLimitInfo(data.aiRateLimitInfo);
+            }
         } catch (error) {
             console.error('Error fetching mood recommendations:', error);
-            setError('Unable to fetch recommendations. Please try again.');
+            
+            // Handle 429 rate limit errors specifically
+            if (error.response?.status === 429) {
+                const rateLimitInfo = error.response.data?.aiRateLimitInfo;
+                if (rateLimitInfo) {
+                    setAiRateLimitInfo(rateLimitInfo);
+                    setError(`AI requests exhausted. Try again in ${rateLimitInfo.timeUntilReset || 60} seconds.`);
+                } else {
+                    setError('AI rate limit reached. Please try again later.');
+                }
+            } else {
+                setError('Unable to fetch recommendations. Please try again.');
+            }
         } finally {
-            setLoading(false);
+            if (!silentRefresh) {
+                setLoading(false);
+            }
         }
     };
 
     const handleMoodSelect = (mood) => {
+        // Check rate limit before making request
+        if (aiRateLimitInfo && !aiRateLimitInfo.canMakeRequest && countdown > 0) {
+            setError(`Please wait ${countdown} seconds before requesting more AI recommendations.`);
+            return;
+        }
+        
         setSelectedMood(mood);
         fetchMoodRecommendations(mood);
     };
@@ -96,20 +150,36 @@ const SmartDiscovery = () => {
                     How are you feeling today?
                 </p>
 
+                {/* AI Rate Limit Status */}
+                {aiRateLimitInfo && !aiRateLimitInfo.canMakeRequest && countdown > 0 && (
+                    <div className="mb-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3">
+                        <p className="text-yellow-300 text-sm flex items-center gap-2">
+                            <span>⏱️</span>
+                            <span>AI cooldown: {countdown}s remaining</span>
+                        </p>
+                        <p className="text-yellow-200 text-xs mt-1">
+                            You've reached the AI request limit. Please wait before requesting more recommendations.
+                        </p>
+                    </div>
+                )}
+
                 {/* Mood Selector */}
                 <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 mb-6">
                     {Object.keys(MOOD_ICONS).map((mood) => {
                         const IconComponent = MOOD_ICONS[mood];
                         const colorClass = MOOD_COLORS[mood];
                         const isSelected = selectedMood === mood;
+                        const isRateLimited = aiRateLimitInfo && !aiRateLimitInfo.canMakeRequest && countdown > 0;
 
                         return (
                             <button
                                 key={mood}
                                 onClick={() => handleMoodSelect(mood)}
+                                disabled={isRateLimited && !isSelected}
                                 className={`
                                     flex flex-col items-center gap-2 p-3 rounded-lg border transition-all
                                     ${isSelected ? colorClass : 'text-gray-400 bg-gray-800/50 border-gray-700 hover:border-gray-600'}
+                                    ${isRateLimited && !isSelected ? 'opacity-50 cursor-not-allowed' : ''}
                                 `}
                             >
                                 <IconComponent size={20} />
@@ -137,7 +207,6 @@ const SmartDiscovery = () => {
                 </div>
             )}
 
-
             {loading && (
                 <div className="flex items-center justify-center py-12">
                     <div className="text-center">
@@ -149,19 +218,23 @@ const SmartDiscovery = () => {
                 </div>
             )}
 
-
             {error && !loading && (
                 <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 text-center">
                     <p className="text-red-300 text-sm">{error}</p>
-                    <button
-                        onClick={() => fetchMoodRecommendations(selectedMood)}
-                        className="text-red-200 hover:text-red-100 text-xs mt-2 underline"
-                    >
-                        Try again
-                    </button>
+                    {error.includes('exhausted') || error.includes('wait') ? (
+                        <p className="text-red-200 text-xs mt-2">
+                            Rate limit info: {aiRateLimitInfo?.remainingRequests || 0} requests remaining
+                        </p>
+                    ) : (
+                        <button
+                            onClick={() => fetchMoodRecommendations(selectedMood)}
+                            className="text-red-200 hover:text-red-100 text-xs mt-2 underline"
+                        >
+                            Try again
+                        </button>
+                    )}
                 </div>
             )}
-
 
             {recommendations && !loading && !error && (
                 <div>
@@ -176,11 +249,15 @@ const SmartDiscovery = () => {
                             <p className="text-blue-200 text-xs mt-1">
                                 Perfect albums for your {selectedMood} mood
                             </p>
+                            {aiRateLimitInfo && (
+                                <p className="text-blue-200 text-xs mt-1">
+                                    AI requests remaining: {aiRateLimitInfo.remainingRequests}/{aiRateLimitInfo.maxRequests}
+                                </p>
+                            )}
                         </div>
                     </div>
 
-         
-                    {recommendations.recommendations.albums?.length > 0 ? (
+                    {recommendations.recommendations?.albums?.length > 0 ? (
                         <div className="carousel carousel-center w-full p-4 gap-6 space-x-6 rounded-box">
                             {recommendations.recommendations.albums.slice(0, 8).map(renderAlbumCard)}
                         </div>
@@ -195,10 +272,17 @@ const SmartDiscovery = () => {
                     {/* Refresh Button */}
                     <div className="text-center mt-4">
                         <button
-                            onClick={() => fetchMoodRecommendations(selectedMood)}
-                            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors"
+                            onClick={() => {
+                                if (aiRateLimitInfo && !aiRateLimitInfo.canMakeRequest && countdown > 0) {
+                                    setError(`Please wait ${countdown} seconds before requesting more recommendations.`);
+                                    return;
+                                }
+                                fetchMoodRecommendations(selectedMood);
+                            }}
+                            disabled={loading || (aiRateLimitInfo && !aiRateLimitInfo.canMakeRequest && countdown > 0)}
+                            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            Get More {selectedMood.charAt(0).toUpperCase() + selectedMood.slice(1)} Vibes
+                            Get More {selectedMood?.charAt(0).toUpperCase() + selectedMood?.slice(1)} Vibes
                         </button>
                     </div>
                 </div>
