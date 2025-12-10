@@ -1,263 +1,46 @@
-import { searchSpotifyData } from "../lib/pullSpotifyData.js";
-import Likes from "../models/likes.model.js";
-import Listened from "../models/listened.model.js";
-import ListenLater from "../models/listenLater.model.js";
-import Rating from "../models/rating.model.js";
-import Review from "../models/review.model.js";
-import Comment from "../models/comment.model.js";
-import Album from "../models/album.model.js";
-import Track from "../models/track.model.js";
+import * as actionsService from "../services/actions.service.js";
 
-/**
- * Utility function to get or create album/track data from Spotify
- * @param {string} itemId - The Spotify ID of the album or track
- * @param {string} itemType - Either 'albums' or 'tracks'
- * @returns {Promise<Object>} The album or track data
- */
-export const getOrCreateSpotifyData = async (itemId, itemType) => {
+export { getOrCreateSpotifyData } from "../services/actions.service.js";
+
+export const toggleLike = async (req, res) => {
     try {
-        // Check if item exists in database
-        let item;
-        if (itemType === 'albums') {
-            item = await Album.findOne({ albumId: itemId });
-            if (!item) {
-                const spotifyData = await searchSpotifyData(`${itemType}/${itemId}`);
-                if (!spotifyData || spotifyData.error) {
-                    throw new Error(`${itemType.slice(0, -1)} not found on Spotify.`);
-                }
-                item = await Album.create({
-                    albumId: itemId,
-                    name: spotifyData.name,
-                    album_type: spotifyData.album_type,
-                    total_tracks: spotifyData.total_tracks,
-                    is_playable: spotifyData.is_playable,
-                    release_date: spotifyData.release_date,
-                    release_date_precision: spotifyData.release_date_precision,
-                    images: spotifyData.images,
-                    artists: spotifyData.artists.map(artist => ({
-                        spotifyId: artist.id,
-                        name: artist.name,
-                        uri: artist.uri,
-                        href: artist.href,
-                        external_urls: artist.external_urls,
-                        type: artist.type
-                    })),
-                    tracks: {
-                        total: spotifyData.tracks?.total,
-                        items: spotifyData.tracks?.items?.map(track => ({
-                            name: track.name,
-                            trackId: track.id,
-                            disc_number: track.disc_number,
-                            duration_ms: track.duration_ms,
-                            explicit: track.explicit,
-                            track_number: track.track_number,
-                            uri: track.uri,
-                            is_playable: track.is_playable,
-                            is_local: track.is_local,
-                            preview_url: track.preview_url,
-                            artists: track.artists.map(artist => ({
-                                spotifyId: artist.id,
-                                name: artist.name,
-                                uri: artist.uri,
-                                external_urls: artist.external_urls
-                            }))
-                        }))
-                    },
-                    external_urls: spotifyData.external_urls,
-                    external_ids: spotifyData.external_ids,
-                    uri: spotifyData.uri,
-                    href: spotifyData.href,
-                    popularity: spotifyData.popularity,
-                    label: spotifyData.label,
-                    copyrights: spotifyData.copyrights,
-                    genres: spotifyData.genres,
-                    lastAccessed: new Date(),
-                    createdAt: new Date()
-                });
-            } else {
-                // Update lastAccessed timestamp
-                item.lastAccessed = new Date();
-                await item.save();
-            }
-        } else {
-            item = await Track.findOne({ trackId: itemId });
-            if (!item) {
-                const spotifyData = await searchSpotifyData(`${itemType}/${itemId}`);
-                if (!spotifyData || spotifyData.error) {
-                    throw new Error(`${itemType.slice(0, -1)} not found on Spotify.`);
-                }
-                item = await Track.create({
-                    trackId: itemId,
-                    name: spotifyData.name,
-                    duration_ms: spotifyData.duration_ms,
-                    explicit: spotifyData.explicit,
-                    popularity: spotifyData.popularity,
-                    track_number: spotifyData.track_number,
-                    disc_number: spotifyData.disc_number,
-                    is_local: spotifyData.is_local,
-                    is_playable: spotifyData.is_playable,
-                    preview_url: spotifyData.preview_url,
-                    type: spotifyData.type,
-                    href: spotifyData.href,
-                    album: {
-                        album_type: spotifyData.album?.album_type,
-                        spotifyId: spotifyData.album?.id,
-                        name: spotifyData.album?.name,
-                        release_date: spotifyData.album?.release_date,
-                        release_date_precision: spotifyData.album?.release_date_precision,
-                        total_tracks: spotifyData.album?.total_tracks,
-                        type: spotifyData.album?.type,
-                        uri: spotifyData.album?.uri,
-                        href: spotifyData.album?.href,
-                        is_playable: spotifyData.album?.is_playable,
-                        images: spotifyData.album?.images,
-                        artists: spotifyData.album?.artists?.map(artist => ({
-                            spotifyId: artist.id,
-                            name: artist.name,
-                            type: artist.type,
-                            uri: artist.uri,
-                            href: artist.href,
-                            external_urls: artist.external_urls
-                        })),
-                        external_urls: spotifyData.album?.external_urls
-                    },
-                    artists: spotifyData.artists.map(artist => ({
-                        spotifyId: artist.id,
-                        name: artist.name,
-                        type: artist.type,
-                        uri: artist.uri,
-                        href: artist.href,
-                        external_urls: artist.external_urls
-                    })),
-                    external_urls: spotifyData.external_urls,
-                    external_ids: spotifyData.external_ids,
-                    uri: spotifyData.uri,
-                    linked_from: spotifyData.linked_from,
-                    lastAccessed: new Date(),
-                    createdAt: new Date()
-                });
-            } else {
-                // Update lastAccessed timestamp
-                item.lastAccessed = new Date();
-                await item.save();
-            }
-        }
-        return item;
-    } catch (error) {
-        console.error(`Error in getOrCreateSpotifyData for ${itemType}:`, error.message);
-        throw error;
-    }
-};
-
-/**
-toggleLike - Toggle like state for a album. 
-Expects: req.params.itemType (string: "track" or "album"), req.params.itemId (Spotify track/album ID as a string)
- */
-// ✔️ - tested, revamped
-export const toggleLike = async(req,res)=>{
-    try {        
         const { albumId } = req.params;
         const userId = req.user._id;
 
-        if (!albumId) {
-            return res.status(400).json({ message: "albumId is required." });
-        }
-
-        await getOrCreateSpotifyData(albumId, 'albums');
-
-        const existingLike = await Likes.findOne({ userId, albumId });
-        
-        if (existingLike) {
-            await Likes.deleteOne({ _id: existingLike._id });
-            return res.status(200).json({ message: "Like removed." });
-        } else {
-            // Create like entry
-            await Likes.create({ userId, albumId });
-            
-            // Always create a listened entry when liking
-            await Listened.findOneAndUpdate(
-                { userId, albumId },
-                { userId, albumId },
-                { upsert: true, new: true }
-            );
-            
-            // Remove from listen later if exists
-            await ListenLater.deleteOne({ userId, albumId });
-            
-            return res.status(200).json({ 
-                message: "Album liked, marked as listened, and removed from Listen Later."
-            });
-        }
+        const result = await actionsService.toggleLike(userId, albumId);
+        return res.status(200).json(result);
     } catch (error) {
         console.error("Error in toggleLike:", error.message);
+        if (error.message === "albumId is required.") {
+            return res.status(400).json({ message: error.message });
+        }
         return res.status(500).json({ message: "Internal Server Error" });
     }
 }
 
-
-/**
- addRating - Create a rating for a track or album. 
- When rating is set, remove any listenLater entry. (for albums only)
- Expects: req.params.itemType (string: "track" or "album"), req.params.itemId (Spotify track/album ID as a string), 
- req.body.rating (number between 0 and 100, )
- */
-// ✔️ - tested, revamped
 export const addRating = async (req, res) => {
     try {
         const { itemType, itemId } = req.params;
         const { rating } = req.body;
         const userId = req.user._id;
-        
-        if (!itemId) {
-            return res.status(400).json({ message: "itemId is required." });
-        }
-        
-        if (!itemType || (itemType !== "tracks" && itemType !== "albums")) {
-            return res.status(400).json({ message: "Valid itemType (tracks or albums) is required." });
-        }
 
-        // Validate rating is a number between 0.5 and 5
-        if (typeof rating !== "number" || isNaN(rating) || rating < 0 || rating > 100 || rating % 0.5 !== 0) {
-            return res.status(400).json({ message: "Rating must be a number between 0 and 100" });
-        }
-            
-        await getOrCreateSpotifyData(itemId, itemType);
-        
-        // Check for existing rating
-        const existingRating = await Rating.findOne({ userId, itemId, itemType });
-        
-        let newRating;
-        if (existingRating) {
-            // Delete existing rating first
-            await existingRating.deleteOne();
-        }
-        
-        // Create new rating
-        newRating = await Rating.create({ 
-            userId, 
-            itemId, 
-            rating, 
-            itemType 
-        });
-          
-        if(itemType === "albums"){
-            // Remove from Listen Later if exists
-            await ListenLater.deleteOne({ userId, albumId:itemId }); 
-            
-            // Mark as listened
-            const existingListened = await Listened.findOne({ userId, albumId:itemId });
-            if (!existingListened) {
-                await Listened.create({ userId, albumId:itemId });
-            }
-        }
+        const newRating = await actionsService.addRating(userId, { itemType, itemId, rating });
 
-        return res.status(201).json({ 
-            message: "Rating added successfully.", 
-            rating: newRating 
+        return res.status(201).json({
+            message: "Rating added successfully.",
+            rating: newRating
         });
 
     } catch (error) {
         console.error("Error in addRating:", error.message);
+        const badReqs = [
+            "itemId is required.",
+            "Valid itemType (tracks or albums) is required.",
+            "Rating must be a number between 0 and 100"
+        ];
+        if (badReqs.includes(error.message)) {
+            return res.status(400).json({ message: error.message });
+        }
         return res.status(500).json({ message: "Internal Server Error" });
     }
 }
@@ -266,472 +49,247 @@ export const getRating = async (req, res) => {
     try {
         const { itemType, itemId } = req.params;
         const userId = req.user._id;
-        
-        if (!itemId) {
-            return res.status(400).json({ message: "itemId is required." });
-        }
-        
-        if (!itemType || (itemType !== "tracks" && itemType !== "albums")) {
-            return res.status(400).json({ message: "Valid itemType (tracks or albums) is required." });
-        }
 
-        const existingRating = await Rating.findOne({ 
-            userId, 
-            itemId, 
-            itemType 
-        });
+        const rating = await actionsService.getRating(userId, { itemType, itemId });
 
-        if (!existingRating) {
-            return res.json({ rating: null });
-        }
-
-        return res.json({ rating: existingRating.rating });
+        return res.json({ rating });
 
     } catch (error) {
         console.error("Error in getRating:", error.message);
+        if (error.message.includes("required")) {
+            return res.status(400).json({ message: error.message });
+        }
         return res.status(500).json({ message: "Internal Server Error" });
     }
 };
 
-/**
-  toggleListened - Toggle whether a user has marked a album as listened. 
-  Expects: req.params.albumId (Spotify album ID as a string). 
-
-  //30Mar - user can mark unlisten even if they had previously liked/rated the album
- */
-// ✔️ - tested,revamped
-export const toggleListened = async (req,res) => {
+export const toggleListened = async (req, res) => {
     try {
-        const { albumId} = req.params
+        const { albumId } = req.params
         const userId = req.user._id
 
-        if (!albumId) {
-            return res.status(400).json({ message: "albumId is required." });
-        }
-        
-        await getOrCreateSpotifyData(albumId, 'albums');
-        
-        //toggle off - remove from listened
-        const existingListened = await Listened.findOne({ userId, albumId });
-        
-        if(existingListened){
-            await Listened.deleteOne({ _id: existingListened._id})
-            return res.status(200).json({ message: "Album removed from listened." });
-        }
-        
-        // Mark as listened.
-        await Listened.create({ userId, albumId});
-
-        return res.status(200).json({ message: "album marked as listened." });
+        const result = await actionsService.toggleListened(userId, albumId);
+        return res.status(200).json(result);
 
     } catch (error) {
         console.error("Error in toggleListened:", error.message);
+        if (error.message === "albumId is required.") {
+            return res.status(400).json({ message: error.message });
+        }
         return res.status(500).json({ message: "Internal Server Error, my boy" });
     }
 }
 
-
-/**
-toggleListenLater - Toggle the "Listen Later" state for a track or album. 
-Expects: req.params.itemType (string: "track" or "album"), req.params.itemId (Spotify track/album ID as a string). 
-Behavior:
-    - If the item is not in Listen Later, add it.
-    - If the item is already in Listen Later, remove it.
-    - In either case, duplicates are not allowed.
- */
-// ✔️ - tested, revamped
 export const toggleListenLater = async (req, res) => {
     try {
         const { albumId } = req.params;
         const userId = req.user._id;
-        
-        if (!albumId) {
-            return res.status(400).json({ message: "albumId is required." });
-        }
-        
-        // Use the utility function to get or create album data
-        await getOrCreateSpotifyData(albumId, 'albums');
-        
-        // Check for existing entry in listen later
-        const existingEntry = await ListenLater.findOne({ userId, albumId });
-        
-        if (existingEntry) {
-            // If the album exists, remove it (toggle off)
-            await ListenLater.deleteOne({ _id: existingEntry._id });
-            return res.status(200).json({ message: "Album removed from Listen Later." });
-        } else {
-            // Otherwise, add the album to Listen Later
-            const newEntry = await ListenLater.create({ userId, albumId });
-            return res.status(200).json({ 
-                message: "Album added to Listen Later.", 
-                doc: newEntry 
-            });
-        }
-        
+
+        const result = await actionsService.toggleListenLater(userId, albumId);
+        return res.status(200).json(result);
+
     } catch (error) {
         console.error("Error in toggleListenLater:", error.message);
-        return res.status(500).json({ message: "Internal Server Error, my boy" });    
+        if (error.message === "albumId is required.") {
+            return res.status(400).json({ message: error.message });
+        }
+        return res.status(500).json({ message: "Internal Server Error, my boy" });
     }
 }
 
-/** 
-deleteRating - Explicitly delete the rating for a track or album. Expects: req.params.itemType, req.params.itemId
-*/
-// ✔️ - tested, revamped
 export const deleteRating = async (req, res) => {
     try {
         const { itemType, itemId } = req.params;
         const userId = req.user._id;
 
-        if (!itemId || !itemType) {
-            return res.status(400).json({ message: "itemId and itemType are required." });
-        }
-
-        if (!['albums', 'tracks'].includes(itemType)) {
-            return res.status(400).json({ message: "Invalid itemType. Must be 'albums' or 'tracks'" });
-        }
-
-        // Delete rating
-        const existingRating = await Rating.findOne({
-            userId,
-            itemId,
-            itemType
-        });
-
-        if (!existingRating) {
-            return res.status(400).json({ message: "No existing rating found." });
-        }
-
-        await existingRating.deleteOne();
-
-        // If it's an album, also remove it from listened
-        // if (itemType === 'albums') {
-        //     await Listened.deleteOne({ userId, albumId: itemId });
-        // }
-
-        return res.status(200).json({ message: "Rating deleted successfully." });
+        const result = await actionsService.deleteRating(userId, { itemType, itemId });
+        return res.status(200).json(result);
 
     } catch (error) {
-        console.error("Error in deleteRating:", error);
+        console.error("Error in deleteRating:", error.message);
+        if (error.message === "No existing rating found.") {
+            return res.status(400).json({ message: error.message }); // 400 as per original? Or 404? Original was 400.
+        }
+        if (error.message.includes("required") || error.message.includes("Invalid")) {
+            return res.status(400).json({ message: error.message });
+        }
         return res.status(500).json({ message: "Internal Server Error" });
     }
 };
 
-/**
-addReview - Add a review only for a album. When a review is added, automatically mark as listened and remove from Listen Later. Expects: req.params.itemType, req.params.itemId, req.body.reviewText (string)
-*/
-// ✔️ - tested, revamped
 export const addReview = async (req, res) => {
     try {
         const { albumId } = req.params;
         const { reviewText } = req.body;
         const userId = req.user._id;
-        
-        if (!albumId || !reviewText) {
-            return res.status(400).json({ message: "albumId and reviewText are required." });
-        }
-        
-        // Use the utility function to get or create album data
-        await getOrCreateSpotifyData(albumId, 'albums');
-        
-        // Check for existing review
-        const existingReview = await Review.findOne({ userId, albumId });
-        if (existingReview) {
-            return res.status(400).json({ 
-                message: "You have already reviewed this album. Please edit your existing review instead." 
-            });
-        }
 
-        // Review text can't be empty
-        if (reviewText.trim() === '') {
-            return res.status(400).json({ message: "Review text cannot be empty." });
-        }
-        
-        // Create review
-        const newReview = await Review.create({
-            userId,
-            albumId,
-            reviewText
-        });
-        
-        // Mark as listened
-        const existingListened = await Listened.findOne({ userId, albumId });
-        if (!existingListened) {
-            await Listened.create({ userId, albumId });
-        }
-        
-        // Remove from listenLater if it exists
-        await ListenLater.deleteOne({ userId, albumId });
-        
-        return res.status(201).json({ 
+        const newReview = await actionsService.addReview(userId, { albumId, reviewText });
+
+        return res.status(201).json({
             message: "Review added successfully. Album marked as listened and removed from Listen Later (if it existed).",
             review: newReview
         });
     } catch (error) {
         console.error("Error in addReview:", error.message);
-        return res.status(500).json({ message: "Internal Server Error" });    
+        const userErrors = [
+            "albumId and reviewText are required.",
+            "You have already reviewed this album. Please edit your existing review instead.",
+            "Review text cannot be empty."
+        ];
+        if (userErrors.includes(error.message)) {
+            return res.status(400).json({ message: error.message });
+        }
+        return res.status(500).json({ message: "Internal Server Error" });
     }
 }
 
-/**
- updateReview - Update an existing review for an album. 
- Expects: req.params.albumId, req.body.reviewText (string)
- 
- no reviewID => A user has only one review per album, so we use the combination 
- of the user's id and the album id to uniquely identify the review.
- */
-// ✔️ - tested, revamped
-export const updateReview = async (req,res)=>{
+export const updateReview = async (req, res) => {
     try {
         const { albumId } = req.params;
         const { reviewText } = req.body;
         const userId = req.user._id;
 
-        if(!reviewText){
-            return res.status(400).json({ message: "Bro, Review text is required." });
-        }
-        if(!albumId){
-            return res.status(400).json({ message: "albumId is required." });
-        }
-
-        const existingReview = await Review.findOne({ userId, albumId });
-        if(!existingReview){
-            return res.status(404).json({ message: "Review not found." });
-        }
-
-        //overwrite new review over old one
-        existingReview.reviewText = reviewText;
-        await existingReview.save();
-        return res.status(200).json({ message: "Review updated.", review: existingReview });
+        const updatedReview = await actionsService.updateReview(userId, { albumId, reviewText });
+        return res.status(200).json({ message: "Review updated.", review: updatedReview });
     } catch (error) {
         console.error("Error in updateReview:", error.message);
+        if (error.message === "Review not found.") {
+            return res.status(404).json({ message: error.message });
+        }
+        if (error.message.includes("required")) {
+            return res.status(400).json({ message: error.message });
+        }
         return res.status(500).json({ message: "Internal Server Error, my boy" });
     }
 }
 
-/**
- * deleteReview - Delete the review for an album. Expects: req.params.albumId
- */
-// ✔️ - tested,revamped
 export const deleteReview = async (req, res) => {
     try {
-      const { albumId } = req.params;
-      const userId = req.user._id;
-  
-      if (!albumId) {
-        return res.status(400).json({ message: "itemId is required." });
-      }
-  
-      const existingReview = await Review.findOne({ userId, albumId });
-      if (!existingReview) {
-        return res.status(404).json({ message: "Review not found." });
-      }
-  
-      await existingReview.deleteOne();
-      return res.status(200).json({ message: "Review deleted." });
-    } catch (error) {
-      console.error("Error in deleteReview:", error.message);
-      return res.status(500).json({ message: "Internal Server Error, my boy" });
-    }
-  };
-
-
-/**
-addComment - Add a comment under a review.
-Expects: req.body.reviewId, req.body.commentText (string) Optionally, req.params.itemType and req.params.itemId for context.
- */
-// ✔️ - tested,revamped
-export const addComment = async (req,res)=>{
-    try {
-        const {reviewId, commentText} = req.body 
+        const { albumId } = req.params;
         const userId = req.user._id;
 
-        if(!commentText || !reviewId){
-            return res.status(400).json({ message: "reivewId and commentText are required. check those fields" });
+        const result = await actionsService.deleteReview(userId, albumId);
+        return res.status(200).json(result);
+    } catch (error) {
+        console.error("Error in deleteReview:", error.message);
+        if (error.message === "Review not found.") {
+            return res.status(404).json({ message: error.message });
         }
-        //empty comment and typecheck
-        if(typeof commentText !== "string" || commentText.trim() === ""){
-            return res.status(400).json({message: "Invalid Comment"});
+        if (error.message.includes("required")) {
+            return res.status(400).json({ message: error.message });
         }
+        return res.status(500).json({ message: "Internal Server Error, my boy" });
+    }
+};
 
-        const existingReview = await Review.findOne({_id: reviewId, userId})
-        if(!existingReview){
-            return res.status(400).json({message: "Invalid review id"});
-        }
-        const newComment = await Comment.create({ userId, reviewId, commentText });
+export const addComment = async (req, res) => {
+    try {
+        const { reviewId, commentText } = req.body
+        const userId = req.user._id;
+
+        const newComment = await actionsService.addComment(userId, { reviewId, commentText });
         return res.status(201).json({ message: "Comment added.", comment: newComment });
     } catch (error) {
-    console.error("Error in addComment:", error.message);
-    return res.status(500).json({ message: "Internal Server Error" });
+        console.error("Error in addComment:", error.message);
+        if (error.message.includes("required") || error.message.includes("Invalid")) {
+            return res.status(400).json({ message: error.message });
+        }
+        //  if (error.message === "Invalid review id") // Service throws this if review not found
+        //     return res.status(400).json({ message: "Invalid review id" });
+
+        return res.status(500).json({ message: "Internal Server Error" });
     }
 }
 
-
-/**
-deleteComment - Delete a comment. Expects: req.params.commentId
-*/
-// ✔️ - tested, revampd
 export const deleteComment = async (req, res) => {
     try {
-      const { commentId } = req.params;
-      const userId = req.user._id;
-      if (!commentId) {
-        return res.status(400).json({ message: "commentId is required." });
-      }
-  
-      const existingComment = await Comment.findOne({ _id: commentId, userId });
-      if (!existingComment) {
-        return res.status(404).json({ message: "Comment not found or unauthorized." });
-      }
-  
-      await existingComment.deleteOne();
-      return res.status(200).json({ message: "Comment deleted." });
+        const { commentId } = req.params;
+        const userId = req.user._id;
+
+        const result = await actionsService.deleteComment(userId, commentId);
+        return res.status(200).json(result);
     } catch (error) {
-      console.error("Error in deleteComment:", error.message);
-      return res.status(500).json({ message: "Internal Server Error, my boy" });
+        console.error("Error in deleteComment:", error.message);
+        if (error.message === "Comment not found or unauthorized.") {
+            return res.status(404).json({ message: error.message });
+        }
+        if (error.message.includes("required")) {
+            return res.status(400).json({ message: error.message });
+        }
+        return res.status(500).json({ message: "Internal Server Error, my boy" });
     }
-  };
+};
 
 export const getReviews = async (req, res) => {
     try {
         const { albumId } = req.params;
-        
-        if (!albumId) {
-            return res.status(400).json({ message: "albumId is required." });
-        }
 
-        const reviews = await Review.find({ albumId })
-            .sort({ createdAt: -1 })
-            .populate('userId', 'username')
-            .populate('likedBy', 'username'); // Add this to populate likedBy users
+        const result = await actionsService.getReviews(albumId);
 
-        const reviewsWithDetails = await Promise.all(
-            reviews.map(async (review) => {
-                const comments = await Comment.find({ reviewId: review._id })
-                    .populate('userId', 'username');
-
-                return {
-                    reviewId: review._id,
-                    reviewText: review.reviewText,
-                    createdAt: review.createdAt,
-                    likes: review.likes,          // Include likes count
-                    likedBy: review.likedBy.map(user => user._id), // Include array of user IDs who liked
-                    user: {
-                        id: review.userId._id,
-                        username: review.userId.username
-                    },
-                    commentCount: comments.length
-                };
-            })
-        );
-
-        return res.status(200).json({ 
-            reviews: reviewsWithDetails,
-            totalReviews: reviewsWithDetails.length
-        });
+        return res.status(200).json(result);
 
     } catch (error) {
         console.error("Error in getReviews:", error.message);
+        if (error.message === "albumId is required.") {
+            return res.status(400).json({ message: error.message });
+        }
         return res.status(500).json({ message: "Internal Server Error" });
     }
 };
 
 export const likeReview = async (req, res) => {
-  try {
-    const { reviewId } = req.params;
-    const userId = req.user._id;
+    try {
+        const { reviewId } = req.params;
+        const userId = req.user._id;
 
-    if (!reviewId) {
-      return res.status(400).json({ message: "reviewId is required." });
+        const result = await actionsService.likeReview(userId, reviewId);
+        return res.status(200).json(result);
+
+    } catch (error) {
+        console.error("Error in likeReview:", error.message);
+        if (error.message === "Review not found.") {
+            return res.status(404).json({ message: error.message });
+        }
+        if (error.message.includes("required")) {
+            return res.status(400).json({ message: error.message });
+        }
+        return res.status(500).json({ message: "Internal Server Error" });
     }
-
-    const review = await Review.findById(reviewId);
-    if (!review) {
-      return res.status(404).json({ message: "Review not found." });
-    }
-
-    const userHasLiked = review.likedBy.includes(userId);
-
-    if (userHasLiked) {
-      review.likes = Math.max(0, review.likes - 1); // Ensure likes don't go below 0
-      review.likedBy = review.likedBy.filter(id => !id.equals(userId));
-      await review.save();
-      return res.status(200).json({ message: "Review unliked.", likes: review.likes });
-    } else {
-      review.likes += 1;
-      review.likedBy.push(userId);
-      await review.save();
-      return res.status(200).json({ message: "Review liked.", likes: review.likes });
-    }
-
-  } catch (error) {
-    console.error("Error in likeReview:", error.message);
-    return res.status(500).json({ message: "Internal Server Error" });
-  }
 };
 
 export const getActions = async (req, res) => {
-  try {
-    const { albumId } = req.params;
-    const userId = req.user._id;
+    try {
+        const { albumId } = req.params;
+        const userId = req.user._id;
 
-    if (!albumId) {
-      return res.status(400).json({ message: "albumId is required." });
+        const result = await actionsService.getActions(userId, albumId);
+        res.status(200).json(result);
+
+    } catch (error) {
+        console.error("Error in getActions:", error.message);
+        if (error.message === "Album Not Found") {
+            return res.status(404).json({ message: error.message });
+        }
+        if (error.message.includes("required")) {
+            return res.status(400).json({ message: error.message });
+        }
+        res.status(500).json({ message: "Internal Server Error" });
     }
-
-    // Get album data or create if doesn't exist
-    const album = await getOrCreateSpotifyData(albumId, 'albums');
-    if (!album) {
-      return res.status(404).json({ message: "Album Not Found" });
-    }
-
-    // Check all user actions for this album
-    const [listened, liked, listenLater, rating, review] = await Promise.all([
-      Listened.exists({ userId, albumId }),
-      Likes.exists({ userId, albumId }),
-      ListenLater.exists({ userId, albumId }),
-      Rating.findOne(
-        { userId, itemId: albumId, itemType: 'albums' }, 
-        { rating: 1, _id: 0 }
-      ),
-      Review.exists({ userId, albumId })
-    ]);
-
-    res.status(200).json({
-      listened: !!listened,
-      liked: !!liked,
-      listenLater: !!listenLater,
-      rating: rating ? rating.rating : null,
-      reviewed: !!review
-    });
-
-  } catch (error) {
-    console.error("Error in getActions:", error.message);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
 };
 
 export const getTrackActions = async (req, res) => {
-  try {
-    const { trackId } = req.params;
-    const userId = req.user._id;
+    try {
+        const { trackId } = req.params;
+        const userId = req.user._id;
 
-    if (!trackId) {
-      return res.status(400).json({ message: "trackId is required." });
+        const result = await actionsService.getTrackActions(userId, trackId);
+        res.status(200).json(result);
+
+    } catch (error) {
+        console.error("Error in getTrackActions:", error.message);
+        if (error.message.includes("required")) {
+            return res.status(400).json({ message: error.message });
+        }
+        res.status(500).json({ message: "Internal Server Error" });
     }
-
-    // Get track rating
-    const rating = await Rating.findOne(
-      { userId, itemId: trackId, itemType: 'tracks' }, 
-      { rating: 1, _id: 0 }
-    );
-
-    res.status(200).json({
-      rating: rating ? rating.rating : null
-    });
-
-  } catch (error) {
-    console.error("Error in getTrackActions:", error.message);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
 };

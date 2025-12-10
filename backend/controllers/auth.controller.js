@@ -1,61 +1,33 @@
-import cloudinary from "../lib/cloudinary.js";
 import { generateToken } from "../lib/utils.js";
-import User from "../models/user.model.js";
-import bcrypt from "bcryptjs";
+import * as authService from "../services/auth.service.js";
 
 export const signup = async (req, res) => {
-  const { username, email, password } = req.body;
   try {
-    if (password.length < 6) {
-      return res
-        .status(400)
-        .json({ message: "Password must be at least 6 characters long" });
-    }
-    const user = await User.findOne({ email });
-    if (user) return res.status(400).json({ message: "User already exists" });
+    const newUser = await authService.signupUser(req.body);
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedpass = await bcrypt.hash(password, salt);
+    //generate jwt token here
+    generateToken(newUser._id, res);
 
-    const newUser = new User({
-      username: username,
-      email: email,
-      password: hashedpass,
+    res.status(201).json({
+      _id: newUser._id,
+      username: newUser.username,
+      email: newUser.email,
+      profilePic: newUser.profilePic,
+      followers: newUser.followers,
+      following: newUser.following
     });
-
-    if (newUser) {
-      //generate jwt token here
-      generateToken(newUser._id, res);
-      await newUser.save();
-
-      res.status(201).json({
-        _id: newUser._id,
-        username: newUser.username,
-        email: newUser.email,
-        profilePic: newUser.profilePic,
-        followers: newUser.followers,
-        following: newUser.following
-      });
-    }
   } catch (error) {
     console.log("Error in signup controller: ", error.message);
+    if (error.message === "User already exists" || error.message === "Password must be at least 6 characters long") {
+      return res.status(400).json({ message: error.message });
+    }
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
 export const login = async (req, res) => {
-  const { username, password } = req.body;
-
   try {
-    const user = await User.findOne({ username });
-    if (!user) {
-      return res.status(400).json({ message: "Invalid credentials" });
-    }
-    //compare password provided by user with hashed password in db
-    const isPasswordCorrect = await bcrypt.compare(password, user.password);
-    if (!isPasswordCorrect) {
-      return res.status(400).json({ message: "Invalid credentials" });
-    }
+    const user = await authService.loginUser(req.body);
 
     //generate jwt
     generateToken(user._id, res);
@@ -70,18 +42,21 @@ export const login = async (req, res) => {
     });
   } catch (error) {
     console.log("Error in login controller: ", error.message);
+    if (error.message === "Invalid credentials") {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
 export const logout = (req, res) => {
   try {
-       // Clear the JWT cookie with the same options used when setting it
-       res.clearCookie('jwt', {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
-        path: '/',
+    // Clear the JWT cookie with the same options used when setting it
+    res.clearCookie('jwt', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+      path: '/',
     });
     res.status(200).json({ msg: 'Logged out successfully' });
   } catch (error) {
@@ -90,57 +65,23 @@ export const logout = (req, res) => {
   }
 };
 
-export const updateProfile = async (req,res) => {
+export const updateProfile = async (req, res) => {
   try {
-      const {profilePic, username, email, bio, favourites} = req.body;
-      const userId = req.user._id;
-
-      if(!profilePic && !username && !email && !bio){
-          return res.status(400).json({message:"Nothing given to update"});
-      }
-
-      let updateData = {};
-
-      if(profilePic){   
-          const uploadResponse = await cloudinary.uploader.upload(profilePic);
-          updateData.profilePic = uploadResponse.secure_url;
-      }
-
-      if(username){
-          const existingUser = await User.findOne({username});
-          if(existingUser && existingUser._id.toString() !== userId.toString()){
-              return res.status(400).json({message: "This username is already taken"});
-          }
-          updateData.username = username;
-      }
-
-      if(email){
-          const existingUser = await User.findOne({email});
-          if(existingUser && existingUser._id.toString() !== userId.toString()){
-              return res.status(400).json({message: "An account with this email already exists"});
-          }
-          updateData.email = email;
-      }
-
-      if(bio !== undefined){
-          updateData.bio = bio;
-      }
-
-      if(favourites){
-          if(!Array.isArray(favourites) || favourites.length > 4){
-              return res.status(400).json({message: "Favourites must be an array of up to 4 movies"});
-          }
-          updateData.favourites = favourites;
-      }
-
-
-      const updatedUser = await User.findByIdAndUpdate(userId,updateData,{new:true});
-      
-      res.status(200).json(updatedUser);
+    const updatedUser = await authService.updateUserProfile(req.user._id, req.body);
+    res.status(200).json(updatedUser);
 
   } catch (error) {
-      console.error("Error in updated profile:",error);
-      res.status(500).json({message:"Internal Server Error3"});
+    console.error("Error in updated profile:", error);
+    const clientErrors = [
+      "Nothing given to update",
+      "This username is already taken",
+      "An account with this email already exists",
+      "Favourites must be an array of up to 4 movies"
+    ];
+    if (clientErrors.includes(error.message)) {
+      return res.status(400).json({ message: error.message });
+    }
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
