@@ -37,7 +37,6 @@ Thumbs.db
 # Dependencies lock files (optional, keep if needed)  
 package-lock.json  
 yarn.lock  
-pnpm-lock.yaml  
 
 
 findOrCreateSong.js
