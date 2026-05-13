@@ -1,6 +1,5 @@
 // Maximum 2 requests per minute (configurable via environment variables)
-// IMPORTANT: This is an in-memory rate limiter. For production with multiple server instances,
-// consider using Redis-based rate limiting to coordinate across all instances.
+// This is an in-memory rate limiter. 
 
 class AIRateLimiter {
   constructor() {

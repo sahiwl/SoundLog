@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom'
 import useAuthStore from '../store/useAuthStore.js'
 
 const Homepage = () => {
-  const { authUser } = useAuthStore();
+  const { authUser } = useAuthStore();  
 
   return (
     <div className="text-white pt-28 min-h-screen ">

@@ -63,8 +63,17 @@ app.get("/", (req, res) => {
   res.send("Server is live on Vercel");
 });
 
+
 app.get("/api", (req, res) => {
   res.json({ message: "API is working on Vercel" });
+});
+
+app.get("/api/health", (req,res)=>{
+  res.status(200).json({
+    ok: true,
+    status: "alive and breathing",
+    timestamp: new Date().toISOString()
+})
 });
 
 // Error handling middleware

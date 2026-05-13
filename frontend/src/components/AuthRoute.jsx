@@ -1,16 +1,13 @@
 import { Navigate, Outlet } from "react-router-dom";
 import useAuthStore from "../store/useAuthStore.js";
 import { showToast } from '../lib/toastConfig.js';
+import LoadingScreen from "./LoadingScreen.jsx";
 
 const AuthRoute = ({ routeType }) => {
   const { isAuthenticated, isCheckingAuth } = useAuthStore();
 
   if (isCheckingAuth) {
-    return (
-      <div className='flex items-center justify-center min-h-screen'>
-        <div className="loading loading-infinity loading-xl"></div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   // Auth routes (signin/signup) - User is redirected to home if logged in, 

@@ -23,8 +23,28 @@ import Footer from './components/Landing/Footer';
 import { ToastContainer } from 'react-toastify';
 import toastConfig from './lib/toastConfig';
 import AuthSuccess from "./components/AuthSuccess";
+import { useState } from "react";
+import { useEffect } from "react";
+import { axiosInstance } from "./lib/axios";
+import LoadingScreen from "./components/LoadingScreen";
 
 function App() {
+
+  const [isWarmingUp, setIsWarmingUp] = useState(true); //true - server booting up, false - server is active
+
+  useEffect(() => {
+    let isActive = true;
+
+    axiosInstance.get("/health")
+      .catch(() => { })
+      .finally(() => {
+        if (isActive) setIsWarmingUp(false);
+      });
+
+    return () => { isActive = false; };
+  }, []);
+
+  if (isWarmingUp) return <LoadingScreen />;
   return (
     <div className="min-h-screen flex flex-col overflow-x-hidden">
       <Navbar />
@@ -42,8 +62,8 @@ function App() {
           <Route element={<AuthRoute routeType="protected" />}>
             <Route path="/home" element={<Homepage />} />
 
-            
-            <Route path="/newreleases" element={<NewReleasesPage />} /> 
+
+            <Route path="/newreleases" element={<NewReleasesPage />} />
             <Route path="/album/:albumId" element={<AlbumPage />} />
             <Route path="/artist/:artistId" element={<ArtistPage />} />
             <Route path="/tracks/:trackId" element={<TrackPage />} />
@@ -53,13 +73,13 @@ function App() {
             <Route path="/:username/likes" element={<UserLikes />} />
             <Route path="/:username/profile" element={<ProfilePage />} />
             <Route path="/:username/settings" element={<SettingsPage />} />
-            <Route path="/auth-success" element={<AuthSuccess/>} />
+            <Route path="/auth-success" element={<AuthSuccess />} />
           </Route>
         </Routes>
       </main>
-      
+
       <ToastContainer {...toastConfig} />
-      <Footer/>
+      <Footer />
     </div>
   );
 }
