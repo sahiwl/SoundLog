@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import './App.css'
 import Landing from './pages/Landing';
 import Signup from './pages/Signup';
@@ -29,6 +29,7 @@ import { axiosInstance } from "./lib/axios";
 import LoadingScreen from "./components/LoadingScreen";
 
 function App() {
+  const location = useLocation();
 
   const [isWarmingUp, setIsWarmingUp] = useState(true); //true - server booting up, false - server is active
 
@@ -44,7 +45,7 @@ function App() {
     return () => { isActive = false; };
   }, []);
 
-  if (isWarmingUp) return <LoadingScreen />;
+  if (isWarmingUp && location.pathname === "/") return <LoadingScreen />;
   return (
     <div className="min-h-screen flex flex-col overflow-x-hidden">
       <Navbar />

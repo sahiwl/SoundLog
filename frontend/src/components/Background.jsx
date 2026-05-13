@@ -2,7 +2,7 @@
 import React from "react";
 
 const Background = ({ children, imageUrl, className }) => (
-  <div className={`min-h-screen relative flex bg-back ${className}`}>
+  <div className={`min-h-screen relative flex bg-back overflow-hidden ${className}`}>
     <div 
       className="absolute inset-0 -z-10"
       style={{
