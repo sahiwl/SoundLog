@@ -70,7 +70,7 @@ export const updateUserProfile = async (userId, { profilePic, username, email, b
 
     if (favourites) {
         if (!Array.isArray(favourites) || favourites.length > 4) {
-            throw new Error("Favourites must be an array of up to 4 movies");
+            throw new Error("Favourites must be an array of up to 4 albums");
         }
         updateData.favourites = favourites;
     }

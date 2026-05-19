@@ -2,17 +2,23 @@ import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import dotenv from "dotenv";
 import User from "../models/user.model.js";
-import bcrypt from "bcryptjs"; 
+import bcrypt from "bcryptjs";
+import { getGoogleCallbackUrl } from "./authConfig.js";
 
 dotenv.config();
-const baseURL = process.env.B_PROD_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:5001/api'); 
+
+if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+  console.warn(
+    "Google OAuth: GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET not set — /auth/google will fail."
+  );
+}
 
 passport.use(
   new GoogleStrategy(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: `${baseURL}/auth/google/callback`,
+      callbackURL: getGoogleCallbackUrl(),
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
@@ -34,23 +40,30 @@ passport.use(
             await user.save();
           }
         } else {
+          const email = profile.emails?.[0]?.value;
+          if (!email) {
+            return done(new Error("Google account has no email — cannot sign up."), null);
+          }
 
           const salt = await bcrypt.genSalt(10);
           const hashedPassword = await bcrypt.hash(
             Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2),
             salt
           );
-          
-          const username = `${profile.displayName.toLowerCase().replace(/[^a-z0-9]/g, "")}${Math.floor(Math.random() * 1000)}`;
-          
+
+          const baseName = (profile.displayName || "user")
+            .toLowerCase()
+            .replace(/[^a-z0-9]/g, "") || "user";
+          const username = `${baseName}${Math.floor(Math.random() * 10000)}`;
+
           user = new User({
             googleId: profile.id,
-            username: username,
-            email: profile.emails[0].value,
+            username,
+            email,
             password: hashedPassword,
             profilePic: profile.photos?.[0]?.value || "",
           });
-          
+
           await user.save();
         }
 
@@ -64,7 +77,7 @@ passport.use(
 );
 
 passport.serializeUser((user, done) => {
-  done(null, user.id);
+  done(null, user._id.toString());
 });
 
 passport.deserializeUser(async (id, done) => {

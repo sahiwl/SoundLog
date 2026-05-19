@@ -7,6 +7,15 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
-    historyApiFallback: true
-  }
-  })
+    // Enable HTML5 History API fallback for React Router client-side routing.
+    historyApiFallback: true,
+    // Proxy API requests during development to the backend server.
+    // Requests starting with "/api" will be forwarded to the backend on port 5001.
+    proxy: {
+      "/api": {
+        target: "http://localhost:5001",
+        changeOrigin: true,
+      },
+    },
+  },
+})

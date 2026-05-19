@@ -9,36 +9,37 @@ import {
 import { protectRoute } from "../middleware/auth.middleware.js";
 import passport from "passport";
 import { generateToken } from "../lib/utils.js";
+import { getFrontendOrigin } from "../lib/authConfig.js";
+
 const router = express.Router();
+
+const frontendOrigin = () => getFrontendOrigin() || "http://localhost:5173";
 
 router.post("/signup", signup);
 router.post("/login", login);
 router.post("/logout", logout);
 router.get("/check", protectRoute, checkAuth);
 
-
-router.get("/google",
+router.get(
+  "/google",
   passport.authenticate("google", { scope: ["profile", "email"] })
 );
 
-router.get("/google/callback",
-  passport.authenticate("google", { failureRedirect: `${process.env.ORIGIN_MAIN}` }),
-  // passport.authenticate("google", { failureRedirect: `${process.env.LOCAL}` }),
-
-  (req, res) => { 
-    if(!req.user){
-      return res.status(401).json({message: "Google authentication failed"});
+router.get(
+  "/google/callback",
+  passport.authenticate("google", {
+    failureRedirect: `${frontendOrigin()}/signin?error=google_auth_failed`,
+    session: true,
+  }),
+  (req, res) => {
+    if (!req.user) {
+      return res.redirect(`${frontendOrigin()}/signin?error=google_auth_failed`);
     }
-    const token = generateToken(req.user._id, res);
-    res.cookie("jwt", token, {
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
-      })
-      return res.redirect(`${process.env.ORIGIN_MAIN}/auth-success?token=${token}`)
-      // return res.redirect(`${process.env.LOCAL}/auth-success?token=${token}`)
-  });
+
+    generateToken(req.user._id, res);
+    return res.redirect(`${frontendOrigin()}/auth-success`);
+  }
+);
 
 router.patch("/update-profile", protectRoute, updateProfile);
 

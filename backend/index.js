@@ -15,25 +15,33 @@ import cors from "cors";
 import { cleanupInactiveDocuments } from "./lib/cleanup.js";
 import passport from "./lib/passport.js";
 import session from "express-session";
+import { getGoogleCallbackUrl } from "./lib/authConfig.js";
 
 dotenv.config();
 const app = express();
 
-app.use(express.json({limit: '50mb'}));
-app.use(express.urlencoded({limit: '50mb', extended: true}));
+// Render sits behind a proxy — needed so secure cookies work in production
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1);
+}
 
-app.use(express.json()); 
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
 app.use(cookieParser());
 
-app.use(session({
-  secret: process.env.SESSION_SECRET,
-  resave: false,
-  saveUninitialized: false,
-  cookie: { 
-    secure: process.env.NODE_ENV === "production",
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
-  },
-}));
+// Google OAuth uses a short lived session cookie during the redirect dance only
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || process.env.JWT_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+      maxAge: 24 * 60 * 60 * 1000,
+    },
+  })
+);
 
 const corsOptions = {
   origin: [process.env.ORIGIN, process.env.LOCAL, process.env.ORIGIN_MAIN], 
@@ -97,8 +105,13 @@ app.use('*', (req, res) => {
 
 const PORT = process.env.PORT || 5001;
 
-app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running on port ${PORT}`);
+  try {
+    console.log(`Google OAuth callback: ${getGoogleCallbackUrl()}`);
+  } catch (err) {
+    console.warn("Google OAuth callback URL not configured:", err.message);
+  }
 });
 
 // Schedule cleanup task only in local development
