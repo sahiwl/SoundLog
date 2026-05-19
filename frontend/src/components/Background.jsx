@@ -6,7 +6,7 @@ const Background = ({ children, imageUrl, className }) => (
     <div 
       className="absolute inset-0 -z-10"
       style={{
-        backgroundImage: `url("${imageUrl || '/placeholder.svg'}")`,
+        backgroundImage: `url("${imageUrl || '/album-placeholder.svg'}")`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         filter: 'blur(4px) brightness(0.2)', // Increased blur and darkening

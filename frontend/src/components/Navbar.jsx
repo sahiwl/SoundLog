@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import { Search, User, LogOut, Menu, X } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import useAuthStore from "../store/useAuthStore.js";
@@ -44,24 +44,13 @@ const UserSection = ({ isAuthenticated, onLogout, user }) => {
 };
 
 const Navbar = () => {
-  const { checkAuth, logout, isAuthenticated, authUser } = useAuthStore();
+  const { logout, isAuthenticated, authUser } = useAuthStore();
   const [showSearchOverlay, setShowSearchOverlay] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation(); // Get current route
 
   const hideSearchIcon = ["/", "/signup", "/signin"].includes(location.pathname);
-
-  useEffect(() => {
-    const checkAuthStatus = async () => {
-      try {
-        await checkAuth();
-      } catch (error) {
-        console.error("Auth check failed:", error);
-      }
-    };
-    checkAuthStatus();
-  }, []);
 
   const handleLogout = useCallback(async () => {
     try {
