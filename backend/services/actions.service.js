@@ -7,19 +7,19 @@ import Review from "../models/review.model.js";
 import Comment from "../models/comment.model.js";
 import Album from "../models/album.model.js";
 import Track from "../models/track.model.js";
+import { AppError } from "../lib/AppError.js";
 
 /**
  * Utility function to get or create album/track data from Spotify
  */
 export const getOrCreateSpotifyData = async (itemId, itemType) => {
-    // Check if item exists in database
     let item;
     if (itemType === 'albums') {
         item = await Album.findOne({ albumId: itemId });
         if (!item) {
             const spotifyData = await searchSpotifyData(`${itemType}/${itemId}`);
             if (!spotifyData || spotifyData.error) {
-                throw new Error(`${itemType.slice(0, -1)} not found on Spotify.`);
+                throw new AppError(`${itemType.slice(0, -1)} not found on Spotify.`, 404);
             }
             item = await Album.create({
                 albumId: itemId,
@@ -71,7 +71,6 @@ export const getOrCreateSpotifyData = async (itemId, itemType) => {
                 createdAt: new Date()
             });
         } else {
-            // Update lastAccessed timestamp
             item.lastAccessed = new Date();
             await item.save();
         }
@@ -80,7 +79,7 @@ export const getOrCreateSpotifyData = async (itemId, itemType) => {
         if (!item) {
             const spotifyData = await searchSpotifyData(`${itemType}/${itemId}`);
             if (!spotifyData || spotifyData.error) {
-                throw new Error(`${itemType.slice(0, -1)} not found on Spotify.`);
+                throw new AppError(`${itemType.slice(0, -1)} not found on Spotify.`, 404);
             }
             item = await Track.create({
                 trackId: itemId,
@@ -133,7 +132,6 @@ export const getOrCreateSpotifyData = async (itemId, itemType) => {
                 createdAt: new Date()
             });
         } else {
-            // Update lastAccessed timestamp
             item.lastAccessed = new Date();
             await item.save();
         }
@@ -142,7 +140,7 @@ export const getOrCreateSpotifyData = async (itemId, itemType) => {
 };
 
 export const toggleLike = async (userId, albumId) => {
-    if (!albumId) throw new Error("albumId is required.");
+    if (!albumId) throw new AppError("albumId is required.", 400);
 
     await getOrCreateSpotifyData(albumId, 'albums');
 
@@ -151,26 +149,26 @@ export const toggleLike = async (userId, albumId) => {
     if (existingLike) {
         await Likes.deleteOne({ _id: existingLike._id });
         return { message: "Like removed." };
-    } else {
-        await Likes.create({ userId, albumId });
-        await Listened.findOneAndUpdate(
-            { userId, albumId },
-            { userId, albumId },
-            { upsert: true, new: true }
-        );
-        await ListenLater.deleteOne({ userId, albumId });
-
-        return { message: "Album liked, marked as listened, and removed from Listen Later." };
     }
+
+    await Likes.create({ userId, albumId });
+    await Listened.findOneAndUpdate(
+        { userId, albumId },
+        { userId, albumId },
+        { upsert: true, new: true }
+    );
+    await ListenLater.deleteOne({ userId, albumId });
+
+    return { message: "Album liked, marked as listened, and removed from Listen Later." };
 };
 
 export const addRating = async (userId, { itemType, itemId, rating }) => {
-    if (!itemId) throw new Error("itemId is required.");
+    if (!itemId) throw new AppError("itemId is required.", 400);
     if (!itemType || (itemType !== "tracks" && itemType !== "albums")) {
-        throw new Error("Valid itemType (tracks or albums) is required.");
+        throw new AppError("Valid itemType (tracks or albums) is required.", 400);
     }
     if (typeof rating !== "number" || isNaN(rating) || rating < 0 || rating > 100 || rating % 0.5 !== 0) {
-        throw new Error("Rating must be a number between 0 and 100");
+        throw new AppError("Rating must be a number between 0 and 100", 400);
     }
 
     await getOrCreateSpotifyData(itemId, itemType);
@@ -193,9 +191,9 @@ export const addRating = async (userId, { itemType, itemId, rating }) => {
 };
 
 export const getRating = async (userId, { itemType, itemId }) => {
-    if (!itemId) throw new Error("itemId is required.");
+    if (!itemId) throw new AppError("itemId is required.", 400);
     if (!itemType || (itemType !== "tracks" && itemType !== "albums")) {
-        throw new Error("Valid itemType (tracks or albums) is required.");
+        throw new AppError("Valid itemType (tracks or albums) is required.", 400);
     }
 
     const existingRating = await Rating.findOne({ userId, itemId, itemType });
@@ -203,7 +201,7 @@ export const getRating = async (userId, { itemType, itemId }) => {
 };
 
 export const toggleListened = async (userId, albumId) => {
-    if (!albumId) throw new Error("albumId is required.");
+    if (!albumId) throw new AppError("albumId is required.", 400);
 
     await getOrCreateSpotifyData(albumId, 'albums');
 
@@ -219,7 +217,7 @@ export const toggleListened = async (userId, albumId) => {
 };
 
 export const toggleListenLater = async (userId, albumId) => {
-    if (!albumId) throw new Error("albumId is required.");
+    if (!albumId) throw new AppError("albumId is required.", 400);
 
     await getOrCreateSpotifyData(albumId, 'albums');
 
@@ -228,22 +226,21 @@ export const toggleListenLater = async (userId, albumId) => {
     if (existingEntry) {
         await ListenLater.deleteOne({ _id: existingEntry._id });
         return { message: "Album removed from Listen Later." };
-    } else {
-        const newEntry = await ListenLater.create({ userId, albumId });
-        return { message: "Album added to Listen Later.", doc: newEntry };
     }
+
+    const newEntry = await ListenLater.create({ userId, albumId });
+    return { message: "Album added to Listen Later.", doc: newEntry };
 };
 
 export const deleteRating = async (userId, { itemType, itemId }) => {
-    if (!itemId || !itemType) throw new Error("itemId and itemType are required.");
+    if (!itemId || !itemType) throw new AppError("itemId and itemType are required.", 400);
     if (!['albums', 'tracks'].includes(itemType)) {
-        throw new Error("Invalid itemType. Must be 'albums' or 'tracks'");
+        throw new AppError("Invalid itemType. Must be 'albums' or 'tracks'", 400);
     }
 
     const existingRating = await Rating.findOne({ userId, itemId, itemType });
-
     if (!existingRating) {
-        throw new Error("No existing rating found.");
+        throw new AppError("No existing rating found.", 404);
     }
 
     await existingRating.deleteOne();
@@ -251,17 +248,19 @@ export const deleteRating = async (userId, { itemType, itemId }) => {
 };
 
 export const addReview = async (userId, { albumId, reviewText }) => {
-    if (!albumId || !reviewText) throw new Error("albumId and reviewText are required.");
+    if (!albumId || !reviewText) throw new AppError("albumId and reviewText are required.", 400);
+    if (reviewText.trim() === '') {
+        throw new AppError("Review text cannot be empty.", 400);
+    }
 
     await getOrCreateSpotifyData(albumId, 'albums');
 
     const existingReview = await Review.findOne({ userId, albumId });
     if (existingReview) {
-        throw new Error("You have already reviewed this album. Please edit your existing review instead.");
-    }
-
-    if (reviewText.trim() === '') {
-        throw new Error("Review text cannot be empty.");
+        throw new AppError(
+            "You have already reviewed this album. Please edit your existing review instead.",
+            409
+        );
     }
 
     const newReview = await Review.create({ userId, albumId, reviewText });
@@ -277,12 +276,12 @@ export const addReview = async (userId, { albumId, reviewText }) => {
 };
 
 export const updateReview = async (userId, { albumId, reviewText }) => {
-    if (!reviewText) throw new Error("Bro, Review text is required.");
-    if (!albumId) throw new Error("albumId is required.");
+    if (!reviewText) throw new AppError("Review text is required.", 400);
+    if (!albumId) throw new AppError("albumId is required.", 400);
 
     const existingReview = await Review.findOne({ userId, albumId });
     if (!existingReview) {
-        throw new Error("Review not found.");
+        throw new AppError("Review not found.", 404);
     }
 
     existingReview.reviewText = reviewText;
@@ -291,11 +290,11 @@ export const updateReview = async (userId, { albumId, reviewText }) => {
 };
 
 export const deleteReview = async (userId, albumId) => {
-    if (!albumId) throw new Error("itemId is required.");
+    if (!albumId) throw new AppError("albumId is required.", 400);
 
     const existingReview = await Review.findOne({ userId, albumId });
     if (!existingReview) {
-        throw new Error("Review not found.");
+        throw new AppError("Review not found.", 404);
     }
 
     await existingReview.deleteOne();
@@ -303,23 +302,27 @@ export const deleteReview = async (userId, albumId) => {
 };
 
 export const addComment = async (userId, { reviewId, commentText }) => {
-    if (!commentText || !reviewId) throw new Error("reivewId and commentText are required. check those fields");
-    if (typeof commentText !== "string" || commentText.trim() === "") throw new Error("Invalid Comment");
+    if (!commentText || !reviewId) {
+        throw new AppError("reviewId and commentText are required.", 400);
+    }
+    if (typeof commentText !== "string" || commentText.trim() === "") {
+        throw new AppError("Invalid comment.", 400);
+    }
 
-    const existingReview = await Review.findOne({ _id: reviewId, userId })
+    const existingReview = await Review.findOne({ _id: reviewId, userId });
     if (!existingReview) {
-        throw new Error("Invalid review id");
+        throw new AppError("Invalid review id.", 400);
     }
     const newComment = await Comment.create({ userId, reviewId, commentText });
     return newComment;
 };
 
 export const deleteComment = async (userId, commentId) => {
-    if (!commentId) throw new Error("commentId is required.");
+    if (!commentId) throw new AppError("commentId is required.", 400);
 
     const existingComment = await Comment.findOne({ _id: commentId, userId });
     if (!existingComment) {
-        throw new Error("Comment not found or unauthorized.");
+        throw new AppError("Comment not found or unauthorized.", 404);
     }
 
     await existingComment.deleteOne();
@@ -327,7 +330,7 @@ export const deleteComment = async (userId, commentId) => {
 };
 
 export const getReviews = async (albumId) => {
-    if (!albumId) throw new Error("albumId is required.");
+    if (!albumId) throw new AppError("albumId is required.", 400);
 
     const reviews = await Review.find({ albumId })
         .sort({ createdAt: -1 })
@@ -361,11 +364,11 @@ export const getReviews = async (albumId) => {
 };
 
 export const likeReview = async (userId, reviewId) => {
-    if (!reviewId) throw new Error("reviewId is required.");
+    if (!reviewId) throw new AppError("reviewId is required.", 400);
 
     const review = await Review.findById(reviewId);
     if (!review) {
-        throw new Error("Review not found.");
+        throw new AppError("Review not found.", 404);
     }
 
     const userHasLiked = review.likedBy.includes(userId);
@@ -375,20 +378,20 @@ export const likeReview = async (userId, reviewId) => {
         review.likedBy = review.likedBy.filter(id => !id.equals(userId));
         await review.save();
         return { message: "Review unliked.", likes: review.likes };
-    } else {
-        review.likes += 1;
-        review.likedBy.push(userId);
-        await review.save();
-        return { message: "Review liked.", likes: review.likes };
     }
+
+    review.likes += 1;
+    review.likedBy.push(userId);
+    await review.save();
+    return { message: "Review liked.", likes: review.likes };
 };
 
 export const getActions = async (userId, albumId) => {
-    if (!albumId) throw new Error("albumId is required.");
+    if (!albumId) throw new AppError("albumId is required.", 400);
 
     const album = await getOrCreateSpotifyData(albumId, 'albums');
     if (!album) {
-        throw new Error("Album Not Found");
+        throw new AppError("Album not found.", 404);
     }
 
     const [listened, liked, listenLater, rating, review] = await Promise.all([
@@ -412,7 +415,7 @@ export const getActions = async (userId, albumId) => {
 };
 
 export const getTrackActions = async (userId, trackId) => {
-    if (!trackId) throw new Error("trackId is required.");
+    if (!trackId) throw new AppError("trackId is required.", 400);
 
     const rating = await Rating.findOne(
         { userId, itemId: trackId, itemType: 'tracks' },

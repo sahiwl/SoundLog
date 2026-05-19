@@ -17,6 +17,7 @@ import passport from "./lib/passport.js";
 import session from "express-session";
 import { getGoogleCallbackUrl } from "./lib/authConfig.js";
 import { validateEnv } from "./lib/validateEnv.js";
+import { AppError } from "./lib/AppError.js";
 
 dotenv.config();
 validateEnv();
@@ -88,23 +89,29 @@ app.get("/api/health", (req,res)=>{
 })
 });
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error('Error:', err);
-  
-  const message = process.env.NODE_ENV === 'production' 
-    ? 'Something went wrong!' 
-    : err.message;
-  
-  res.status(err.status || 500).json({ 
-    message,
-    error: process.env.NODE_ENV === 'production' ? {} : err
-  });
+// 404 handler — must come before the error handler
+app.use((req, res, next) => {
+  res.status(404).json({ message: "Route not found" });
 });
 
-// Handle 404
-app.use('*', (req, res) => {
-  res.status(404).json({ message: 'Route not found' });
+// Global error handler — all routes use asyncHandler, so thrown errors arrive here
+app.use((err, req, res, next) => {
+  if (err?.type === "entity.too.large") {
+    return res.status(413).json({ message: "Request body too large" });
+  }
+
+  if (err instanceof AppError) {
+    return res.status(err.statusCode).json({ message: err.message });
+  }
+
+  console.error("Unhandled error:", err);
+  const status = err.statusCode || err.status || 500;
+  const message =
+    status >= 500 && process.env.NODE_ENV === "production"
+      ? "Internal Server Error"
+      : err.message || "Internal Server Error";
+
+  res.status(status).json({ message });
 });
 
 const PORT = process.env.PORT || 5001;
