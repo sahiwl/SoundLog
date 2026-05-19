@@ -34,7 +34,7 @@ app.use(cookieParser());
 // Google OAuth uses a short lived session cookie during the redirect dance only
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || process.env.JWT_SECRET,
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     cookie: {
@@ -109,6 +109,19 @@ app.use('*', (req, res) => {
 
 const PORT = process.env.PORT || 5001;
 
+const CLEANUP_INTERVAL_MS = 24 * 60 * 60 * 1000;
+
+const scheduleCleanup = () => {
+  cleanupInactiveDocuments().catch((err) =>
+    console.error("Startup cleanup failed:", err)
+  );
+  setInterval(() => {
+    cleanupInactiveDocuments().catch((err) =>
+      console.error("Scheduled cleanup failed:", err)
+    );
+  }, CLEANUP_INTERVAL_MS);
+};
+
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running on port ${PORT}`);
   try {
@@ -116,12 +129,8 @@ app.listen(PORT, "0.0.0.0", () => {
   } catch (err) {
     console.warn("Google OAuth callback URL not configured:", err.message);
   }
+  scheduleCleanup();
 });
-
-// Schedule cleanup task only in local development
-if (process.env.NODE_ENV !== 'production') {
-  setInterval(cleanupInactiveDocuments, 24 * 60 * 60 * 1000);
-}
 
 // Export for Vercel
 export default app;

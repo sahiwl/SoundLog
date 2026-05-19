@@ -1,6 +1,7 @@
 import { addComment, addReview, deleteComment, deleteRating, deleteReview, 
          toggleLike, toggleListened, toggleListenLater, addRating, 
-         updateReview, getRating, getReviews, likeReview, getActions, getTrackActions } from "../controllers/actions.controller.js";
+         updateReview, getRating, getReviews, likeReview, getActions, getTrackActions,
+         getTrackRatingsBatch } from "../controllers/actions.controller.js";
 
 import express from 'express'
 import { protectRoute } from '../middleware/auth.middleware.js';
@@ -35,6 +36,7 @@ router.delete("/comment/:commentId", protectRoute, deleteComment)
 
 //lifesavers
 router.get("/albums/:albumId", protectRoute, getActions)
+router.get("/tracks/ratings", protectRoute, getTrackRatingsBatch);
 router.get("/tracks/:trackId", protectRoute, getTrackActions);
 
 export default router

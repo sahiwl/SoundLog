@@ -47,25 +47,14 @@ const AlbumPage = () => {
   };
 
   const fetchTrackRatings = async (tracks) => {
-    try {
-      const ratings = await Promise.all(
-        tracks.map(async (track) => {
-          try {
-            const response = await axiosInstance.get(
-              `/actions/tracks/${track.trackId}`
-            );
-            return { [track.trackId]: response.data.rating };
-          } catch (error) {
-            console.error(
-              `Error fetching rating for track ${track.trackId}:`,
-              error
-            );
-            return { [track.trackId]: "NA" };
-          }
-        })
-      );
+    if (!tracks?.length) return;
 
-      setTrackRatings(Object.assign({}, ...ratings));
+    try {
+      const ids = tracks.map((track) => track.trackId).join(",");
+      const response = await axiosInstance.get(
+        `/actions/tracks/ratings?ids=${ids}`
+      );
+      setTrackRatings(response.data);
     } catch (error) {
       console.error("Error fetching track ratings:", error);
     }

@@ -293,3 +293,19 @@ export const getTrackActions = async (req, res) => {
         res.status(500).json({ message: "Internal Server Error" });
     }
 };
+
+export const getTrackRatingsBatch = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const ids = (req.query.ids || "")
+            .split(",")
+            .map((id) => id.trim())
+            .filter(Boolean);
+
+        const result = await actionsService.getTrackRatingsBatch(userId, ids);
+        res.status(200).json(result);
+    } catch (error) {
+        console.error("Error in getTrackRatingsBatch:", error.message);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+};

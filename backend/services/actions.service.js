@@ -423,3 +423,15 @@ export const getTrackActions = async (userId, trackId) => {
         rating: rating ? rating.rating : null
     };
 };
+
+export const getTrackRatingsBatch = async (userId, trackIds) => {
+    if (!trackIds?.length) return {};
+
+    const ratings = await Rating.find({
+        userId,
+        itemType: "tracks",
+        itemId: { $in: trackIds },
+    });
+
+    return Object.fromEntries(ratings.map((r) => [r.itemId, r.rating]));
+};
