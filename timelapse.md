@@ -1,5 +1,27 @@
 # Timelapse
 
+### 20 May 4:03AM
+ - getUserProfile now has favourites populated with album cover/title/artist
+ - Recent Reviews with last 3 with album thumb on profilepage
+ - fix settings page  
+
+### 20 May 2:39AM
+ - checkAuth() was called from Navbar, Hero, and AuthSuccess on load. Landing page alone could fire 2–3 /auth/check requests. Fixed it using a single checkAUth() at app.jsx
+ - removed checkAUth from navbar, hero
+ - User pages now have hook + grid + pagination (~35 lines each)
+
+### 20 May 2:08AM
+ - All route files import and wrap async controllers from asyncHandler.js
+ - removed muttler
+ - add new AppError.js for global error handling, focusing on removing redundant try/catch blocks
+ - every throw is now AppError. 400 for validation, 404 for "not found", 409 for "already reviewed".
+ - controllers have no try/catch anymore. Routes are wrapped in asyncHandler, so any thrown AppError flows straight to the global handler.
+
+### 20 May 1:18AM
+ - proper zod import, valid signup/login/update-profile schemas 
+ - Removed the JWT fallback in index.js. Sessions now use only SESSION_SECRET (already required by validateEnv).
+
+
 ### 19 May 9:01PM
    vercel.json changes: Proxy /api/* to Render beofre the SPA catch all. Browser sees soundlog.sahiwl.me/api (same site as the app) so JWT cookies work in Firefox. Update destination if backend host changes.
 
