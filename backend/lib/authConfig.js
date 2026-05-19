@@ -11,13 +11,11 @@ export const getApiBase = () => {
   return trim(url);
 };
 
-// Google Console redirect URI 
+// Google Console redirect URI (SPA host + /api — proxied to backend in dev & prod)
 export const getGoogleCallbackUrl = () => {
-
   if (process.env.NODE_ENV === "production") {
-    return `${getApiBase()}/auth/google/callback`;
+    return `${trim(process.env.ORIGIN_MAIN)}/api/auth/google/callback`;
   }
-  // Dev only: Vite proxy on SPA host so JWT cookie works with axios /api
   if (process.env.NODE_ENV === "development" && process.env.LOCAL) {
     return `${trim(process.env.LOCAL)}/api/auth/google/callback`;
   }
@@ -36,6 +34,7 @@ export const getJwtCookieOptions = () => ({
   maxAge: 7 * 24 * 60 * 60 * 1000,
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
-  sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+  // Same-origin /api proxy (Vite + Vercel) — Lax works; None was for cross-origin Render URL
+  sameSite: "Lax",
   path: "/",
 });
