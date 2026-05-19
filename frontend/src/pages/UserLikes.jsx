@@ -20,7 +20,10 @@ const UserLikes = () => {
   if (error) return <p className="pt-28 px-4">{error}</p>;
 
   return (
-    <Background className="text-white pt-28 min-h-screen">
+    <Background
+      imageUrl="https://c4.wallpaperflare.com/wallpaper/896/440/837/music-album-covers-the-beatles-abbey-road-wallpaper-preview.jpg"
+      className="text-white pt-28 min-h-screen"
+    >
       <div className="container mx-auto px-4 py-6">
         <h1 className="text-3xl font-bold mb-6">{username}'s Liked Albums</h1>
         <PaginatedUserAlbumGrid albums={items} />

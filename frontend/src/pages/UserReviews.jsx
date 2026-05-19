@@ -20,7 +20,10 @@ const UserReviews = () => {
   if (error) return <p className="pt-28 px-4">{error}</p>;
 
   return (
-    <Background className="text-white pt-28 min-h-screen">
+    <Background
+      imageUrl="https://imgix.bustle.com/uploads/image/2021/8/31/9043e78c-a96c-49c5-a19d-e4efde485bcf-drake-certified-lover-boy.jpeg?w=374&h=285&fit=crop&crop=faces&dpr=2"
+      className="text-white pt-28 min-h-screen"
+    >
       <div className="container mx-auto px-4 py-6">
         <h1 className="text-3xl font-bold mb-6">{username}'s Reviews</h1>
         <div className="space-y-6">

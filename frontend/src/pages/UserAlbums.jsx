@@ -20,7 +20,10 @@ const UserAlbums = () => {
   if (error) return <p className="pt-28 px-4">{error}</p>;
 
   return (
-    <Background className="text-white pt-28 min-h-screen">
+    <Background
+      imageUrl="https://media.wired.com/photos/5926c9277034dc5f91bec9b3/191:100/w_1280,c_limit/BlondeAlbum.jpg"
+      className="text-white pt-28 min-h-screen"
+    >
       <div className="container mx-auto px-4 py-6">
         <h1 className="text-3xl font-bold mb-6">{username}'s Albums</h1>
         <PaginatedUserAlbumGrid albums={items} />
