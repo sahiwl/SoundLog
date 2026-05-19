@@ -1,42 +1,38 @@
-import { addComment, addReview, deleteComment, deleteRating, deleteReview, 
-         toggleLike, toggleListened, toggleListenLater, addRating, 
-         updateReview, getRating, getReviews, likeReview, getActions, getTrackActions,
-         getTrackRatingsBatch } from "../controllers/actions.controller.js";
+import {
+  addComment, addReview,deleteComment,deleteRating,deleteReview,toggleLike,toggleListened,toggleListenLater,addRating,updateReview,getRating,getReviews,likeReview,getActions,getTrackActions, getTrackRatingsBatch,
+} from "../controllers/actions.controller.js";
 
-import express from 'express'
-import { protectRoute } from '../middleware/auth.middleware.js';
-import { validate } from '../middleware/validate.js';
+import express from "express";
+import { protectRoute } from "../middleware/auth.middleware.js";
+import { validate } from "../middleware/validate.js";
+import { asyncHandler } from "../middleware/asyncHandler.js";
 import {
   addRatingSchema,
   addReviewSchema,
   updateReviewSchema,
-} from '../validators/actions.schema.js';
+} from "../validators/actions.schema.js";
 
-const router = express.Router()
+const router = express.Router();
 
-router.post("/like/:albumId", protectRoute, toggleLike)
-router.post("/listen/:albumId", protectRoute, toggleListened)
-router.post("/listenLater/:albumId", protectRoute, toggleListenLater)
+router.post("/like/:albumId", protectRoute, asyncHandler(toggleLike));
+router.post("/listen/:albumId", protectRoute, asyncHandler(toggleListened));
+router.post("/listenLater/:albumId", protectRoute, asyncHandler(toggleListenLater));
 
-//rating routes
-router.post("/rate/:itemType/:itemId", protectRoute, validate(addRatingSchema), addRating)
-router.get("/rate/:itemType/:itemId", protectRoute, getRating)  // Make sure this route exists
-router.delete('/rate/:itemType/:itemId', protectRoute, deleteRating)
+router.post("/rate/:itemType/:itemId",protectRoute,validate(addRatingSchema),asyncHandler(addRating));
+router.get("/rate/:itemType/:itemId",protectRoute,asyncHandler(getRating));
+router.delete("/rate/:itemType/:itemId",protectRoute,asyncHandler(deleteRating));
 
-//review routes
-router.post("/review/:albumId", protectRoute, validate(addReviewSchema), addReview)
-router.put("/review/:albumId", protectRoute, validate(updateReviewSchema), updateReview)
-router.delete("/review/:albumId", protectRoute, deleteReview)
-router.get("/review/:albumId", protectRoute, getReviews)
-router.post("/review/like/:reviewId", protectRoute, likeReview)
+router.post("/review/:albumId",  protectRoute,  validate(addReviewSchema),  asyncHandler(addReview));
+router.put("/review/:albumId",  protectRoute,  validate(updateReviewSchema),  asyncHandler(updateReview));
+router.delete("/review/:albumId", protectRoute, asyncHandler(deleteReview));
+router.get("/review/:albumId", protectRoute, asyncHandler(getReviews));
+router.post("/review/like/:reviewId",  protectRoute,  asyncHandler(likeReview));
 
-//comment routes
-router.post("/comment", protectRoute, addComment)// Expects reviewId and commentText in body
-router.delete("/comment/:commentId", protectRoute, deleteComment)
+router.post("/comment", protectRoute, asyncHandler(addComment));
+router.delete("/comment/:commentId", protectRoute, asyncHandler(deleteComment));
 
-//lifesavers
-router.get("/albums/:albumId", protectRoute, getActions)
-router.get("/tracks/ratings", protectRoute, getTrackRatingsBatch);
-router.get("/tracks/:trackId", protectRoute, getTrackActions);
+router.get("/albums/:albumId", protectRoute, asyncHandler(getActions));
+router.get("/tracks/ratings", protectRoute, asyncHandler(getTrackRatingsBatch));
+router.get("/tracks/:trackId", protectRoute, asyncHandler(getTrackActions));
 
-export default router
+export default router;

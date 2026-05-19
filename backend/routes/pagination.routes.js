@@ -1,30 +1,18 @@
-import express from 'express';
-import { protectRoute } from '../middleware/auth.middleware.js';
-import {
-    getUserReviews,
-    getUserAlbums,
-    getUserLikes,
-    getAlbumPage,
-    getTrackPage,
-    getNewReleasesPage,
-    getArtistPage,
-    getUserListenLater
-} from '../controllers/pagination.controller.js';
-
+import express from "express";
+import { protectRoute } from "../middleware/auth.middleware.js";
+import { asyncHandler } from "../middleware/asyncHandler.js";
+import {  getUserReviews,  getUserAlbums,  getUserLikes,  getAlbumPage,  getTrackPage,  getNewReleasesPage,  getArtistPage,  getUserListenLater,} from "../controllers/pagination.controller.js";
 
 const router = express.Router();
 
-//Get pages
-router.get('/tracks/:trackId', protectRoute, getTrackPage);
-router.get('/albums/:albumId', protectRoute, getAlbumPage);
-router.get('/artists/:artistId', protectRoute, getArtistPage);
-router.get('/newreleases', protectRoute, getNewReleasesPage);
+router.get("/tracks/:trackId", protectRoute, asyncHandler(getTrackPage));
+router.get("/albums/:albumId", protectRoute, asyncHandler(getAlbumPage));
+router.get("/artists/:artistId", protectRoute, asyncHandler(getArtistPage));
+router.get("/newreleases", protectRoute, asyncHandler(getNewReleasesPage));
 
-
-// User-specific pages for individual items
-router.get('/:username/reviews', protectRoute, getUserReviews);
-router.get('/:username/likes', protectRoute, getUserLikes);
-router.get('/:username/albums', protectRoute, getUserAlbums);
-router.get('/:username/listenlater', protectRoute, getUserListenLater);
+router.get("/:username/reviews", protectRoute, asyncHandler(getUserReviews));
+router.get("/:username/likes", protectRoute, asyncHandler(getUserLikes));
+router.get("/:username/albums", protectRoute, asyncHandler(getUserAlbums));
+router.get("/:username/listenlater",protectRoute,asyncHandler(getUserListenLater));
 
 export default router;
