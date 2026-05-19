@@ -41,9 +41,7 @@ const userSchema = new mongoose.Schema(
             default: []
         }],
         favourites: [{
-            type: Number,
-            ref: "Album",
-            default: [],
+            type: String, // Spotify album IDs — not wired in frontend yet
         }],
     },
     {timestamps: true} //timestamps when account was created

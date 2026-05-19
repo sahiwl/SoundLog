@@ -4,11 +4,11 @@ const ratingSchema = new mongoose.Schema(
   {
     itemId: {
       type: String,
-      required: true, //as we can rate both songs and albums
+      required: true,
     },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User", //reference to Song model
+      ref: "User",
       required: true,
     },
     rating: {

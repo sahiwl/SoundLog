@@ -9,10 +9,9 @@ const playlistSchema = new mongoose.Schema(
     description: {
       type: String,
     },
-    songs: [
+    albums: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Song",
+        type: String, // Spotify album IDs
       },
     ],
     createdBy: {
@@ -24,6 +23,6 @@ const playlistSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const Playlist = mongoose.model("Listened", playlistSchema);
+const Playlist = mongoose.model("Playlist", playlistSchema);
 
 export default Playlist;

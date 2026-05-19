@@ -16,8 +16,10 @@ import { cleanupInactiveDocuments } from "./lib/cleanup.js";
 import passport from "./lib/passport.js";
 import session from "express-session";
 import { getGoogleCallbackUrl } from "./lib/authConfig.js";
+import { validateEnv } from "./lib/validateEnv.js";
 
 dotenv.config();
+validateEnv();
 const app = express();
 
 // Render sits behind a proxy — needed so secure cookies work in production

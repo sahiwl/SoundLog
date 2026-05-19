@@ -21,7 +21,6 @@ export const updateProfileSchema = z.object({
       username: z.string().trim().min(1).optional(),
       email: z.string().trim().email("Invalid email address").optional(),
       bio: z.string().optional(),
-      favourites: z.array(z.unknown()).max(4).optional(),
       profilePic: z.string().optional(),
     })
     .refine(
@@ -29,7 +28,6 @@ export const updateProfileSchema = z.object({
         data.username ||
         data.email ||
         data.bio !== undefined ||
-        data.favourites ||
         data.profilePic,
       { message: "Nothing given to update" }
     ),
