@@ -2,6 +2,7 @@ import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import cloudinary from "../lib/cloudinary.js";
 import { AppError } from "../lib/AppError.js";
+import { getAlbumDetails } from "./song.service.js";
 
 export const signupUser = async ({ username, email, password }) => {
     if (!password || password.length < 6) {
@@ -37,8 +38,8 @@ export const loginUser = async ({ username, password }) => {
     return user;
 };
 
-export const updateUserProfile = async (userId, { profilePic, username, email, bio }) => {
-    if (!profilePic && !username && !email && bio === undefined) {
+export const updateUserProfile = async (userId, { profilePic, username, email, bio, favourites }) => {
+    if (!profilePic && !username && !email && bio === undefined && !favourites) {
         throw new AppError("Nothing given to update", 400);
     }
 
@@ -67,6 +68,21 @@ export const updateUserProfile = async (userId, { profilePic, username, email, b
 
     if (bio !== undefined) {
         updateData.bio = bio;
+    }
+
+    if (favourites) {
+        if (!Array.isArray(favourites) || favourites.length > 4) {
+            throw new AppError("Favourites must be an array of up to 4 albums", 400);
+        }
+        // each favourite album is cached locally so the profile renders fast
+        await Promise.all(
+            favourites.map((albumId) =>
+                getAlbumDetails(albumId).catch(() => {
+                    throw new AppError(`Album ${albumId} not found on Spotify.`, 404);
+                })
+            )
+        );
+        updateData.favourites = favourites;
     }
 
     const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true });
