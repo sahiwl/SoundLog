@@ -1,0 +1,36 @@
+import { z } from "zod";
+
+export const signupSchema = z.object({
+  body: z.object({
+    username: z.string().trim().min(1, "Username is required"),
+    email: z.string().trim().email("Invalid email address"),
+    password: z.string().min(6, "Password must be at least 6 characters long"),
+  }),
+});
+
+export const loginSchema = z.object({
+  body: z.object({
+    username: z.string().trim().min(1, "Username is required"),
+    password: z.string().min(1, "Password is required"),
+  }),
+});
+
+export const updateProfileSchema = z.object({
+  body: z
+    .object({
+      username: z.string().trim().min(1).optional(),
+      email: z.string().trim().email("Invalid email address").optional(),
+      bio: z.string().optional(),
+      favourites: z.array(z.unknown()).max(4).optional(),
+      profilePic: z.string().optional(),
+    })
+    .refine(
+      (data) =>
+        data.username ||
+        data.email ||
+        data.bio !== undefined ||
+        data.favourites ||
+        data.profilePic,
+      { message: "Nothing given to update" }
+    ),
+});

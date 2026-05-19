@@ -72,7 +72,7 @@ export const updateProfile = async (req, res) => {
       "Nothing given to update",
       "This username is already taken",
       "An account with this email already exists",
-      "Favourites must be an array of up to 4 movies"
+      "Favourites must be an array of up to 4 albums"
     ];
     if (clientErrors.includes(error.message)) {
       return res.status(400).json({ message: error.message });

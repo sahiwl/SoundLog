@@ -42,7 +42,7 @@ const userSchema = new mongoose.Schema(
         }],
         favourites: [{
             type: Number,
-            ref: "Song",
+            ref: "Album",
             default: [],
         }],
     },

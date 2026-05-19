@@ -59,6 +59,8 @@ connectDB();
 app.use(passport.initialize())
 app.use(passport.session())
 
+app.use("/api", rateLimiter)
+
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes)
 app.use("/api/releases", searchRoutes)

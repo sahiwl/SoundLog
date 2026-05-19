@@ -4,6 +4,12 @@ import { addComment, addReview, deleteComment, deleteRating, deleteReview,
 
 import express from 'express'
 import { protectRoute } from '../middleware/auth.middleware.js';
+import { validate } from '../middleware/validate.js';
+import {
+  addRatingSchema,
+  addReviewSchema,
+  updateReviewSchema,
+} from '../validators/actions.schema.js';
 
 const router = express.Router()
 
@@ -12,13 +18,13 @@ router.post("/listen/:albumId", protectRoute, toggleListened)
 router.post("/listenLater/:albumId", protectRoute, toggleListenLater)
 
 //rating routes
-router.post("/rate/:itemType/:itemId", protectRoute, addRating)
+router.post("/rate/:itemType/:itemId", protectRoute, validate(addRatingSchema), addRating)
 router.get("/rate/:itemType/:itemId", protectRoute, getRating)  // Make sure this route exists
 router.delete('/rate/:itemType/:itemId', protectRoute, deleteRating)
 
 //review routes
-router.post("/review/:albumId", protectRoute, addReview)
-router.put("/review/:albumId", protectRoute, updateReview)
+router.post("/review/:albumId", protectRoute, validate(addReviewSchema), addReview)
+router.put("/review/:albumId", protectRoute, validate(updateReviewSchema), updateReview)
 router.delete("/review/:albumId", protectRoute, deleteReview)
 router.get("/review/:albumId", protectRoute, getReviews)
 router.post("/review/like/:reviewId", protectRoute, likeReview)
