@@ -1,5 +1,9 @@
 # Timelapse
 
+### 19 May 9:01PM
+   vercel.json changes: Proxy /api/* to Render beofre the SPA catch all. Browser sees soundlog.sahiwl.me/api (same site as the app) so JWT cookies work in Firefox. Update destination if backend host changes.
+
+
 ### 17 Nov 1:18AM
 fix auto api calls from ai services on every refresh/first visit on homepage
 

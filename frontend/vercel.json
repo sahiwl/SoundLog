@@ -1,6 +1,6 @@
 
   {
-    "_comment": "Proxy /api/* to Render BEFORE the SPA catch-all. Browser sees FE_URL/api (same site as the app) so JWT cookies work in Firefox. Update destination if backend host changes.",
+ 
   "rewrites": [
     {
       "source": "/api/:path*",
