@@ -1,10 +1,10 @@
 import { searchSpotifyData } from "../lib/pullSpotifyData.js";
+import { AppError } from "../lib/AppError.js";
 
 export const searchAll = async (searchQuery) => {
     if (!searchQuery) {
-        throw new Error("Query parameter 'query' is required");
+        throw new AppError("Query parameter 'query' is required.", 400);
     }
-    // Request tracks, albums, artists simultaneously
     const data = await searchSpotifyData("search", {
         q: searchQuery,
         type: "track,album,artist",
@@ -12,7 +12,6 @@ export const searchAll = async (searchQuery) => {
         limit: 5,
     });
 
-    // Return partial data from each category
     return {
         tracks: data.tracks?.items || [],
         albums: data.albums?.items || [],
@@ -22,10 +21,9 @@ export const searchAll = async (searchQuery) => {
 
 export const searchTracks = async (trackName) => {
     if (!trackName) {
-        throw new Error(`Query parameter "name" is required.`);
+        throw new AppError(`Query parameter "name" is required.`, 400);
     }
 
-    //use spotify search endpoint for tracks
     const data = await searchSpotifyData("search", {
         q: trackName,
         type: "track",
@@ -37,10 +35,9 @@ export const searchTracks = async (trackName) => {
 
 export const searchAlbums = async (albumName) => {
     if (!albumName) {
-        throw new Error(`Query parameter "name" is required.`);
+        throw new AppError(`Query parameter "name" is required.`, 400);
     }
 
-    //using spotify search endpoint for albums
     const data = await searchSpotifyData("search", {
         q: albumName,
         type: "album",
@@ -53,10 +50,9 @@ export const searchAlbums = async (albumName) => {
 
 export const searchArtists = async (artistName) => {
     if (!artistName) {
-        throw new Error(`Query parameter "name" is required.`);
+        throw new AppError(`Query parameter "name" is required.`, 400);
     }
 
-    // Use the Spotify search endpoint for artists.
     const data = await searchSpotifyData("search", {
         q: artistName,
         type: "artist",

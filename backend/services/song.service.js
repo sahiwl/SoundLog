@@ -2,6 +2,7 @@ import { GetAlbumTracks, getNewReleases as fetchNewReleases, GetSpecificAlbum, G
 import Album from "../models/album.model.js";
 import Track from "../models/track.model.js";
 import Artist from "../models/artist.model.js";
+import { AppError } from "../lib/AppError.js";
 
 export const getTrackDetails = async (itemId) => {
     // Check if track exists in database
@@ -11,7 +12,7 @@ export const getTrackDetails = async (itemId) => {
             market: 'IN'
         });
         if (!spotifyData || spotifyData.error) {
-            throw new Error("Track not found on Spotify.");
+            throw new AppError("Track not found on Spotify.", 404);
         }
         track = await Track.create({
             trackId: itemId,
@@ -73,7 +74,7 @@ export const getAlbumDetails = async (itemId) => {
             market: 'IN'
         });
         if (!spotifyData || spotifyData.error) {
-            throw new Error("Album not found on Spotify.");
+            throw new AppError("Album not found on Spotify.", 404);
         }
         album = await Album.create({
             albumId: itemId,
@@ -134,7 +135,7 @@ export const getArtistDetails = async (artistId) => {
             market: 'IN'
         });
         if (!spotifyData || spotifyData.error) {
-            throw new Error("Artist not found on Spotify.");
+            throw new AppError("Artist not found on Spotify.", 404);
         }
 
         artist = await Artist.create({

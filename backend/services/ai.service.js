@@ -16,6 +16,7 @@ import {
     extractGenresFromProfile,
     getAIRateLimitInfo
 } from '../lib/aiHelpers.js';
+import { AppError } from '../lib/AppError.js';
 
 const getDefaultRecommendations = async (mood) => {
     try {
@@ -165,7 +166,10 @@ export const getSmartRecommendations = async (userId, mood) => {
 
 export const getMoodRecommendations = async (mood) => {
     if (!MOOD_CONFIGURATIONS[mood]) {
-        throw new Error('Invalid mood. Available moods: ' + Object.keys(MOOD_CONFIGURATIONS).join(', '));
+        throw new AppError(
+            'Invalid mood. Available moods: ' + Object.keys(MOOD_CONFIGURATIONS).join(', '),
+            400
+        );
     }
 
     const recommendations = await getDefaultRecommendations(mood);
@@ -182,10 +186,11 @@ export const getAIRecommendations = async (userId, mood) => {
     // Check if AI requests are available
     const rateLimitInfo = getAIRateLimitInfo();
     if (!rateLimitInfo.canMakeRequest) {
-        const error = new Error(`AI requests exhausted. Try again in ${rateLimitInfo.timeUntilReset} seconds.`);
-        error.status = 429;
-        error.rateLimitInfo = rateLimitInfo;
-        throw error;
+        throw new AppError(
+            `AI requests exhausted. Try again in ${rateLimitInfo.timeUntilReset} seconds.`,
+            429,
+            { aiRateLimitInfo: rateLimitInfo }
+        );
     }
 
     const ratings = await Rating.find({ userId }).limit(50).sort({ createdAt: -1 });

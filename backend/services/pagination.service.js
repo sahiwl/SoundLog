@@ -6,13 +6,13 @@ import Listened from "../models/listened.model.js";
 import Comment from "../models/comment.model.js";
 import User from "../models/user.model.js";
 import ListenLater from "../models/listenLater.model.js";
-import { getAlbumDetails, getTrackDetails, getArtistDetails, getNewReleases, getAlbumTracks } from "./song.service.js";
-import { GetSpecificAlbum } from "../lib/pullSpotifyData.js"; // Kept for consistency if needed, but getAlbumDetails handles caching
+import { getAlbumDetails, getTrackDetails, getArtistDetails, getNewReleases } from "./song.service.js";
+import { AppError } from "../lib/AppError.js";
 
 export const getUserReviews = async (username, page = 1) => {
     const user = await User.findOne({ username }).select('_id');
     if (!user) {
-        throw new Error("User not found.");
+        throw new AppError("User not found.", 404);
     }
     const userId = user._id;
     const limit = 10;
@@ -60,7 +60,7 @@ export const getUserReviews = async (username, page = 1) => {
 export const getUserAlbums = async (username, page = 1) => {
     const user = await User.findOne({ username }).select('_id');
     if (!user) {
-        throw new Error("User not found.");
+        throw new AppError("User not found.", 404);
     }
     const userId = user._id;
     const limit = 12;
@@ -141,7 +141,7 @@ export const getUserAlbums = async (username, page = 1) => {
 export const getUserLikes = async (username, page = 1) => {
     const user = await User.findOne({ username }).select('_id');
     if (!user) {
-        throw new Error("User not found.");
+        throw new AppError("User not found.", 404);
     }
     const userId = user._id;
     const limit = 12;
@@ -309,7 +309,7 @@ export const getNewReleasesPage = async (page = 1) => {
     const spotifyData = await getNewReleases(limit, skip);
 
     if (!spotifyData?.albums?.items) {
-        throw new Error('Invalid Spotify response');
+        throw new AppError("Invalid Spotify response", 502);
     }
 
     const total = spotifyData.albums.total || 0;
@@ -336,7 +336,7 @@ export const getNewReleasesPage = async (page = 1) => {
 export const getUserListenLater = async (username, page = 1) => {
     const user = await User.findOne({ username }).select('_id');
     if (!user) {
-        throw new Error("User not found.");
+        throw new AppError("User not found.", 404);
     }
     const userId = user._id;
     const limit = 12;

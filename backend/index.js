@@ -89,19 +89,23 @@ app.get("/api/health", (req,res)=>{
 })
 });
 
-// 404 handler — must come before the error handler
+// 404 handler, must come before the error handler
 app.use((req, res, next) => {
   res.status(404).json({ message: "Route not found" });
 });
 
-// Global error handler — all routes use asyncHandler, so thrown errors arrive here
+// Global error handler, all routes use asyncHandler, so thrown errors arrive here
 app.use((err, req, res, next) => {
   if (err?.type === "entity.too.large") {
     return res.status(413).json({ message: "Request body too large" });
   }
 
   if (err instanceof AppError) {
-    return res.status(err.statusCode).json({ message: err.message });
+    const body = { message: err.message };
+    if (err.details && typeof err.details === "object") {
+      Object.assign(body, err.details);
+    }
+    return res.status(err.statusCode).json(body);
   }
 
   console.error("Unhandled error:", err);
