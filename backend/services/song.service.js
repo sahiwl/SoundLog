@@ -1,4 +1,4 @@
-import { GetAlbumTracks, getNewReleases as fetchNewReleases } from "../lib/pullSpotifyData.js";
+import { getNewReleases as fetchNewReleases } from "../lib/pullSpotifyData.js";
 import {
   getOrCreateAlbum,
   getOrCreateTrack,
@@ -14,11 +14,6 @@ export const getTrackDetails = (itemId, options) =>
 
 export const getArtistDetails = (artistId, options) =>
   getOrCreateArtist(artistId, options);
-
-export const getAlbumTracks = async (itemId) => {
-  const tracks = await GetAlbumTracks(`${itemId}`, { market: "IN" });
-  return tracks;
-};
 
 export const getNewReleases = async (limit = 20, offset = 0) => {
   const newRelease = await fetchNewReleases(limit, offset);

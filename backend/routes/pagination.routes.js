@@ -1,14 +1,13 @@
 import express from "express";
 import { protectRoute } from "../middleware/auth.middleware.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
-import {  getUserReviews,  getUserAlbums,  getUserLikes,  getAlbumPage,  getTrackPage,  getNewReleasesPage,  getArtistPage,  getUserListenLater,} from "../controllers/pagination.controller.js";
+import {  getUserReviews,  getUserAlbums,  getUserLikes,  getAlbumPage,  getTrackPage,  getArtistPage,  getUserListenLater,} from "../controllers/pagination.controller.js";
 
 const router = express.Router();
 
 router.get("/tracks/:trackId", protectRoute, asyncHandler(getTrackPage));
 router.get("/albums/:albumId", protectRoute, asyncHandler(getAlbumPage));
 router.get("/artists/:artistId", protectRoute, asyncHandler(getArtistPage));
-router.get("/newreleases", protectRoute, asyncHandler(getNewReleasesPage));
 
 router.get("/:username/reviews", protectRoute, asyncHandler(getUserReviews));
 router.get("/:username/likes", protectRoute, asyncHandler(getUserLikes));

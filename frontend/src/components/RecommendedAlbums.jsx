@@ -4,6 +4,7 @@ import { axiosInstance } from '../lib/axios';
 import { Link } from 'react-router-dom';
 import useAuthStore from '../store/useAuthStore';
 import { showToast } from '../lib/toastConfig';
+import HorizontalCarousel from './HorizontalCarousel.jsx';
 
 const RecommendedAlbums = () => {
     const [albums, setAlbums] = useState([]);
@@ -283,9 +284,9 @@ const RecommendedAlbums = () => {
             )}
 
             {!loading && !aiLoading && !error && albums.length > 0 && (
-                <div className="carousel carousel-center w-full p-4 gap-6 space-x-6 rounded-box">
+                <HorizontalCarousel>
                     {albums.slice(0, Math.max(8, albums.length)).map(renderAlbumCard)}
-                </div>
+                </HorizontalCarousel>
             )}
         </section>
     );

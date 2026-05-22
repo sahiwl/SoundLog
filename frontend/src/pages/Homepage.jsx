@@ -1,15 +1,9 @@
-import { useState, useEffect } from 'react'
-import { axiosInstance } from '../lib/axios.js'
 import NewReleases from '../components/NewReleases.jsx'
 import RecommendedAlbums from '../components/RecommendedAlbums.jsx'
 import SmartDiscovery from '../components/SmartDiscovery.jsx'
 import UserLiked from '../components/UserLiked.jsx'
-import { Link } from 'react-router-dom'
-import useAuthStore from '../store/useAuthStore.js'
 
 const Homepage = () => {
-  const { authUser } = useAuthStore();  
-
   return (
     <div className="text-white pt-28 min-h-screen ">
       <div className="container mx-auto px-4 py-6 max-w-7xl ">

@@ -13,7 +13,6 @@ import UserListenLater from "./pages/UserListenLater";
 import UserReviews from "./pages/UserReviews";
 import UserAlbums from "./pages/UserAlbums";
 import UserLikes from "./pages/UserLikes";
-import NewReleasesPage from "./pages/NewReleasesPage";
 import SettingsPage from "./pages/SettingsPage";
 import ProfilePage from "./pages/ProfilePage";
 import Footer from "./components/Landing/Footer";
@@ -63,7 +62,6 @@ function App() {
 
           <Route element={<AuthRoute routeType="protected" />}>
             <Route path="/home" element={<Homepage />} />
-            <Route path="/newreleases" element={<NewReleasesPage />} />
             <Route path="/album/:albumId" element={<AlbumPage />} />
             <Route path="/artist/:artistId" element={<ArtistPage />} />
             <Route path="/tracks/:trackId" element={<TrackPage />} />

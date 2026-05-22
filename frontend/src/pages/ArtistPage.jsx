@@ -46,7 +46,7 @@ const ArtistPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-[250px_1fr] lg:grid-cols-[300px_1fr] gap-6 md:gap-8">
             <div className="flex justify-center md:block">
               <img
-                src={artistData.images?.[0]?.url || "/placeholder.svg"}
+                src={artistData.images?.[0]?.url || "/album-placeholder.svg"}
                 alt={artistData.name}
                 className="w-48 h-48 md:w-64 md:h-64 object-cover rounded-full"
               />

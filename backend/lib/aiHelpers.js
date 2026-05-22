@@ -2,6 +2,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { MOOD_ARTISTS, getRandomArtistsFromMood } from '../data/moodArtists.js';
 import { SPOTIFY_GENRE_SEEDS, MOOD_CONFIGURATIONS } from './recommendationStrategies.js';
 import aiRateLimiter from './aiRateLimiter.js';
+import { AppError } from './AppError.js';
 
 const AI_REQUEST_TIMEOUT = 10000; 
 
@@ -51,15 +52,15 @@ const makeAIRequestWithTimeout = async (aiCall) => {
     const result = await Promise.race([
       aiCall(),
       new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('AI request timeout')), AI_REQUEST_TIMEOUT)
+        setTimeout(() => reject(new AppError('AI request timeout', 504)), AI_REQUEST_TIMEOUT)
       )
     ]);
     clearTimeout(timeoutId);
     return result;
   } catch (error) {
     clearTimeout(timeoutId);
-    if (error.message === 'AI request timeout') {
-      throw new Error('AI request timed out after 10 seconds');
+    if (error.message === 'AI request timeout' || error instanceof AppError) {
+      throw error instanceof AppError ? error : new AppError('AI request timed out after 10 seconds', 504);
     }
     throw error;
   }
@@ -78,7 +79,7 @@ export const analyzeUserTaste = async (ratings, reviews, forceAI = false) => {
     // Input validation
     if (!Array.isArray(ratings) || !Array.isArray(reviews)) {
       console.error('Invalid input: ratings and reviews must be arrays');
-      throw new Error('Invalid input: ratings and reviews must be arrays');
+      throw new AppError('Invalid input: ratings and reviews must be arrays', 400);
     }
 
     if (!process.env.GEMINI_API_KEY) {
@@ -106,7 +107,7 @@ export const analyzeUserTaste = async (ratings, reviews, forceAI = false) => {
     const model = getGenAI()?.getGenerativeModel({ model: "gemini-2.5-flash" });
     
     if (!model) {
-      throw new Error('AI service not available: missing API key');
+      throw new AppError('AI service not available: missing API key', 503);
     }
 
     const highRatedItems = ratings.filter(r => r.rating >= 70).slice(0, 10);
@@ -178,7 +179,7 @@ Important: Preferred genres MUST be from this list: ${SPOTIFY_GENRE_SEEDS.join('
         const parsed = JSON.parse(jsonMatch[0]);
         
         if (!parsed.summary || !Array.isArray(parsed.preferredGenres)) {
-          throw new Error('Invalid AI response format');
+          throw new AppError('Invalid AI response format', 502);
         }
         
         console.log('Successfully parsed AI response', {
@@ -190,7 +191,7 @@ Important: Preferred genres MUST be from this list: ${SPOTIFY_GENRE_SEEDS.join('
         return parsed;
       }
       
-      throw new Error('Failed to parse AI response - no JSON found');
+      throw new AppError('Failed to parse AI response - no JSON found', 502);
     } catch (error) {
       // If request failed after recording, undo it so it doesn't count against limit
       if (wasRecorded) {
@@ -261,7 +262,7 @@ export const generateAISearchQuery = async (tasteProfile, mood, type = 'track', 
     // Input validation
     if (!tasteProfile || !tasteProfile.summary) {
       console.error('Invalid taste profile provided');
-      throw new Error('Invalid taste profile provided');
+      throw new AppError('Invalid taste profile provided', 400);
     }
 
     if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === 'your_gemini_api_key_here') {

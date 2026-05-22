@@ -48,12 +48,6 @@ export const getArtistPage = async (req, res) => {
     res.json(result);
 };
 
-export const getNewReleasesPage = async (req, res) => {
-    const page = parseInt(req.query.page) || 1;
-    const result = await paginationService.getNewReleasesPage(page);
-    res.status(200).json(result);
-};
-
 export const getUserListenLater = async (req, res) => {
     const { username } = req.params;
     const page = parseInt(req.query.page) || 1;

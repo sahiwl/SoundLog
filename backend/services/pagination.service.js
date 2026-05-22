@@ -5,7 +5,7 @@ import Listened from "../models/listened.model.js";
 import Comment from "../models/comment.model.js";
 import User from "../models/user.model.js";
 import ListenLater from "../models/listenLater.model.js";
-import { getAlbumDetails, getTrackDetails, getArtistDetails, getNewReleases } from "./song.service.js";
+import { getAlbumDetails, getTrackDetails, getArtistDetails } from "./song.service.js";
 import { AppError } from "../lib/AppError.js";
 
 export const getUserReviews = async (username, page = 1) => {
@@ -297,37 +297,6 @@ export const getArtistPage = async (artistId) => {
             createdAt: artist.createdAt,
             updatedAt: artist.updatedAt
         }
-    };
-};
-
-export const getNewReleasesPage = async (page = 1) => {
-    const limit = 20;
-    const skip = (page - 1) * limit;
-
-    const spotifyData = await getNewReleases(limit, skip);
-
-    if (!spotifyData?.albums?.items) {
-        throw new AppError("Invalid Spotify response", 502);
-    }
-
-    const total = spotifyData.albums.total || 0;
-
-    const albums = spotifyData.albums.items
-        .map(album => ({
-            albumId: album.id,
-            name: album.name,
-            images: album.images,
-            artists: album.artists,
-            release_date: album.release_date,
-            total_tracks: album.total_tracks,
-            album_type: album.album_type
-        }))
-        .sort((a, b) => new Date(b.release_date) - new Date(a.release_date));
-
-    return {
-        totalAlbums: total,
-        albums: albums,
-        currentPage: page
     };
 };
 

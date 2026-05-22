@@ -3,6 +3,7 @@ import { Music } from 'lucide-react';
 import { axiosInstance } from '../lib/axios';
 import { Link } from 'react-router-dom';
 import useAuthStore from '../store/useAuthStore';
+import HorizontalCarousel from './HorizontalCarousel.jsx';
 
 const UserLiked = () => {
     const [userLikedAlbums, setUserLikedAlbums] = useState([]);
@@ -98,9 +99,9 @@ const UserLiked = () => {
             )}
 
             {!loading && !error && userLikedAlbums.length > 0 && (
-                <div className="carousel carousel-center w-full p-4 gap-6 space-x-6 rounded-box">
+                <HorizontalCarousel>
                     {userLikedAlbums.slice(0, 8).map(renderAlbumCard)}
-                </div>
+                </HorizontalCarousel>
             )}
         </section>
     );

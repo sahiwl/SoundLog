@@ -73,7 +73,7 @@ app.use("/api/music", songRoutes)
 app.use("/api/ai", aiRoutes)
 
 app.get("/", (req, res) => {
-  res.send("Server is live on Vercel");
+  res.send("Server is live on Render");
 });
 
 

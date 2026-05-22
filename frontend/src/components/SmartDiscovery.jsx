@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Sparkles, Music, Heart, Zap, Coffee, Focus, PartyPopper } from 'lucide-react';
 import { axiosInstance } from '../lib/axios';
 import { Link } from 'react-router-dom';
+import HorizontalCarousel from './HorizontalCarousel.jsx';
 
 const MOOD_ICONS = {
     happy: Heart,
@@ -264,9 +265,9 @@ const SmartDiscovery = () => {
                     </div>
 
                     {recommendations.recommendations?.albums?.length > 0 ? (
-                        <div className="carousel carousel-center w-full p-4 gap-6 space-x-6 rounded-box">
+                        <HorizontalCarousel>
                             {recommendations.recommendations.albums.slice(0, 8).map(renderAlbumCard)}
-                        </div>
+                        </HorizontalCarousel>
                     ) : (
                         <div className="text-center text-gray-400 py-8">
                             <Music className="mx-auto mb-2 opacity-50" size={32} />

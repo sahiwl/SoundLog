@@ -164,24 +164,6 @@ export const getSmartRecommendations = async (userId, mood) => {
     };
 };
 
-export const getMoodRecommendations = async (mood) => {
-    if (!MOOD_CONFIGURATIONS[mood]) {
-        throw new AppError(
-            'Invalid mood. Available moods: ' + Object.keys(MOOD_CONFIGURATIONS).join(', '),
-            400
-        );
-    }
-
-    const recommendations = await getDefaultRecommendations(mood);
-
-    return {
-        recommendations,
-        mood,
-        availableMoods: Object.keys(MOOD_CONFIGURATIONS),
-        aiRateLimitInfo: getAIRateLimitInfo()
-    };
-};
-
 export const getAIRecommendations = async (userId, mood) => {
     // Check if AI requests are available
     const rateLimitInfo = getAIRateLimitInfo();

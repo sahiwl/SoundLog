@@ -4,6 +4,7 @@ import { axiosInstance } from '../lib/axios.js'
 import { showToast } from '../lib/toastConfig.js'
 import { Link } from 'react-router-dom'
 import { Music } from 'lucide-react'
+import HorizontalCarousel from './HorizontalCarousel.jsx'
 
 const NewReleases = () => {
 
@@ -66,9 +67,9 @@ const NewReleases = () => {
     <div className="min-h-content -28 bg- text-white">
       <h1 className="text-4xl font-bold mb-8">New Releases</h1>
 
-      <div className="carousel carousel-center w-full p-4 gap-6 space-x-6 rounded-box">
+      <HorizontalCarousel>
         {newReleases.map(renderAlbumCard)}
-      </div>
+      </HorizontalCarousel>
     </div>
   )
 }
