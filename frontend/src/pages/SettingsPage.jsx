@@ -6,6 +6,7 @@ import { axiosInstance } from "../lib/axios.js";
 import { showToast } from "../lib/toastConfig.js";
 import Background from "../components/Background.jsx";
 import FavouritesPicker from "../components/FavouritesPicker.jsx";
+import UserAvatar from "../components/UserAvatar.jsx";
 
 const inputClass =
   "mt-1 w-full rounded border border-gray-700 bg-zinc-800 px-4 py-2 text-sm text-gray-200 placeholder-gray-500 focus:border-white focus:outline-none";
@@ -16,9 +17,7 @@ const SettingsPage = () => {
   const { authUser, isUpdatingProfile, updateProfile } = useAuthStore();
   const navigate = useNavigate();
 
-  const [selectedImage, setSelectedImage] = useState(
-    authUser?.profilePic || "/avatar.png"
-  );
+  const [selectedImage, setSelectedImage] = useState(authUser?.profilePic || "");
   const [formData, setFormData] = useState({
     username: authUser?.username || "",
     email: authUser?.email || "",
@@ -62,7 +61,7 @@ const SettingsPage = () => {
         await updateProfile({ profilePic: base64Image });
       } catch (error) {
         console.error("Image upload failed:", error);
-        setSelectedImage(authUser?.profilePic || "/avatar.png");
+        setSelectedImage(authUser?.profilePic || "");
       }
     };
 
@@ -120,10 +119,12 @@ const SettingsPage = () => {
               htmlFor="imageUpload"
               className="relative w-28 h-28 sm:w-32 sm:h-32 cursor-pointer group"
             >
-              <img
+              <UserAvatar
+                username={authUser?.username}
                 src={selectedImage}
-                alt="Profile"
-                className="w-full h-full rounded-full object-cover ring-2 ring-white/10"
+                size={128}
+                className="w-full h-full ring-2 ring-white/10"
+                textClassName="text-4xl"
               />
               <div className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                 <Camera size={22} className="text-white" />

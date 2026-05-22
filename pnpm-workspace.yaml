@@ -1,0 +1,7 @@
+packages:
+  - backend
+  - frontend
+
+# pnpm 11 blocks postinstall scripts unless explicitly allowed — vite needs esbuild
+allowBuilds:
+  esbuild: true

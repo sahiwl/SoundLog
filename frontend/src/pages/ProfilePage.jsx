@@ -4,6 +4,7 @@ import useAuthStore from "../store/useAuthStore.js";
 import { axiosInstance } from "../lib/axios.js";
 import Background from "../components/Background.jsx";
 import AlbumImage from "../components/AlbumImage.jsx";
+import UserAvatar from "../components/UserAvatar.jsx";
 
 const FavouriteSlot = ({ album, index }) => {
   if (!album) {
@@ -104,20 +105,13 @@ const ProfilePage = () => {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 pb-16">
         {/* Header */}
         <section className="flex flex-col sm:flex-row sm:items-end gap-6 pb-8 border-b border-white/10">
-          {userInfo.profilePic ? (
-            <img
-              src={userInfo.profilePic}
-              alt={userInfo.username}
-              width={128}
-              height={128}
-              loading="lazy"
-              className="w-28 h-28 sm:w-32 sm:h-32 rounded-full object-cover ring-2 ring-white/10"
-            />
-          ) : (
-            <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-gray-700 flex items-center justify-center text-4xl font-semibold ring-2 ring-white/10">
-              {userInfo.username.charAt(0).toUpperCase()}
-            </div>
-          )}
+          <UserAvatar
+            username={userInfo.username}
+            src={userInfo.profilePic}
+            size={128}
+            className="ring-2 ring-white/10"
+            textClassName="text-4xl"
+          />
 
           <div className="flex-1">
             <div className="flex items-center justify-between flex-wrap gap-3">

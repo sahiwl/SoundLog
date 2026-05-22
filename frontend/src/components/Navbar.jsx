@@ -4,6 +4,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import useAuthStore from "../store/useAuthStore.js";
 import { showToast } from "../lib/toastConfig.js";
 import FullScreenSearch from "./Search.jsx";
+import UserAvatar from "./UserAvatar.jsx";
 
 const UserSection = ({ isAuthenticated, onLogout, user }) => {
   const navigate = useNavigate();
@@ -14,17 +15,12 @@ const UserSection = ({ isAuthenticated, onLogout, user }) => {
         className="flex items-center gap-2 cursor-pointer"
         onClick={() => navigate(`/${user.username}/profile`)}
       >
-        {user.profilePic ? (
-          <img
-            src={user.profilePic}
-            alt="Profile"
-            className="w-7 h-7 rounded-full object-cover"
-          />
-        ) : (
-          <div className="w-7 h-7 rounded-full bg-gray-500 flex items-center justify-center text-sm font-medium text-white">
-            {user.username.charAt(0).toUpperCase()}
-          </div>
-        )}
+        <UserAvatar
+          username={user.username}
+          src={user.profilePic}
+          size={28}
+          textClassName="text-xs"
+        />
         <span className="text-gray-300 hover:text-white">
           {user.username.toUpperCase()}
         </span>
@@ -150,17 +146,12 @@ const Navbar = () => {
                 to={`/${authUser.username}/profile`}
                 className="flex items-center gap-2 hover:text-white cursor-pointer"
               >
-                {authUser.profilePic ? (
-                  <img
-                    src={authUser.profilePic}
-                    alt="Profile"
-                    className="w-6 h-6 rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="w-6 h-6 rounded-full bg-gray-500 flex items-center justify-center text-sm font-medium text-white">
-                    {authUser.username.charAt(0).toUpperCase()}
-                  </div>
-                )}
+                <UserAvatar
+                  username={authUser.username}
+                  src={authUser.profilePic}
+                  size={24}
+                  textClassName="text-xs"
+                />
                 <span className="text-gray-300">{authUser.username.toUpperCase()}</span>
               </Link>
               {['reviews', 'albums', 'listenlater', 'likes'].map((path) => (

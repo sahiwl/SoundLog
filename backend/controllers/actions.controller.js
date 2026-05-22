@@ -1,7 +1,5 @@
 import * as actionsService from "../services/actions.service.js";
 
-export { getOrCreateSpotifyData } from "../services/actions.service.js";
-
 export const toggleLike = async (req, res) => {
     const { albumId } = req.params;
     const result = await actionsService.toggleLike(req.user._id, albumId);

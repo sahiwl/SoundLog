@@ -37,10 +37,5 @@
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^15.15.0",
     "vite": "^6.4.1"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "esbuild"
-    ]
   }
 }

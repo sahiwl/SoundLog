@@ -1,4 +1,3 @@
-import Album from "../models/album.model.js";
 import Rating from "../models/rating.model.js";
 import Review from "../models/review.model.js";
 import Likes from "../models/likes.model.js";
@@ -25,27 +24,44 @@ export const getUserReviews = async (username, page = 1) => {
         .limit(limit)
         .populate('userId', 'username');
 
-    const reviewsWithAlbumDetails = await Promise.all(
-        reviews.map(async (review) => {
-            const album = await Album.findOne({ albumId: review.albumId });
-            const rating = await Rating.findOne({
-                userId,
-                itemId: review.albumId,
-                itemType: 'albums'
-            });
+    const albumIds = reviews.map((r) => r.albumId);
 
-            return {
-                _id: review._id,
-                reviewText: review.reviewText,
-                rating: rating ? rating.rating : "NA",
-                createdAt: review.createdAt,
-                albumId: review.albumId,
-                albumTitle: album?.name || "Unknown Album",
-                releaseDate: album?.release_date || "Unknown Year",
-                albumImage: album?.images?.[0]?.url || null
-            };
-        })
+    // Batch fetch ratings for all the reviewed albums in one query (avoids N+1).
+    const ratings = await Rating.find({
+        userId,
+        itemType: "albums",
+        itemId: { $in: albumIds },
+    }).select("itemId rating");
+    const ratingByAlbum = new Map(ratings.map((r) => [r.itemId, r.rating]));
+
+    // Route album lookups through the shared cache helper. It fixes the
+    // "Unknown Album" bug for albums that hadn't been cached yet (eg. seeded
+    // reviews) and reuses already cached docs without an extra Spotify call.
+    // touch: false because listing reviews isn't really "accessing" the album.
+    const albums = await Promise.all(
+        albumIds.map((id) =>
+            getAlbumDetails(id, { touch: false }).catch(() => null)
+        )
     );
+    const albumById = new Map(
+        albums.filter(Boolean).map((a) => [a.albumId, a])
+    );
+
+    const reviewsWithAlbumDetails = reviews.map((review) => {
+        const album = albumById.get(review.albumId);
+        return {
+            _id: review._id,
+            reviewText: review.reviewText,
+            rating: ratingByAlbum.has(review.albumId)
+                ? ratingByAlbum.get(review.albumId)
+                : "NA",
+            createdAt: review.createdAt,
+            albumId: review.albumId,
+            albumTitle: album?.name || "Unknown Album",
+            releaseDate: album?.release_date || "Unknown Year",
+            albumImage: album?.images?.[0]?.url || null,
+        };
+    });
 
     const total = await Review.countDocuments({ userId });
 
@@ -112,16 +128,7 @@ export const getUserAlbums = async (username, page = 1) => {
 
     const albumsWithDetails = await Promise.all(
         paginatedAlbums.map(async (data) => {
-            // Use getAlbumDetails from song service which handles caching
             const album = await getAlbumDetails(data.albumId);
-
-            // Update lastAccessed happens inside getAlbumDetails if it fetches? 
-            // Actually getAlbumDetails creates if not exists. 
-            // The original controller updated lastAccessed explicitly if found.
-            // Let's replicate that behavior.
-            album.lastAccessed = new Date();
-            await album.save();
-
             return {
                 ...album.toObject(),
                 rating: data.rating || null,
@@ -155,8 +162,6 @@ export const getUserLikes = async (username, page = 1) => {
     const albumsWithDetails = await Promise.all(
         likes.map(async (like) => {
             const album = await getAlbumDetails(like.albumId);
-            album.lastAccessed = new Date();
-            await album.save();
             return album.toObject();
         })
     );
@@ -176,8 +181,6 @@ export const getAlbumPage = async (albumId, page = 1) => {
     const skip = (page - 1) * limit;
 
     const album = await getAlbumDetails(albumId);
-    album.lastAccessed = new Date();
-    await album.save();
 
     const reviews = await Review.find({ albumId })
         .sort({ createdAt: -1 })
@@ -247,8 +250,6 @@ export const getTrackPage = async (trackId, page = 1) => {
     const skip = (page - 1) * limit;
 
     const track = await getTrackDetails(trackId);
-    track.lastAccessed = new Date();
-    await track.save();
 
     const ratings = await Rating.find({ itemId: trackId, itemType: "tracks" })
         .sort({ createdAt: -1 })
@@ -279,9 +280,6 @@ export const getTrackPage = async (trackId, page = 1) => {
 
 export const getArtistPage = async (artistId) => {
     const artist = await getArtistDetails(artistId);
-
-    artist.lastAccessed = new Date();
-    await artist.save();
 
     return {
         artist: {
@@ -350,9 +348,6 @@ export const getUserListenLater = async (username, page = 1) => {
     const albumsWithDetails = await Promise.all(
         listenLater.map(async (item) => {
             const album = await getAlbumDetails(item.albumId);
-            album.lastAccessed = new Date();
-            await album.save();
-
             return {
                 ...album.toObject(),
                 addedAt: item.createdAt
