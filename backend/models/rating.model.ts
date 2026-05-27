@@ -1,6 +1,16 @@
-import mongoose from "mongoose";
+import mongoose, { Document, Schema, Model } from "mongoose";
 
-const ratingSchema = new mongoose.Schema(
+export interface IRating extends Document {
+  itemId: string;
+  userId: mongoose.Types.ObjectId;
+  rating: number;
+  itemType: "tracks" | "albums";
+  // logId?: mongoose.Types.ObjectId | null;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+const ratingSchema = new Schema<IRating>(
   {
     itemId: {
       type: String,
@@ -31,6 +41,6 @@ const ratingSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const Rating = mongoose.model("Rating", ratingSchema);
+const Rating: Model<IRating> = mongoose.model<IRating>("Rating", ratingSchema);
 
 export default Rating;
