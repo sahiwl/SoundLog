@@ -1,9 +1,9 @@
+import type express from "express";
 
-
-const trim = (url) => (url || "").replace(/\/$/, "");
+const trim = (url: string | undefined) : string => (url || "").replace(/\/$/, "");
 
 // B_PROD_URL (prod) or BE_DEV_URL (dev) — both include "/api" 
-export const getApiBase = () => {
+export const getApiBase = ():string => {
   const url =
     process.env.NODE_ENV === "production"
       ? process.env.B_PROD_URL
@@ -12,7 +12,7 @@ export const getApiBase = () => {
 };
 
 // Google Console redirect URI (SPA host + /api — proxied to backend in dev & prod)
-export const getGoogleCallbackUrl = () => {
+export const getGoogleCallbackUrl = () : string => {
   if (process.env.NODE_ENV === "production") {
     return `${trim(process.env.ORIGIN_MAIN)}/api/auth/google/callback`;
   }
@@ -23,18 +23,18 @@ export const getGoogleCallbackUrl = () => {
 };
 
 // Where to send the browser after OAuth (frontend only) 
-export const getFrontendOrigin = () => {
+export const getFrontendOrigin = () : string => {
   if (process.env.NODE_ENV !== "production") {
     return trim(process.env.LOCAL || "http://localhost:5173");
   }
   return trim(process.env.ORIGIN_MAIN);
 };
 
-export const getJwtCookieOptions = () => ({
+export const getJwtCookieOptions = (): express.CookieOptions => ({
   maxAge: 7 * 24 * 60 * 60 * 1000,
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
   // Same-origin /api proxy (Vite + Vercel) — Lax works; None was for cross-origin Render URL
-  sameSite: "Lax",
+  sameSite: "lax",
   path: "/",
 });
