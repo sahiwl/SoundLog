@@ -1,5 +1,5 @@
-export const validateEnv = () => {
-  const required = [
+export const validateEnv = () : void => {
+  const required : string[] = [
     "MONGODB_URI",
     "JWT_SECRET",
     "SESSION_SECRET",

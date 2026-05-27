@@ -1,9 +1,8 @@
 // Curated popular artists for each mood 
 // Each mood has 50+ artists for maximum variety and different results each time
 
-export const MOOD_ARTISTS = {
+export const MOOD_ARTISTS: Record<string, string[]> = {
   happy: [
-
     'Dua Lipa', 'The Weeknd', 'Bruno Mars', 'Ed Sheeran', 'Taylor Swift',
     'Ariana Grande', 'Justin Timberlake', 'Doja Cat', 'Harry Styles', 'Lizzo',
     'Pharrell Williams', 'Mark Ronson', 'Charlie Puth', 'Post Malone', 'Billie Eilish',
@@ -154,17 +153,17 @@ export const MOOD_ARTISTS = {
 };
 
 // Helper func to get random artists from a mood
-export const getRandomArtistsFromMood = (mood, count = 4) => {
+export const getRandomArtistsFromMood = (mood: string, count: number = 4): string[] => {
   const artists = MOOD_ARTISTS[mood] || MOOD_ARTISTS.happy;
   const shuffled = [...artists].sort(() => 0.5 - Math.random());
   return shuffled.slice(0, count);
 };
 
-export const getAvailableMoods = () => {
+export const getAvailableMoods = (): string[] => {
   return Object.keys(MOOD_ARTISTS);
 };
 
 // artist count for a mood (for debugging)
-export const getArtistCountForMood = (mood) => {
+export const getArtistCountForMood = (mood: string): number => {
   return MOOD_ARTISTS[mood] ? MOOD_ARTISTS[mood].length : 0;
 };
