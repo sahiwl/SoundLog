@@ -6,13 +6,12 @@
       "outDir": "dist",
       "rootDir": ".",
       "strict": false,
-      "allowJs": true,
-      "checkJs": false,
+      "allowJs": false,
       "esModuleInterop": true,
       "skipLibCheck": true,
       "resolveJsonModule": true,
       "noEmit": true
     },
-    "include": ["**/*.ts", "**/*.js"],
+    "include": ["**/*.ts"],
     "exclude": ["node_modules", "dist"]
   }

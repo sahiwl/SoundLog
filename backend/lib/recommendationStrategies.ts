@@ -7,7 +7,6 @@ export type MoodType ='happy'| 'sad'| 'energetic'| 'chill'| 'focus'| 'party';
 
 export interface MoodConfiguration {
   genres: string[];
-  attributes: Record<string, number>;
   searchTerms: string[];
 }
 
@@ -66,62 +65,26 @@ export interface FormattedAlbum {
 export const MOOD_CONFIGURATIONS: MoodConfigurations = {
   happy: {
     genres: ['pop', 'dance', 'funk'],
-    attributes: {
-      target_valence: 0.8,
-      target_energy: 0.7,
-      target_danceability: 0.7,
-      min_valence: 0.5,
-    },
     searchTerms: ['upbeat', 'happy', 'cheerful', 'positive', 'feel good'],
   },
   sad: {
     genres: ['indie', 'alternative', 'folk'],
-    attributes: {
-      target_valence: 0.3,
-      target_energy: 0.4,
-      max_valence: 0.5,
-      target_acousticness: 0.6,
-    },
     searchTerms: ['melancholy', 'emotional', 'heartbreak', 'indie', 'acoustic'],
   },
   energetic: {
     genres: ['rock', 'electronic', 'punk'],
-    attributes: {
-      target_energy: 0.9,
-      target_tempo: 140,
-      min_energy: 0.7,
-      target_loudness: -5,
-    },
     searchTerms: ['energetic', 'high energy', 'pump up', 'workout', 'intense'],
   },
   chill: {
     genres: ['ambient', 'jazz', 'indie'],
-    attributes: {
-      target_valence: 0.6,
-      target_energy: 0.3,
-      max_energy: 0.5,
-      target_acousticness: 0.7,
-    },
     searchTerms: ['chill', 'relaxing', 'mellow', 'ambient', 'lounge'],
   },
   focus: {
     genres: ['classical', 'ambient', 'electronic'],
-    attributes: {
-      target_instrumentalness: 0.8,
-      max_speechiness: 0.1,
-      target_energy: 0.4,
-      min_instrumentalness: 0.5,
-    },
     searchTerms: ['instrumental', 'focus', 'study', 'ambient', 'classical'],
   },
   party: {
     genres: ['pop', 'dance', 'hip-hop'],
-    attributes: {
-      target_danceability: 0.9,
-      target_energy: 0.8,
-      min_danceability: 0.6,
-      target_valence: 0.8,
-    },
     searchTerms: ['party', 'dance', 'club', 'upbeat', 'celebration'],
   },
 };
@@ -213,69 +176,7 @@ export const getAlbumsByArtists = async (
   return albums;
 };
 
-// Strategy 2: Get albums from popular tracks using Spotify recommendations
-export const getAlbumsFromRecommendations = async (
-  mood: MoodType,
-  existingAlbums: SpotifyAlbum[] = []
-): Promise<SpotifyAlbum[]> => {
-  const albums: SpotifyAlbum[] = [];
-  
-  try {
-    const moodConfig = MOOD_CONFIGURATIONS[mood] || MOOD_CONFIGURATIONS.happy;
-    const validGenres = moodConfig.genres.filter((g: string) => SPOTIFY_GENRE_SEEDS.includes(g));
-    const seedGenres = validGenres.slice(0, 2);
-    
-    if (seedGenres.length > 0) {
-      const recommendationParams: Record<string, any> = {
-        seed_genres: seedGenres.join(','),
-        limit: 20,
-        market: 'US',
-        min_popularity: 40, 
-        ...moodConfig.attributes
-      };
-
-      const spotifyResponse = await axiosInstance.get('/recommendations', {
-        params: recommendationParams
-      });
-
-      const tracks: SpotifyTrack[] = spotifyResponse.data.tracks || [];
-      
-      // Extract albums from popular tracks
-      const seenAlbumIds = new Set(existingAlbums.map(a => a.id));
-      const albumsFromTracks: SpotifyAlbum[] = [];
-      
-      for (const track of tracks) {
-        if (track.album && !seenAlbumIds.has(track.album.id)) {
-          // Filter out compilation-style albums
-          const albumName = track.album.name.toLowerCase();
-          const isCompilation =
-            albumName.includes('compilation') ||
-            albumName.includes('vol.') ||
-            albumName.includes('volume') ||
-            albumName.includes('instrumental') ||
-            albumName.includes('various artists');
-          
-          if (!isCompilation && track.popularity >= 35) {
-            albumsFromTracks.push({
-              ...track.album,
-              popularity: track.popularity,
-              preview_url: track.preview_url
-            });
-            seenAlbumIds.add(track.album.id);
-          }
-        }
-      }
-      
-      albums.push(...albumsFromTracks);
-    }
-  } catch (error: any) {
-    console.error('Recommendations API failed:', error?.message);
-  }
-  
-  return albums;
-};
-
-// Strategy 3: Search for trending albums in recent years
+// Strategy 2: Search for trending albums in recent years
 export const getTrendingAlbums = async (mood: MoodType,existingAlbums: SpotifyAlbum[] = []): Promise<SpotifyAlbum[]> => {
   const albums: SpotifyAlbum[] = [];
   

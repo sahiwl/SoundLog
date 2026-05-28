@@ -3,11 +3,10 @@ import { generateToken } from "../lib/utils.js";
 import { getJwtCookieOptions } from "../lib/authConfig.js";
 import * as authService from "../services/auth.service.js";
 import type { AuthenticatedRequest } from "../types/authReq.js";
-import type { LoginInput, SignupInput, UpdateProfileInput } from "../validators/auth.schema.js";
 
 export const signup = async (req: Request, res: Response) => {
-  const newUser = await authService.signupUser(req.body as SignupInput["body"]);
-  generateToken(newUser._id.toString(), res);
+  const newUser = await authService.signupUser(req.body);
+  generateToken(newUser._id, res);
 
   res.status(201).json({
     _id: newUser._id,
@@ -20,8 +19,8 @@ export const signup = async (req: Request, res: Response) => {
 };
 
 export const login = async (req: Request, res: Response) => {
-  const user = await authService.loginUser(req.body as LoginInput["body"]);
-  generateToken(user._id.toString(), res);
+  const user = await authService.loginUser(req.body);
+  generateToken(user._id, res);
 
   res.status(200).json({
     _id: user._id,
@@ -40,13 +39,10 @@ export const logout = (_req: Request, res: Response) => {
 };
 
 export const updateProfile = async (req: AuthenticatedRequest, res: Response) => {
-  const updatedUser = await authService.updateUserProfile(
-    req.user._id,
-    req.body as UpdateProfileInput["body"]
-  );
+  const updatedUser = await authService.updateUserProfile(req.user._id, req.body);
   res.status(200).json(updatedUser);
 };
 
-export const checkAuth = (req: AuthenticatedRequest, res: Response) => {
+export const checkAuth = async (req: AuthenticatedRequest, res: Response) => {
   res.status(200).json(req.user);
 };

@@ -45,7 +45,7 @@ passport.use(
         } else {
           const email = profile.emails?.[0]?.value;
           if (!email) {
-            return done(new Error("Google account has no email — cannot sign up."), null);
+            return done(new Error("Google account has no email, cannot sign up."), false);
           }
 
           const salt = await bcrypt.genSalt(10);
@@ -73,7 +73,7 @@ passport.use(
         return done(null, user);
       } catch (err) {
         console.error("Google auth error:", err);
-        return done(err as Error, null);
+        return done(err as Error, false);
       }
     }
   )

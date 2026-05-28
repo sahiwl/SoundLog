@@ -12,7 +12,7 @@ export const toggleLike = async (req: AuthenticatedRequest, res: Response) => {
 export const addRating = async (req: AuthenticatedRequest, res: Response) => {
   const itemType = requireItemType(requireParam(req.params.itemType, "itemType"));
   const itemId = requireParam(req.params.itemId, "itemId");
-  const { rating } = req.body as { rating: number };
+  const { rating } = req.body;
   const newRating = await actionsService.addRating(req.user._id, {
     itemType,
     itemId,
@@ -52,7 +52,7 @@ export const deleteRating = async (req: AuthenticatedRequest, res: Response) => 
 
 export const addReview = async (req: AuthenticatedRequest, res: Response) => {
   const albumId = requireParam(req.params.albumId, "albumId");
-  const { reviewText } = req.body as { reviewText: string };
+  const { reviewText } = req.body;
   const newReview = await actionsService.addReview(req.user._id, {
     albumId,
     reviewText,
@@ -66,7 +66,7 @@ export const addReview = async (req: AuthenticatedRequest, res: Response) => {
 
 export const updateReview = async (req: AuthenticatedRequest, res: Response) => {
   const albumId = requireParam(req.params.albumId, "albumId");
-  const { reviewText } = req.body as { reviewText: string };
+  const { reviewText } = req.body;
   const updatedReview = await actionsService.updateReview(req.user._id, {
     albumId,
     reviewText,

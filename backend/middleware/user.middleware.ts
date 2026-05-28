@@ -19,8 +19,9 @@ export const verifyUser = async (req: Request ,res: Response, next:NextFunction)
         req.profilePic = user.profilePic;
         req.username = username;
         next();
-    } catch (error) {
-        console.error("Error in verifyUser middleware:", error.message);
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        console.error("Error in verifyUser middleware:", message);
         res.status(500).json({message: "Internal Server Error"});
     }
 }

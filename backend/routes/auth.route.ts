@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Request, Response } from "express";
 import {
   checkAuth,
   login,
@@ -21,7 +21,8 @@ import {
 
 const router = express.Router();
 
-const frontendOrigin = () => getFrontendOrigin() || "http://localhost:5173";
+const frontendOrigin = (): string =>
+  getFrontendOrigin() || "http://localhost:5173";
 
 router.post("/signup", authRateLimiter, validate(signupSchema), asyncHandler(signup));
 router.post("/login", authRateLimiter, validate(loginSchema), asyncHandler(login));
@@ -39,7 +40,7 @@ router.get(
     failureRedirect: `${frontendOrigin()}/signin?error=google_auth_failed`,
     session: true,
   }),
-  (req, res) => {
+  (req: Request, res: Response) => {
     if (!req.user) {
       return res.redirect(`${frontendOrigin()}/signin?error=google_auth_failed`);
     }

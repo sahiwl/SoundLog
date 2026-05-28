@@ -2,13 +2,13 @@
   "name": "backend",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch index.js",
-    "start": "node index.js",
-    "build": "echo 'No build step required'",
-    "cleanup": "node scripts/runCleanup.js",
+    "dev": "tsx watch index.ts",
+    "start": "node dist/index.js",
+    "build": "tsc -p tsconfig.build.json",
+    "cleanup": "node dist/scripts/runCleanup.js",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [],

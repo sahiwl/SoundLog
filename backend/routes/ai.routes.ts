@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Router } from "express";
 import {
   getSmartRecommendations,
   getAIRecommendations,
@@ -6,7 +6,7 @@ import {
 import { protectRoute } from "../middleware/auth.middleware.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 
-const router = express.Router();
+const router: Router = express.Router();
 
 router.get("/recommendations", protectRoute, asyncHandler(getSmartRecommendations));
 router.get("/ai-recommendations", protectRoute, asyncHandler(getAIRecommendations));

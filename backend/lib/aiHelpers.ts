@@ -1,11 +1,22 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { MOOD_ARTISTS, getRandomArtistsFromMood } from '../data/moodArtists.js';
-import { SPOTIFY_GENRE_SEEDS, MOOD_CONFIGURATIONS } from './recommendationStrategies.js';
+import { MOOD_CONFIGURATIONS, SPOTIFY_GENRE_SEEDS, type MoodType } from './recommendationStrategies.js';
 import aiRateLimiter from './aiRateLimiter.js';
 import { AppError } from './AppError.js';
 
 const AI_REQUEST_TIMEOUT = 15000;
-const GEMINI_MODEL = "gemini-2.5-flash";
+const DEFAULT_GEMINI_MODEL = "gemini-2.5-flash";
+const FALLBACK_GEMINI_MODEL = "gemini-2.0-flash";
+
+const getGeminiModels = (): readonly string[] => {
+  const primary = process.env.GEMINI_MODEL?.trim() || DEFAULT_GEMINI_MODEL;
+  return primary === FALLBACK_GEMINI_MODEL
+    ? [primary]
+    : [primary, FALLBACK_GEMINI_MODEL];
+};
+const GEMINI_RETRY_DELAY_MS = 1500;
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // --- Types ---
 export interface Rating {
@@ -50,6 +61,11 @@ const isQuotaError = (error: any): boolean => {
          ));
 };
 
+const isTransientOverload = (error: unknown): boolean => {
+  if (!(error instanceof Error)) return false;
+  return error.message.includes("503") || error.message.toLowerCase().includes("high demand");
+};
+
 // --- Google GenAI Initialization ---
 let genAI: GoogleGenerativeAI | null = null;
 const getGenAI = (): GoogleGenerativeAI | null => {
@@ -87,6 +103,42 @@ const makeAIRequestWithTimeout = async <T>(aiCall: () => Promise<T>): Promise<T>
     }
     throw error;
   }
+};
+
+const generateContentWithFallback = async (prompt: string) => {
+  const client = getGenAI();
+  if (!client) {
+    throw new AppError("AI service not available: missing API key", 503);
+  }
+
+  let lastError: unknown;
+
+  for (const modelName of getGeminiModels()) {
+    const model = client.getGenerativeModel({ model: modelName });
+
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        return await makeAIRequestWithTimeout(() => model.generateContent(prompt));
+      } catch (error) {
+        lastError = error;
+        if (isTransientOverload(error) && attempt === 0) {
+          console.warn(`Gemini ${modelName} overloaded, retrying in ${GEMINI_RETRY_DELAY_MS}ms...`);
+          await sleep(GEMINI_RETRY_DELAY_MS);
+          continue;
+        }
+        console.warn(`Gemini ${modelName} failed:`, error instanceof Error ? error.message : error);
+        break;
+      }
+    }
+  }
+
+  throw lastError;
+};
+
+/** SDK types `response`/`text()` as sync; runtime may return a Promise. */
+const getTextFromGenerateResult = async (result: {response: { text: () => string | Promise<string> }; }): Promise<string> => {
+  const text = result.response.text();
+  return Promise.resolve(text);
 };
 
 // --- Taste Analysis with AI Fallback ---
@@ -129,8 +181,7 @@ export const analyzeUserTaste = async ( ratings: Rating[], reviews: Review[], fo
       return createBasicTasteProfile(ratings, reviews);
     }
 
-    const model = getGenAI()?.getGenerativeModel({ model: GEMINI_MODEL });
-    if (!model) {
+    if (!getGenAI()) {
       throw new AppError('AI service not available: missing API key', 503);
     }
 
@@ -183,12 +234,8 @@ Important: Preferred genres MUST be from this list: ${SPOTIFY_GENRE_SEEDS.join('
       }
       wasRecorded = true;
 
-      const result = await makeAIRequestWithTimeout(async () => {
-        return await model.generateContent(prompt);
-      });
-
-      const response = await result.response;
-      const text = await response.text();
+      const result = await generateContentWithFallback(prompt);
+      const text = await getTextFromGenerateResult(result);
 
       const duration = Date.now() - startTime;
       console.log(`AI taste analysis completed in ${duration}ms.`, {
@@ -314,9 +361,7 @@ export const generateAISearchQuery = async (
       return getFallbackArtistQuery(mood, type);
     }
 
-    const model = getGenAI()?.getGenerativeModel({ model: GEMINI_MODEL });
-
-    if (!model) {
+    if (!getGenAI()) {
       console.log('Model not available, using curated artist search');
       return getFallbackArtistQuery(mood, type);
     }
@@ -352,12 +397,8 @@ Return ONLY the query string, nothing else.
       }
       wasRecorded = true;
 
-      const result = await makeAIRequestWithTimeout(async () => {
-        return await model.generateContent(prompt);
-      });
-
-      const response = await result.response;
-      let query: string = (await response.text()).trim();
+      const result = await generateContentWithFallback(prompt);
+      let query = (await getTextFromGenerateResult(result)).trim();
 
       const duration = Date.now() - startTime;
       console.log(`AI search query generated in ${duration}ms.`, {
@@ -418,8 +459,8 @@ export const extractGenresFromProfile = (
     genres = tasteProfile.preferredGenres.slice(0, 2);
   }
 
-  if (mood && MOOD_CONFIGURATIONS[mood]) {
-    const moodGenres: string[] = MOOD_CONFIGURATIONS[mood].genres;
+  if (mood && mood in MOOD_CONFIGURATIONS) {
+    const moodGenres = MOOD_CONFIGURATIONS[mood as MoodType].genres;
     const moodGenre = moodGenres.find(g => SPOTIFY_GENRE_SEEDS.includes(g));
     if (moodGenre && !genres.includes(moodGenre)) {
       genres.push(moodGenre);

@@ -7,7 +7,9 @@
   "scripts": {
     "dev": "concurrently -n backend,frontend -c blue,green \"pnpm --filter backend dev\" \"pnpm --filter frontend dev\"",
     "dev:backend": "pnpm --filter backend dev",
-    "dev:frontend": "pnpm --filter frontend dev"
+    "dev:frontend": "pnpm --filter frontend dev",
+    "typecheck": "pnpm --filter backend typecheck",
+    "build:backend": "pnpm --filter backend build"
   },
   "devDependencies": {
     "concurrently": "^9.0.0"

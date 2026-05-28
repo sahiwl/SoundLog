@@ -3,9 +3,7 @@ import Review from "../models/review.model.js";
 import { axiosInstance } from "../lib/spotifyAuth.js";
 import {
     MOOD_CONFIGURATIONS,
-    SPOTIFY_GENRE_SEEDS,
     getAlbumsByArtists,
-    getAlbumsFromRecommendations,
     getTrendingAlbums,
     shuffleAndFormatAlbums,
     isRealAlbum,
@@ -15,7 +13,6 @@ import {
 import {
     analyzeUserTaste,
     generateAISearchQuery,
-    extractGenresFromProfile,
     getAIRateLimitInfo,
     type Rating as TasteRating,
     type Review as TasteReview,
@@ -54,12 +51,6 @@ const getDefaultRecommendations = async (
 
         const artistAlbums = await getAlbumsByArtists(mood as MoodType, 8);
         allAlbums = [...allAlbums, ...artistAlbums];
-
-        const recommendationAlbums = await getAlbumsFromRecommendations(
-            mood as MoodType,
-            allAlbums
-        );
-        allAlbums = [...allAlbums, ...recommendationAlbums];
 
         const trendingAlbums = await getTrendingAlbums(mood as MoodType, allAlbums);
         allAlbums = [...allAlbums, ...trendingAlbums];
@@ -138,21 +129,8 @@ const getPersonalizedRecommendations = async (userId: UserId,ratings: TasteRatin
             }
         }
 
-        const genres = extractGenresFromProfile(tasteProfile, mood as MoodType);
-        const validGenres = genres.filter((g) => SPOTIFY_GENRE_SEEDS.includes(g));
-
-        if (validGenres.length > 0) {
-            const recommendationAlbums = await getAlbumsFromRecommendations(
-                mood as MoodType,
-                allAlbums
-            );
-            allAlbums = [...allAlbums, ...recommendationAlbums];
-        }
-
-        if (allAlbums.length < 8) {
-            const trendingAlbums = await getTrendingAlbums(mood as MoodType, allAlbums);
-            allAlbums = [...allAlbums, ...trendingAlbums];
-        }
+        const trendingAlbums = await getTrendingAlbums(mood as MoodType, allAlbums);
+        allAlbums = [...allAlbums, ...trendingAlbums];
 
         const formattedAlbums = shuffleAndFormatAlbums(allAlbums, Math.max(12, 8));
 
