@@ -7,6 +7,7 @@ export const signupSchema = z.object({
     password: z.string().min(6, "Password must be at least 6 characters long"),
   }),
 });
+export type SignupInput = z.infer<typeof signupSchema>
 
 export const loginSchema = z.object({
   body: z.object({
@@ -14,6 +15,7 @@ export const loginSchema = z.object({
     password: z.string().min(1, "Password is required"),
   }),
 });
+export type LoginInput = z.infer<typeof loginSchema>
 
 export const updateProfileSchema = z.object({
   body: z
@@ -37,3 +39,4 @@ export const updateProfileSchema = z.object({
       { message: "Nothing given to update" }
     ),
 });
+export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;

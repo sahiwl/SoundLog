@@ -1,7 +1,7 @@
-import rateLimit from "express-rate-limit";
+import rateLimit, { RateLimitRequestHandler } from "express-rate-limit";
 
-export const rateLimiter = rateLimit({
-  windowMs: 10 * 60 * 1000,
+export const rateLimiter : RateLimitRequestHandler = rateLimit({
+  windowMs :  10 * 60 * 1000,
   limit: 300,
   message: {
     message:
@@ -9,7 +9,7 @@ export const rateLimiter = rateLimit({
   },
 });
 
-export const authRateLimiter = rateLimit({
+export const authRateLimiter:RateLimitRequestHandler = rateLimit({
   windowMs: 5 * 60 * 1000,
   limit: 20,
   message: {
