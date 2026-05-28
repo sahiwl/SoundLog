@@ -1,18 +1,26 @@
 import Likes from "../models/likes.model.js";
 import Listened from "../models/listened.model.js";
 import ListenLater from "../models/listenLater.model.js";
-import Rating from "../models/rating.model.js";
-import Review from "../models/review.model.js";
-import Comment from "../models/comment.model.js";
+import Rating, { IRating } from "../models/rating.model.js";
+import Review, { IReview } from "../models/review.model.js";
+import Comment, { IComment } from "../models/comment.model.js";
 import { getOrCreateAlbum, getOrCreateTrack } from "../lib/spotifyCache.js";
 import { AppError } from "../lib/AppError.js";
+import { Types } from "mongoose";
+import type { IUser } from "../models/user.model.js";
 
-const ensureSpotifyItem = (itemId, itemType) =>
-    itemType === "albums"
-        ? getOrCreateAlbum(itemId)
-        : getOrCreateTrack(itemId);
+type UserId = string | Types.ObjectId;
+type ItemType = "tracks" | "albums";
 
-export const toggleLike = async (userId, albumId) => {
+type PopulatedUser = Pick<IUser, "_id" | "username">;
+
+const asPopulatedUser = (userId: PopulatedUser | Types.ObjectId): PopulatedUser =>
+    userId as PopulatedUser;
+
+const ensureSpotifyItem = (itemId: string, itemType: ItemType) =>
+    itemType === "albums" ? getOrCreateAlbum(itemId) : getOrCreateTrack(itemId);
+
+export const toggleLike = async (userId: UserId, albumId: string ): Promise<{ message: string }> => {
     if (!albumId) throw new AppError("albumId is required.", 400);
 
     await getOrCreateAlbum(albumId);
@@ -35,12 +43,24 @@ export const toggleLike = async (userId, albumId) => {
     return { message: "Album liked, marked as listened, and removed from Listen Later." };
 };
 
-export const addRating = async (userId, { itemType, itemId, rating }) => {
+interface RatingInput {
+    itemType: ItemType;
+    itemId: string;
+    rating: number;
+}
+
+export const addRating = async ( userId: UserId, { itemType, itemId, rating }: RatingInput ): Promise<IRating> => {
     if (!itemId) throw new AppError("itemId is required.", 400);
     if (!itemType || (itemType !== "tracks" && itemType !== "albums")) {
         throw new AppError("Valid itemType (tracks or albums) is required.", 400);
     }
-    if (typeof rating !== "number" || isNaN(rating) || rating < 0 || rating > 100 || rating % 0.5 !== 0) {
+    if (
+        typeof rating !== "number" ||
+        isNaN(rating) ||
+        rating < 0 ||
+        rating > 100 ||
+        rating % 0.5 !== 0
+    ) {
         throw new AppError("Rating must be a number between 0 and 100", 400);
     }
 
@@ -63,7 +83,12 @@ export const addRating = async (userId, { itemType, itemId, rating }) => {
     return newRating;
 };
 
-export const getRating = async (userId, { itemType, itemId }) => {
+interface ItemRef {
+    itemType: ItemType;
+    itemId: string;
+}
+
+export const getRating = async ( userId: UserId, { itemType, itemId }: ItemRef ): Promise<number | null> => {
     if (!itemId) throw new AppError("itemId is required.", 400);
     if (!itemType || (itemType !== "tracks" && itemType !== "albums")) {
         throw new AppError("Valid itemType (tracks or albums) is required.", 400);
@@ -73,7 +98,7 @@ export const getRating = async (userId, { itemType, itemId }) => {
     return existingRating ? existingRating.rating : null;
 };
 
-export const toggleListened = async (userId, albumId) => {
+export const toggleListened = async ( userId: UserId, albumId: string ): Promise<{ message: string }> => {
     if (!albumId) throw new AppError("albumId is required.", 400);
 
     await getOrCreateAlbum(albumId);
@@ -89,7 +114,7 @@ export const toggleListened = async (userId, albumId) => {
     return { message: "album marked as listened." };
 };
 
-export const toggleListenLater = async (userId, albumId) => {
+export const toggleListenLater = async ( userId: UserId, albumId: string ): Promise<{ message: string; doc?: unknown }> => {
     if (!albumId) throw new AppError("albumId is required.", 400);
 
     await getOrCreateAlbum(albumId);
@@ -105,9 +130,9 @@ export const toggleListenLater = async (userId, albumId) => {
     return { message: "Album added to Listen Later.", doc: newEntry };
 };
 
-export const deleteRating = async (userId, { itemType, itemId }) => {
+export const deleteRating = async ( userId: UserId, { itemType, itemId }: ItemRef ): Promise<{ message: string }> => {
     if (!itemId || !itemType) throw new AppError("itemId and itemType are required.", 400);
-    if (!['albums', 'tracks'].includes(itemType)) {
+    if (!["albums", "tracks"].includes(itemType)) {
         throw new AppError("Invalid itemType. Must be 'albums' or 'tracks'", 400);
     }
 
@@ -120,9 +145,14 @@ export const deleteRating = async (userId, { itemType, itemId }) => {
     return { message: "Rating deleted successfully." };
 };
 
-export const addReview = async (userId, { albumId, reviewText }) => {
+interface ReviewInput {
+    albumId: string;
+    reviewText: string;
+}
+
+export const addReview = async ( userId: UserId, { albumId, reviewText }: ReviewInput ): Promise<IReview> => {
     if (!albumId || !reviewText) throw new AppError("albumId and reviewText are required.", 400);
-    if (reviewText.trim() === '') {
+    if (reviewText.trim() === "") {
         throw new AppError("Review text cannot be empty.", 400);
     }
 
@@ -148,7 +178,7 @@ export const addReview = async (userId, { albumId, reviewText }) => {
     return newReview;
 };
 
-export const updateReview = async (userId, { albumId, reviewText }) => {
+export const updateReview = async ( userId: UserId, { albumId, reviewText }: ReviewInput ): Promise<IReview> => {
     if (!reviewText) throw new AppError("Review text is required.", 400);
     if (!albumId) throw new AppError("albumId is required.", 400);
 
@@ -162,7 +192,7 @@ export const updateReview = async (userId, { albumId, reviewText }) => {
     return existingReview;
 };
 
-export const deleteReview = async (userId, albumId) => {
+export const deleteReview = async ( userId: UserId, albumId: string ): Promise<{ message: string }> => {
     if (!albumId) throw new AppError("albumId is required.", 400);
 
     const existingReview = await Review.findOne({ userId, albumId });
@@ -174,7 +204,12 @@ export const deleteReview = async (userId, albumId) => {
     return { message: "Review deleted." };
 };
 
-export const addComment = async (userId, { reviewId, commentText }) => {
+interface CommentInput {
+    reviewId: string;
+    commentText: string;
+}
+
+export const addComment = async (userId: UserId,{ reviewId, commentText }: CommentInput): Promise<IComment> => {
     if (!commentText || !reviewId) {
         throw new AppError("reviewId and commentText are required.", 400);
     }
@@ -190,7 +225,7 @@ export const addComment = async (userId, { reviewId, commentText }) => {
     return newComment;
 };
 
-export const deleteComment = async (userId, commentId) => {
+export const deleteComment = async (userId: UserId,commentId: string): Promise<{ message: string }> => {
     if (!commentId) throw new AppError("commentId is required.", 400);
 
     const existingComment = await Comment.findOne({ _id: commentId, userId });
@@ -202,41 +237,49 @@ export const deleteComment = async (userId, commentId) => {
     return { message: "Comment deleted." };
 };
 
-export const getReviews = async (albumId) => {
+export const getReviews = async (albumId: string) => {
     if (!albumId) throw new AppError("albumId is required.", 400);
 
     const reviews = await Review.find({ albumId })
         .sort({ createdAt: -1 })
-        .populate('userId', 'username')
-        .populate('likedBy', 'username');
+        .populate("userId", "username")
+        .populate("likedBy", "username");
 
     const reviewsWithDetails = await Promise.all(
         reviews.map(async (review) => {
-            const comments = await Comment.find({ reviewId: review._id })
-                .populate('userId', 'username');
+            const comments = await Comment.find({ reviewId: review._id }).populate(
+                "userId",
+                "username"
+            );
+
+            const reviewUser = asPopulatedUser(review.userId);
 
             return {
                 reviewId: review._id,
                 reviewText: review.reviewText,
                 createdAt: review.createdAt,
                 likes: review.likes,
-                likedBy: review.likedBy.map(user => user._id),
+                likedBy: review.likedBy?.map((user) =>
+                    typeof user === "object" && user !== null && "username" in user
+                        ? (user as PopulatedUser)._id
+                        : (user as Types.ObjectId)
+                ),
                 user: {
-                    id: review.userId._id,
-                    username: review.userId.username
+                    id: reviewUser._id,
+                    username: reviewUser.username,
                 },
-                commentCount: comments.length
+                commentCount: comments.length,
             };
         })
     );
 
     return {
         reviews: reviewsWithDetails,
-        totalReviews: reviewsWithDetails.length
+        totalReviews: reviewsWithDetails.length,
     };
 };
 
-export const likeReview = async (userId, reviewId) => {
+export const likeReview = async ( userId: UserId, reviewId: string):  Promise<{ message: string; likes: number }> => {
     if (!reviewId) throw new AppError("reviewId is required.", 400);
 
     const review = await Review.findById(reviewId);
@@ -244,22 +287,24 @@ export const likeReview = async (userId, reviewId) => {
         throw new AppError("Review not found.", 404);
     }
 
-    const userHasLiked = review.likedBy.includes(userId);
+    const uid =
+        typeof userId === "string" ? new Types.ObjectId(userId) : userId;
+    const userHasLiked = review.likedBy?.some((id) => id.equals(uid)) ?? false;
 
     if (userHasLiked) {
-        review.likes = Math.max(0, review.likes - 1);
-        review.likedBy = review.likedBy.filter(id => !id.equals(userId));
+        review.likes = Math.max(0, (review.likes ?? 0) - 1);
+        review.likedBy = review.likedBy?.filter((id) => !id.equals(uid)) ?? [];
         await review.save();
-        return { message: "Review unliked.", likes: review.likes };
+        return { message: "Review unliked.", likes: review.likes ?? 0 };
     }
 
-    review.likes += 1;
-    review.likedBy.push(userId);
+    review.likes = (review.likes ?? 0) + 1;
+    review.likedBy = [...(review.likedBy ?? []), uid];
     await review.save();
-    return { message: "Review liked.", likes: review.likes };
+    return { message: "Review liked.", likes: review.likes ?? 0 };
 };
 
-export const getActions = async (userId, albumId) => {
+export const getActions = async (userId: UserId, albumId: string) => {
     if (!albumId) throw new AppError("albumId is required.", 400);
 
     const album = await getOrCreateAlbum(albumId);
@@ -272,10 +317,10 @@ export const getActions = async (userId, albumId) => {
         Likes.exists({ userId, albumId }),
         ListenLater.exists({ userId, albumId }),
         Rating.findOne(
-            { userId, itemId: albumId, itemType: 'albums' },
+            { userId, itemId: albumId, itemType: "albums" },
             { rating: 1, _id: 0 }
         ),
-        Review.exists({ userId, albumId })
+        Review.exists({ userId, albumId }),
     ]);
 
     return {
@@ -283,24 +328,24 @@ export const getActions = async (userId, albumId) => {
         liked: !!liked,
         listenLater: !!listenLater,
         rating: rating ? rating.rating : null,
-        reviewed: !!review
+        reviewed: !!review,
     };
 };
 
-export const getTrackActions = async (userId, trackId) => {
+export const getTrackActions = async (userId: UserId, trackId: string) => {
     if (!trackId) throw new AppError("trackId is required.", 400);
 
     const rating = await Rating.findOne(
-        { userId, itemId: trackId, itemType: 'tracks' },
+        { userId, itemId: trackId, itemType: "tracks" },
         { rating: 1, _id: 0 }
     );
 
     return {
-        rating: rating ? rating.rating : null
+        rating: rating ? rating.rating : null,
     };
 };
 
-export const getTrackRatingsBatch = async (userId, trackIds) => {
+export const getTrackRatingsBatch = async (userId: UserId,trackIds: string[]): Promise<Record<string, number>> => {
     if (!trackIds?.length) return {};
 
     const ratings = await Rating.find({

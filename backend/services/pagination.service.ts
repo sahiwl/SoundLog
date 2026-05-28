@@ -1,15 +1,34 @@
 import Rating from "../models/rating.model.js";
+import type { IRating } from "../models/rating.model.js";
 import Review from "../models/review.model.js";
 import Likes from "../models/likes.model.js";
+import type { ILike } from "../models/likes.model.js";
 import Listened from "../models/listened.model.js";
+import type { IListened } from "../models/listened.model.js";
 import Comment from "../models/comment.model.js";
 import User from "../models/user.model.js";
+import type { IUser } from "../models/user.model.js";
 import ListenLater from "../models/listenLater.model.js";
+import type { IListenLater } from "../models/listenLater.model.js";
 import { getAlbumDetails, getTrackDetails, getArtistDetails } from "./song.service.js";
 import { AppError } from "../lib/AppError.js";
+import type { Types } from "mongoose";
 
-export const getUserReviews = async (username, page = 1) => {
-    const user = await User.findOne({ username }).select('_id');
+type PopulatedUser = Pick<IUser, "_id" | "username">;
+
+interface CachedAlbum {
+    albumId: string;
+    name: string;
+    release_date: string;
+    images?: { url: string }[];
+    toObject?: () => Record<string, unknown>;
+}
+
+const asPopulatedUser = (userId: PopulatedUser | Types.ObjectId): PopulatedUser =>
+    userId as PopulatedUser;
+
+export const getUserReviews = async (username: string, page: number = 1) => {
+    const user = await User.findOne({ username }).select("_id");
     if (!user) {
         throw new AppError("User not found.", 404);
     }
@@ -18,21 +37,20 @@ export const getUserReviews = async (username, page = 1) => {
     const skip = (page - 1) * limit;
 
     const reviews = await Review.find({ userId })
-        .select('reviewText rating albumId createdAt')
+        .select("reviewText albumId createdAt userId")
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
-        .populate('userId', 'username');
+        .populate("userId", "username");
 
     const albumIds = reviews.map((r) => r.albumId);
 
-    // Batch fetch ratings for all the reviewed albums in one query (avoids N+1).
     const ratings = await Rating.find({
         userId,
         itemType: "albums",
         itemId: { $in: albumIds },
-    }).select("itemId rating");
-    const ratingByAlbum = new Map(ratings.map((r) => [r.itemId, r.rating]));
+    }).select("itemId rating") as IRating[];
+    const ratingByAlbum = new Map<string, number>(ratings.map((r) => [r.itemId, r.rating]));
 
     // Route album lookups through the shared cache helper. It fixes the
     // "Unknown Album" bug for albums that hadn't been cached yet (eg. seeded
@@ -43,8 +61,8 @@ export const getUserReviews = async (username, page = 1) => {
             getAlbumDetails(id, { touch: false }).catch(() => null)
         )
     );
-    const albumById = new Map(
-        albums.filter(Boolean).map((a) => [a.albumId, a])
+    const albumById = new Map<string, CachedAlbum>(
+        albums.filter(Boolean).map((a) => [a.albumId, a as CachedAlbum])
     );
 
     const reviewsWithAlbumDetails = reviews.map((review) => {
@@ -73,8 +91,8 @@ export const getUserReviews = async (username, page = 1) => {
     };
 };
 
-export const getUserAlbums = async (username, page = 1) => {
-    const user = await User.findOne({ username }).select('_id');
+export const getUserAlbums = async (username: string, page: number = 1) => {
+    const user = await User.findOne({ username }).select("_id");
     if (!user) {
         throw new AppError("User not found.", 404);
     }
@@ -84,45 +102,50 @@ export const getUserAlbums = async (username, page = 1) => {
 
     const [ratings, listened, likedAlbums] = await Promise.all([
         Rating.find({ userId, itemType: "albums" })
-            .select('itemId rating createdAt')
+            .select("itemId rating createdAt")
             .sort({ createdAt: -1 }),
         Listened.find({ userId })
-            .select('albumId createdAt')
+            .select("albumId createdAt")
             .sort({ createdAt: -1 }),
-        Likes.find({ userId })
-            .select('albumId createdAt')
+        Likes.find({ userId }).select("albumId createdAt"),
     ]);
 
-    const albumData = new Map();
+    interface AlbumDatum {
+        albumId: string;
+        rating?: number;
+        timestamp: Date;
+    }
 
-    ratings.forEach(r => {
+    const albumData = new Map<string, AlbumDatum>();
+
+    ratings.forEach((r) => {
         albumData.set(r.itemId, {
             albumId: r.itemId,
             rating: r.rating,
-            timestamp: r.createdAt
+            timestamp: r.createdAt ?? new Date(0),
         });
     });
 
-    listened.forEach(l => {
+    listened.forEach((l) => {
         if (!albumData.has(l.albumId)) {
             albumData.set(l.albumId, {
                 albumId: l.albumId,
-                timestamp: l.createdAt
+                timestamp: l.createdAt ?? new Date(0),
             });
         }
     });
 
-    likedAlbums.forEach(l => {
+    likedAlbums.forEach((l) => {
         if (!albumData.has(l.albumId)) {
             albumData.set(l.albumId, {
                 albumId: l.albumId,
-                timestamp: l.createdAt
+                timestamp: l.createdAt ?? new Date(0),
             });
         }
     });
 
     const sortedAlbums = Array.from(albumData.values())
-        .sort((a, b) => b.timestamp - a.timestamp);
+        .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 
     const paginatedAlbums = sortedAlbums.slice(skip, skip + limit);
 
@@ -145,8 +168,8 @@ export const getUserAlbums = async (username, page = 1) => {
     };
 };
 
-export const getUserLikes = async (username, page = 1) => {
-    const user = await User.findOne({ username }).select('_id');
+export const getUserLikes = async (username: string, page: number = 1) => {
+    const user = await User.findOne({ username }).select("_id");
     if (!user) {
         throw new AppError("User not found.", 404);
     }
@@ -176,7 +199,7 @@ export const getUserLikes = async (username, page = 1) => {
     };
 };
 
-export const getAlbumPage = async (albumId, page = 1) => {
+export const getAlbumPage = async (albumId: string, page: number = 1) => {
     const limit = 10;
     const skip = (page - 1) * limit;
 
@@ -186,44 +209,57 @@ export const getAlbumPage = async (albumId, page = 1) => {
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
-        .populate('userId', 'username');
+        .populate("userId", "username");
 
     const reviewsWithDetails = await Promise.all(
         reviews.map(async (review) => {
-            const comments = await Comment.find({ reviewId: review._id })
-                .populate('userId', 'username');
+            const comments = await Comment.find({ reviewId: review._id }).populate(
+                "userId",
+                "username"
+            );
 
-            const ratings = await Rating.find({ reviewId: review._id })
-                .populate('userId', 'username');
+            // Legacy query — Rating schema has no reviewId; kept for API shape parity with JS
+            const ratings = await Rating.find({ reviewId: review._id } as Record<string, unknown>).populate(
+                "userId",
+                "username"
+            );
+
+            const reviewUser = asPopulatedUser(review.userId);
 
             return {
                 reviewId: review._id,
                 reviewText: review.reviewText,
-                rating: review.rating,
+                rating: undefined,
                 createdAt: review.createdAt,
                 user: {
-                    id: review.userId._id,
-                    username: review.userId.username
+                    id: reviewUser._id,
+                    username: reviewUser.username,
                 },
-                comments: comments.map(comment => ({
-                    commentId: comment._id,
-                    text: comment.text,
-                    createdAt: comment.createdAt,
-                    user: {
-                        id: comment.userId._id,
-                        username: comment.userId.username
-                    }
-                })),
-                ratings: ratings.map(rating => ({
-                    ratingId: rating._id,
-                    rating: rating.rating,
-                    createdAt: rating.createdAt,
-                    user: {
-                        id: rating.userId._id,
-                        username: rating.userId.username
-                    }
-                })),
-                commentCount: comments.length
+                comments: comments.map((comment) => {
+                    const commentUser = asPopulatedUser(comment.userId);
+                    return {
+                        commentId: comment._id,
+                        text: comment.commentText,
+                        createdAt: comment.createdAt,
+                        user: {
+                            id: commentUser._id,
+                            username: commentUser.username,
+                        },
+                    };
+                }),
+                ratings: ratings.map((rating) => {
+                    const ratingUser = asPopulatedUser(rating.userId);
+                    return {
+                        ratingId: rating._id,
+                        rating: rating.rating,
+                        createdAt: rating.createdAt,
+                        user: {
+                            id: ratingUser._id,
+                            username: ratingUser.username,
+                        },
+                    };
+                }),
+                commentCount: comments.length,
             };
         })
     );
@@ -245,7 +281,7 @@ export const getAlbumPage = async (albumId, page = 1) => {
     };
 };
 
-export const getTrackPage = async (trackId, page = 1) => {
+export const getTrackPage = async (trackId: string, page: number = 1) => {
     const limit = 10;
     const skip = (page - 1) * limit;
 
@@ -255,21 +291,24 @@ export const getTrackPage = async (trackId, page = 1) => {
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
-        .populate('userId', 'username');
+        .populate("userId", "username");
 
     const totalRatings = await Rating.countDocuments({ itemId: trackId, itemType: "tracks" });
 
     return {
         track: track.toObject(),
-        ratings: ratings.map(rating => ({
-            ratingId: rating._id,
-            rating: rating.rating,
-            createdAt: rating.createdAt,
-            user: {
-                id: rating.userId._id,
-                username: rating.userId.username
-            }
-        })),
+        ratings: ratings.map((rating) => {
+            const ratingUser = asPopulatedUser(rating.userId);
+            return {
+                ratingId: rating._id,
+                rating: rating.rating,
+                createdAt: rating.createdAt,
+                user: {
+                    id: ratingUser._id,
+                    username: ratingUser.username,
+                },
+            };
+        }),
         pagination: {
             currentPage: page,
             totalPages: Math.ceil(totalRatings / limit),
@@ -278,7 +317,7 @@ export const getTrackPage = async (trackId, page = 1) => {
     };
 };
 
-export const getArtistPage = async (artistId) => {
+export const getArtistPage = async (artistId: string) => {
     const artist = await getArtistDetails(artistId);
 
     return {
@@ -300,8 +339,8 @@ export const getArtistPage = async (artistId) => {
     };
 };
 
-export const getUserListenLater = async (username, page = 1) => {
-    const user = await User.findOne({ username }).select('_id');
+export const getUserListenLater = async (username: string, page: number = 1) => {
+    const user = await User.findOne({ username }).select("_id");
     if (!user) {
         throw new AppError("User not found.", 404);
     }

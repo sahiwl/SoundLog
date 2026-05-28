@@ -1,10 +1,34 @@
-import User from "../models/user.model.js";
+import User, { IUser } from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import cloudinary from "../lib/cloudinary.js";
 import { AppError } from "../lib/AppError.js";
 import { getAlbumDetails } from "./song.service.js";
+import { Types } from "mongoose";
 
-export const signupUser = async ({ username, email, password }) => {
+interface SignupInput {
+    username: string;
+    email: string;
+    password: string;
+}
+
+interface LoginInput {
+    username: string;
+    password: string;
+}
+
+interface UpdateUserProfileInput {
+    profilePic?: string;
+    username?: string;
+    email?: string;
+    bio?: string;
+    favourites?: string[];
+}
+
+export const signupUser = async ({
+    username,
+    email,
+    password,
+}: SignupInput): Promise<IUser> => {
     if (!password || password.length < 6) {
         throw new AppError("Password must be at least 6 characters long", 400);
     }
@@ -26,7 +50,7 @@ export const signupUser = async ({ username, email, password }) => {
     return newUser;
 };
 
-export const loginUser = async ({ username, password }) => {
+export const loginUser = async ({username, password}: LoginInput): Promise<IUser> => {
     const user = await User.findOne({ username });
     if (!user) {
         throw new AppError("Invalid credentials", 400);
@@ -38,12 +62,13 @@ export const loginUser = async ({ username, password }) => {
     return user;
 };
 
-export const updateUserProfile = async (userId, { profilePic, username, email, bio, favourites }) => {
-    if (!profilePic && !username && !email && bio === undefined && !favourites) {
+export const updateUserProfile = async (userId: string | Types.ObjectId, { profilePic, username, email, bio, favourites }: UpdateUserProfileInput): Promise<IUser | null> => {
+    if ( !profilePic && !username && !email && bio === undefined && !favourites) 
+    {
         throw new AppError("Nothing given to update", 400);
     }
 
-    const updateData = {};
+    const updateData: Partial<Pick<IUser, "profilePic" | "username" | "email" | "bio" | "favourites">> = {};
 
     if (profilePic) {
         const uploadResponse = await cloudinary.uploader.upload(profilePic);
@@ -52,7 +77,8 @@ export const updateUserProfile = async (userId, { profilePic, username, email, b
 
     if (username) {
         const existingUser = await User.findOne({ username });
-        if (existingUser && existingUser._id.toString() !== userId.toString()) {
+        if ( existingUser && existingUser._id.toString() !== userId.toString()) 
+        {
             throw new AppError("This username is already taken", 409);
         }
         updateData.username = username;
