@@ -4,7 +4,8 @@ import { SPOTIFY_GENRE_SEEDS, MOOD_CONFIGURATIONS } from './recommendationStrate
 import aiRateLimiter from './aiRateLimiter.js';
 import { AppError } from './AppError.js';
 
-const AI_REQUEST_TIMEOUT = 10000; 
+const AI_REQUEST_TIMEOUT = 15000;
+const GEMINI_MODEL = "gemini-2.5-flash";
 
 // --- Types ---
 export interface Rating {
@@ -82,7 +83,7 @@ const makeAIRequestWithTimeout = async <T>(aiCall: () => Promise<T>): Promise<T>
   } catch (error: any) {
     clearTimeout(timeoutId);
     if (error.message === 'AI request timeout' || error instanceof AppError) {
-      throw error instanceof AppError ? error : new AppError('AI request timed out after 10 seconds', 504);
+      throw error instanceof AppError ? error : new AppError('AI request timed out after 15 seconds', 504);
     }
     throw error;
   }
@@ -128,7 +129,7 @@ export const analyzeUserTaste = async ( ratings: Rating[], reviews: Review[], fo
       return createBasicTasteProfile(ratings, reviews);
     }
 
-    const model = getGenAI()?.getGenerativeModel({ model: 'gemini-2.5-flash' });
+    const model = getGenAI()?.getGenerativeModel({ model: GEMINI_MODEL });
     if (!model) {
       throw new AppError('AI service not available: missing API key', 503);
     }
@@ -313,7 +314,7 @@ export const generateAISearchQuery = async (
       return getFallbackArtistQuery(mood, type);
     }
 
-    const model = getGenAI()?.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = getGenAI()?.getGenerativeModel({ model: GEMINI_MODEL });
 
     if (!model) {
       console.log('Model not available, using curated artist search');

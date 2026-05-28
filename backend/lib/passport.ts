@@ -4,7 +4,6 @@ import dotenv from "dotenv";
 import User, { IUser } from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import { getGoogleCallbackUrl } from "./authConfig.js";
-import { Request } from "express";
 
 dotenv.config();
 
@@ -28,7 +27,6 @@ passport.use(
       done: VerifyCallback
     ) => {
       try {
-        // @ts-ignore
         let user: IUser | null = await User.findOne({ googleId: profile.id });
 
         if (!user && profile.emails && profile.emails.length > 0) {
@@ -82,13 +80,11 @@ passport.use(
 );
 
 passport.serializeUser((user: Express.User, done: (err: any, id?: any) => void) => {
-  // @ts-ignore
   done(null, user._id.toString());
 });
 
 passport.deserializeUser(async (id: string, done: (err: any, user?: Express.User | null) => void) => {
   try {
-    // @ts-ignore
     const user: IUser | null = await User.findById(id);
     done(null, user);
   } catch (err) {
