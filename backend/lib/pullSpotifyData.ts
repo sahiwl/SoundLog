@@ -1,25 +1,32 @@
 /**
  * searchSpotifyData - A helper function that queries Spotify's Web API.
  *
- * @param {string} endpoint - The endpoint (e.g., "search" or "tracks/{id}").
- * @param {object} params - Query parameters for the request.
- * @returns {Promise<object>} - The data returned by Spotify.
+ * @param endpoint - The endpoint (e.g., "search" or "tracks/{id}").
+ * @param params - Query parameters for the request.
+ * @returns The data returned by Spotify.
  */
 
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { getSpotifyAccessToken } from "./spotifyAuth.js";
 import { AppError } from "./AppError.js";
 
-const spotifyError = (context, error) => {
-  console.error(`Error in ${context}:`, error.message);
-  const status = error.response?.status;
+type SpotifyParams = Record<string, string | number | boolean | undefined>;
+
+const spotifyError = (context: string, error: any): never => {
+  // Narrow error, can be AxiosError or unknown
+  const err = error as AxiosError<any>;
+  console.error(`Error in ${context}:`, err.message);
+  const status = err.response?.status;
   const message =
-    error.response?.data?.error?.message ||
+    err.response?.data?.error?.message ||
     `Failed to fetch from Spotify (${context})`;
-  throw new AppError(message, status >= 400 && status < 600 ? status : 502);
+  throw new AppError(message, status && status >= 400 && status < 600 ? status : 502);
 };
 
-export const searchSpotifyData = async (endpoint, params = {}) => {
+export const searchSpotifyData = async (
+  endpoint: string,
+  params: SpotifyParams = {}
+): Promise<any> => {
   try {
     const token = await getSpotifyAccessToken();
     const url = `https://api.spotify.com/v1/${endpoint}`;
@@ -31,13 +38,16 @@ export const searchSpotifyData = async (endpoint, params = {}) => {
       params,
     });
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error in searchSpotifyData:", error.message);
     throw error;
   }
 };
 
-export const GetSpecificTrack = async (itemId, params = {}) => {
+export const GetSpecificTrack = async (
+  itemId: string,
+  params: SpotifyParams = {}
+): Promise<any> => {
   try {
     const token = await getSpotifyAccessToken();
     const url = `https://api.spotify.com/v1/tracks/${itemId}`;
@@ -49,13 +59,16 @@ export const GetSpecificTrack = async (itemId, params = {}) => {
       params,
     });
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error in GetSpecificTrack:", error.message);
     throw error;
   }
 };
 
-export const GetSpecificAlbum = async (itemId, params = {}) => {
+export const GetSpecificAlbum = async (
+  itemId: string,
+  params: SpotifyParams = {}
+): Promise<any> => {
   try {
     const token = await getSpotifyAccessToken();
     const url = `https://api.spotify.com/v1/albums/${itemId}`;
@@ -67,13 +80,16 @@ export const GetSpecificAlbum = async (itemId, params = {}) => {
       params,
     });
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error in GetSpecificAlbum:", error.message);
     throw error;
   }
 };
 
-export const GetSpecificArtist = async (itemId, params = {}) => {
+export const GetSpecificArtist = async (
+  itemId: string,
+  params: SpotifyParams = {}
+): Promise<any> => {
   try {
     const token = await getSpotifyAccessToken();
     const url = `https://api.spotify.com/v1/artists/${itemId}`;
@@ -85,13 +101,16 @@ export const GetSpecificArtist = async (itemId, params = {}) => {
       params,
     });
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error in GetSpecificArtist: ", error.message);
     throw error;
   }
 };
 
-export const getNewReleases = async (limit, offset) => {
+export const getNewReleases = async (
+  limit?: number,
+  offset?: number
+): Promise<any> => {
   try {
     const token = await getSpotifyAccessToken();
     const endpoint = `https://api.spotify.com/v1/browse/new-releases`;
@@ -103,7 +122,7 @@ export const getNewReleases = async (limit, offset) => {
       params: { limit, offset },
     });
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     spotifyError("getNewReleases", error);
   }
 };

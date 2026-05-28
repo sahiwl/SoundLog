@@ -1,12 +1,28 @@
 // Maximum 2 requests per minute (configurable via environment variables)
 // This is an in-memory rate limiter. 
 
+type RateLimiterStats = {
+  currentRequests: number;
+  maxRequests: number;
+  windowMs: number;
+  windowSeconds: number;
+  remainingRequests: number;
+  timeUntilReset: number;
+  oldestRequest: string | null;
+  newestRequest: string | null;
+  isAtLimit: boolean;
+};
+
 class AIRateLimiter {
+  private requests: number[];
+  private maxRequests: number;
+  private windowMs: number;
+
   constructor() {
     this.requests = [];
     // Make configurable via environment variables
-    this.maxRequests = parseInt(process.env.AI_MAX_REQUESTS_PER_MINUTE) || 2;
-    this.windowMs = (parseInt(process.env.AI_RATE_LIMIT_WINDOW_SECONDS) || 60) * 1000; // 1 minute default
+    this.maxRequests = parseInt(process.env.AI_MAX_REQUESTS_PER_MINUTE ?? '') || 2;
+    this.windowMs = (parseInt(process.env.AI_RATE_LIMIT_WINDOW_SECONDS ?? '') || 60) * 1000; // 1 minute default
   }
 
   /**
@@ -14,7 +30,7 @@ class AIRateLimiter {
    * This prevents race conditions where two requests check simultaneously.
    * @returns {boolean} true if request was recorded, false if rate limit exceeded
    */
-  canMakeRequestAndRecord() {
+  public canMakeRequestAndRecord(): boolean {
     const now = Date.now();
     const cutoff = now - this.windowMs;
     
@@ -39,7 +55,7 @@ class AIRateLimiter {
    * Use this for checking status only.
    * @returns {boolean} true if under limit, false if exceeded
    */
-  canMakeRequest() {
+  public canMakeRequest(): boolean {
     const now = Date.now();
     const cutoff = now - this.windowMs;
     
@@ -55,7 +71,7 @@ class AIRateLimiter {
    * Undo the last request (useful if API call failed after recording)
    * This allows failed requests to not count against the limit
    */
-  undoLastRequest() {
+  public undoLastRequest(): void {
     if (this.requests.length > 0) {
       this.requests.pop();
       console.log(`[RATE_LIMITER] Last request undone. Remaining: ${this.maxRequests - this.requests.length}/${this.maxRequests}`);
@@ -66,7 +82,7 @@ class AIRateLimiter {
    * Get time until the oldest request expires (rate limit resets)
    * @returns {number} seconds until reset
    */
-  getTimeUntilReset() {
+  public getTimeUntilReset(): number {
     if (this.requests.length === 0) return 0;
     
     const oldestRequest = Math.min(...this.requests);
@@ -79,7 +95,7 @@ class AIRateLimiter {
    * Get remaining requests in current window
    * @returns {number} remaining requests
    */
-  getRemainingRequests() {
+  public getRemainingRequests(): number {
     const now = Date.now();
     const cutoff = now - this.windowMs;
     
@@ -95,7 +111,7 @@ class AIRateLimiter {
    * Get detailed statistics about rate limiter state
    * Useful for debugging and monitoring
    */
-  getStats() {
+  public getStats(): RateLimiterStats {
     const now = Date.now();
     const cutoff = now - this.windowMs;
     

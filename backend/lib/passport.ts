@@ -1,9 +1,10 @@
 import passport from "passport";
-import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+import { Strategy as GoogleStrategy, Profile as GoogleProfile, VerifyCallback } from "passport-google-oauth20";
 import dotenv from "dotenv";
-import User from "../models/user.model.js";
+import User, { IUser } from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import { getGoogleCallbackUrl } from "./authConfig.js";
+import { Request } from "express";
 
 dotenv.config();
 
@@ -16,21 +17,25 @@ if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
 passport.use(
   new GoogleStrategy(
     {
-      clientID: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      clientID: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
       callbackURL: getGoogleCallbackUrl(),
     },
-    async (accessToken, refreshToken, profile, done) => {
+    async (
+      accessToken: string,
+      refreshToken: string,
+      profile: GoogleProfile,
+      done: VerifyCallback
+    ) => {
       try {
-        let user = await User.findOne({ googleId: profile.id });
-        
+        // @ts-ignore
+        let user: IUser | null = await User.findOne({ googleId: profile.id });
 
         if (!user && profile.emails && profile.emails.length > 0) {
           user = await User.findOne({ email: profile.emails[0].value });
         }
 
         if (user) {
-
           if (!user.googleId) {
             user.googleId = profile.id;
 
@@ -70,19 +75,21 @@ passport.use(
         return done(null, user);
       } catch (err) {
         console.error("Google auth error:", err);
-        return done(err, null);
+        return done(err as Error, null);
       }
     }
   )
 );
 
-passport.serializeUser((user, done) => {
+passport.serializeUser((user: Express.User, done: (err: any, id?: any) => void) => {
+  // @ts-ignore
   done(null, user._id.toString());
 });
 
-passport.deserializeUser(async (id, done) => {
+passport.deserializeUser(async (id: string, done: (err: any, user?: Express.User | null) => void) => {
   try {
-    const user = await User.findById(id);
+    // @ts-ignore
+    const user: IUser | null = await User.findById(id);
     done(null, user);
   } catch (err) {
     done(err, null);
