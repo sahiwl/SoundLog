@@ -1,0 +1,284 @@
+import { axiosInstance } from './spotifyAuth.js';
+import { MOOD_ARTISTS, getRandomArtistsFromMood } from '../data/moodArtists.js';
+
+// Type definitions
+
+export type MoodType ='happy'| 'sad'| 'energetic'| 'chill'| 'focus'| 'party';
+
+export interface MoodConfiguration {
+  genres: string[];
+  searchTerms: string[];
+}
+
+export type MoodConfigurations = Record<MoodType, MoodConfiguration>;
+
+export interface SpotifyArtist {
+  id: string;
+  name: string;
+}
+
+export interface SpotifyImage {
+  url: string;
+  height: number;
+  width: number;
+}
+
+export interface SpotifyExternalUrls {
+  [key: string]: string;
+}
+
+export interface SpotifyAlbum {
+  id: string;
+  name: string;
+  artists: SpotifyArtist[];
+  images: SpotifyImage[];
+  release_date: string;
+  total_tracks: number;
+  external_urls: SpotifyExternalUrls;
+  album_type: string;
+  popularity?: number;
+  [key: string]: any;
+}
+
+export interface SpotifyTrack {
+  id: string;
+  name: string;
+  album: SpotifyAlbum;
+  artists: SpotifyArtist[];
+  popularity: number;
+  preview_url?: string;
+  [key: string]: any;
+}
+
+export interface FormattedAlbum {
+  id: string;
+  name: string;
+  artists: { name: string; id: string }[];
+  images: SpotifyImage[];
+  release_date: string;
+  total_tracks: number;
+  external_urls: SpotifyExternalUrls;
+  album_type: string;
+  popularity?: number;
+}
+
+export const MOOD_CONFIGURATIONS: MoodConfigurations = {
+  happy: {
+    genres: ['pop', 'dance', 'funk'],
+    searchTerms: ['upbeat', 'happy', 'cheerful', 'positive', 'feel good'],
+  },
+  sad: {
+    genres: ['indie', 'alternative', 'folk'],
+    searchTerms: ['melancholy', 'emotional', 'heartbreak', 'indie', 'acoustic'],
+  },
+  energetic: {
+    genres: ['rock', 'electronic', 'punk'],
+    searchTerms: ['energetic', 'high energy', 'pump up', 'workout', 'intense'],
+  },
+  chill: {
+    genres: ['ambient', 'jazz', 'indie'],
+    searchTerms: ['chill', 'relaxing', 'mellow', 'ambient', 'lounge'],
+  },
+  focus: {
+    genres: ['classical', 'ambient', 'electronic'],
+    searchTerms: ['instrumental', 'focus', 'study', 'ambient', 'classical'],
+  },
+  party: {
+    genres: ['pop', 'dance', 'hip-hop'],
+    searchTerms: ['party', 'dance', 'club', 'upbeat', 'celebration'],
+  },
+};
+
+// genre seeds 
+export const SPOTIFY_GENRE_SEEDS: string[] = [
+  'acoustic', 'afrobeat', 'alt-rock', 'alternative', 'ambient', 'blues', 'bossanova', 'brazil',
+  'breakbeat', 'british', 'chill', 'classical', 'club', 'country', 'dance', 'deep-house',
+  'disco', 'drum-and-bass', 'dub', 'dubstep', 'electronic', 'folk', 'funk', 'garage',
+  'gospel', 'groove', 'grunge', 'hip-hop', 'house', 'indie', 'jazz', 'latin', 'metal',
+  'pop', 'punk', 'r-n-b', 'reggae', 'rock', 'soul', 'techno', 'trance'
+];
+
+// func to remove compilation and generic albums
+export const isRealAlbum = (album: SpotifyAlbum): boolean => {
+  const albumName = album.name.toLowerCase();
+  const artistName = album.artists?.[0]?.name?.toLowerCase() || '';
+  
+  const compilationKeywords = [
+    'compilation', 'greatest hits', 'best of', 'vol.', 'volume',
+    'instrumental', 'covers', 'remix', 'karaoke', 'tribute',
+    'various artists', 'soundtrack', 'disney', 'christmas',
+    'hits collection', 'anthology', 'essential', 'ultimate'
+  ];
+  
+  const isCompilation = compilationKeywords.some(keyword => 
+    albumName.includes(keyword) || artistName.includes(keyword)
+  );
+  
+  // Prefer albums over singles, but include substantial singles/EPs
+  const isGoodContent = album.album_type === 'album' || 
+                       (album.album_type === 'single' && album.total_tracks >= 3) ||
+                       (album.total_tracks >= 4);
+  
+  return !isCompilation && isGoodContent && album.total_tracks > 0;
+};
+
+// Strategy 1: Search for albums by curated popular artists
+export const getAlbumsByArtists = async (
+  mood: MoodType,
+  minCount: number = 8
+): Promise<SpotifyAlbum[]> => {
+  const albums: SpotifyAlbum[] = [];
+  
+  try {
+    const selectedArtists: string[] = getRandomArtistsFromMood(mood, 6);
+    
+    console.log(`Searching for albums by artists: ${selectedArtists.join(', ')}`);
+    
+    const albumPromises = selectedArtists.map(async (artist: string) => {
+      try {
+        const artistSearchResponse = await axiosInstance.get('/search', {
+          params: {
+            q: `artist:"${artist}"`,
+            type: 'album',
+            limit: 10,
+            market: 'US'
+          }
+        });
+
+        const artistAlbums: SpotifyAlbum[] = artistSearchResponse.data.albums?.items || [];
+        
+        // Filtering out compilations and generic albums
+        const realAlbums = artistAlbums.filter(isRealAlbum);
+        
+        // sorting using recently released and popularity
+        const sortedAlbums = realAlbums
+          .sort((a, b) => {
+            const aYear = new Date(a.release_date).getFullYear();
+            const bYear = new Date(b.release_date).getFullYear();
+            // Prefer newer albums (2015+) but not necessarily the newest
+            const aScore = (aYear >= 2015 ? 1 : 0.5) * (a.popularity || 50);
+            const bScore = (bYear >= 2015 ? 1 : 0.5) * (b.popularity || 50);
+            return bScore - aScore;
+          })
+          .slice(0, 2); 
+        
+        albums.push(...sortedAlbums);
+      } catch (artistError: any) {
+        console.error(`Failed to fetch albums for artist ${artist}:`, artistError?.message);
+      }
+    });
+    
+    await Promise.all(albumPromises);
+  } catch (error: any) {
+    console.error('Artist-based search failed:', error?.message);
+  }
+  
+  return albums;
+};
+
+// Strategy 2: Search for trending albums in recent years
+export const getTrendingAlbums = async (mood: MoodType,existingAlbums: SpotifyAlbum[] = []): Promise<SpotifyAlbum[]> => {
+  const albums: SpotifyAlbum[] = [];
+  
+  try {
+    const moodConfig = MOOD_CONFIGURATIONS[mood] || MOOD_CONFIGURATIONS.happy;
+    const currentYear = new Date().getFullYear();
+    const searchYears = [currentYear, currentYear - 1, currentYear - 2];
+    
+    for (const year of searchYears) {
+      if (albums.length >= 8) break;
+      
+      // Use different search terms for variety
+      const searchTerm =
+        moodConfig.searchTerms[Math.floor(Math.random() * moodConfig.searchTerms.length)];
+      
+      const yearSearchResponse = await axiosInstance.get('/search', {
+        params: {
+          q: `year:${year} genre:${moodConfig.genres[0]}`,
+          type: 'album',
+          limit: 10,
+          market: 'US'
+        }
+      });
+
+      const yearAlbums: SpotifyAlbum[] = yearSearchResponse.data.albums?.items || [];
+      const seenAlbumIds = new Set(existingAlbums.map(a => a.id));
+      
+      const filteredYearAlbums = yearAlbums.filter(album => {
+        return (
+          !seenAlbumIds.has(album.id) &&
+          isRealAlbum(album) &&
+          album.total_tracks >= 5 &&
+          album.album_type === 'album'
+        );
+      });
+      
+      albums.push(...filteredYearAlbums);
+    }
+  } catch (error: any) {
+    console.error('Year based search failed:', error?.message);
+  }
+  
+  return albums;
+};
+
+// Utility function to shuffle and format final albums with artist diversity
+export const shuffleAndFormatAlbums = (
+  albums: SpotifyAlbum[],
+  limit: number = 12
+): FormattedAlbum[] => {
+  const uniqueAlbums = albums.filter(
+    (album, index, self) =>
+      // Remove duplicates
+      index === self.findIndex(a => a.id === album.id)
+  );
+
+  // artist diversity select at most 2 albums per artist
+  const diverseAlbums: SpotifyAlbum[] = [];
+  const artistCount: Record<string, number> = {};
+  
+  // First pass: Add one album from each unique artist
+  for (const album of uniqueAlbums) {
+    const mainArtist = album.artists[0]?.name || 'Unknown';
+    if (!artistCount[mainArtist]) {
+      artistCount[mainArtist] = 1;
+      diverseAlbums.push(album);
+    }
+  }
+  
+  // Second pass: Add a second album from artists if we haven't reached the limit
+  for (const album of uniqueAlbums) {
+    if (diverseAlbums.length >= limit) break;
+    const mainArtist = album.artists[0]?.name || 'Unknown';
+    if (
+      artistCount[mainArtist] === 1 &&
+      !diverseAlbums.find(a => a.id === album.id)
+    ) {
+      artistCount[mainArtist] = 2;
+      diverseAlbums.push(album);
+    }
+  }
+
+  const shuffleArray = <T,>(array: T[]): T[] => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
+
+  const finalAlbums = shuffleArray(diverseAlbums).slice(0, limit);
+  
+  return finalAlbums.map(album => ({
+    id: album.id,
+    name: album.name,
+    artists: album.artists.map(artist => ({ name: artist.name, id: artist.id })),
+    images: album.images,
+    release_date: album.release_date,
+    total_tracks: album.total_tracks,
+    external_urls: album.external_urls,
+    album_type: album.album_type,
+    popularity: album.popularity
+  }));
+};

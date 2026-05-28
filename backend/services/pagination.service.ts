@@ -1,0 +1,374 @@
+import Rating from "../models/rating.model.js";
+import type { IRating } from "../models/rating.model.js";
+import Review from "../models/review.model.js";
+import Likes from "../models/likes.model.js";
+import type { ILike } from "../models/likes.model.js";
+import Listened from "../models/listened.model.js";
+import type { IListened } from "../models/listened.model.js";
+import Comment from "../models/comment.model.js";
+import User from "../models/user.model.js";
+import type { IUser } from "../models/user.model.js";
+import ListenLater from "../models/listenLater.model.js";
+import type { IListenLater } from "../models/listenLater.model.js";
+import { getAlbumDetails, getTrackDetails, getArtistDetails } from "./song.service.js";
+import { AppError } from "../lib/AppError.js";
+import type { Types } from "mongoose";
+
+type PopulatedUser = Pick<IUser, "_id" | "username">;
+
+interface CachedAlbum {
+    albumId: string;
+    name: string;
+    release_date: string;
+    images?: { url: string }[];
+    toObject?: () => Record<string, unknown>;
+}
+
+const asPopulatedUser = (userId: PopulatedUser | Types.ObjectId): PopulatedUser =>
+    userId as PopulatedUser;
+
+export const getUserReviews = async (username: string, page: number = 1) => {
+    const user = await User.findOne({ username }).select("_id");
+    if (!user) {
+        throw new AppError("User not found.", 404);
+    }
+    const userId = user._id;
+    const limit = 10;
+    const skip = (page - 1) * limit;
+
+    const reviews = await Review.find({ userId })
+        .select("reviewText albumId createdAt userId")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .populate("userId", "username");
+
+    const albumIds = reviews.map((r) => r.albumId);
+
+    const ratings = await Rating.find({
+        userId,
+        itemType: "albums",
+        itemId: { $in: albumIds },
+    }).select("itemId rating") as IRating[];
+    const ratingByAlbum = new Map<string, number>(ratings.map((r) => [r.itemId, r.rating]));
+
+    // Route album lookups through the shared cache helper. It fixes the
+    // "Unknown Album" bug for albums that hadn't been cached yet (eg. seeded
+    // reviews) and reuses already cached docs without an extra Spotify call.
+    // touch: false because listing reviews isn't really "accessing" the album.
+    const albums = await Promise.all(
+        albumIds.map((id) =>
+            getAlbumDetails(id, { touch: false }).catch(() => null)
+        )
+    );
+    const albumById = new Map<string, CachedAlbum>(
+        albums.filter(Boolean).map((a) => [a.albumId, a as CachedAlbum])
+    );
+
+    const reviewsWithAlbumDetails = reviews.map((review) => {
+        const album = albumById.get(review.albumId);
+        return {
+            _id: review._id,
+            reviewText: review.reviewText,
+            rating: ratingByAlbum.has(review.albumId)
+                ? ratingByAlbum.get(review.albumId)
+                : "NA",
+            createdAt: review.createdAt,
+            albumId: review.albumId,
+            albumTitle: album?.name || "Unknown Album",
+            releaseDate: album?.release_date || "Unknown Year",
+            albumImage: album?.images?.[0]?.url || null,
+        };
+    });
+
+    const total = await Review.countDocuments({ userId });
+
+    return {
+        reviews: reviewsWithAlbumDetails,
+        currentPage: page,
+        totalPages: Math.ceil(total / limit),
+        total
+    };
+};
+
+export const getUserAlbums = async (username: string, page: number = 1) => {
+    const user = await User.findOne({ username }).select("_id");
+    if (!user) {
+        throw new AppError("User not found.", 404);
+    }
+    const userId = user._id;
+    const limit = 12;
+    const skip = (page - 1) * limit;
+
+    const [ratings, listened, likedAlbums] = await Promise.all([
+        Rating.find({ userId, itemType: "albums" })
+            .select("itemId rating createdAt")
+            .sort({ createdAt: -1 }),
+        Listened.find({ userId })
+            .select("albumId createdAt")
+            .sort({ createdAt: -1 }),
+        Likes.find({ userId }).select("albumId createdAt"),
+    ]);
+
+    interface AlbumDatum {
+        albumId: string;
+        rating?: number;
+        timestamp: Date;
+    }
+
+    const albumData = new Map<string, AlbumDatum>();
+
+    ratings.forEach((r) => {
+        albumData.set(r.itemId, {
+            albumId: r.itemId,
+            rating: r.rating,
+            timestamp: r.createdAt ?? new Date(0),
+        });
+    });
+
+    listened.forEach((l) => {
+        if (!albumData.has(l.albumId)) {
+            albumData.set(l.albumId, {
+                albumId: l.albumId,
+                timestamp: l.createdAt ?? new Date(0),
+            });
+        }
+    });
+
+    likedAlbums.forEach((l) => {
+        if (!albumData.has(l.albumId)) {
+            albumData.set(l.albumId, {
+                albumId: l.albumId,
+                timestamp: l.createdAt ?? new Date(0),
+            });
+        }
+    });
+
+    const sortedAlbums = Array.from(albumData.values())
+        .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+
+    const paginatedAlbums = sortedAlbums.slice(skip, skip + limit);
+
+    const albumsWithDetails = await Promise.all(
+        paginatedAlbums.map(async (data) => {
+            const album = await getAlbumDetails(data.albumId);
+            return {
+                ...album.toObject(),
+                rating: data.rating || null,
+                timestamp: data.timestamp
+            };
+        })
+    );
+
+    return {
+        albums: albumsWithDetails,
+        currentPage: page,
+        totalPages: Math.ceil(albumData.size / limit),
+        total: albumData.size
+    };
+};
+
+export const getUserLikes = async (username: string, page: number = 1) => {
+    const user = await User.findOne({ username }).select("_id");
+    if (!user) {
+        throw new AppError("User not found.", 404);
+    }
+    const userId = user._id;
+    const limit = 12;
+    const skip = (page - 1) * limit;
+
+    const likes = await Likes.find({ userId })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit);
+
+    const albumsWithDetails = await Promise.all(
+        likes.map(async (like) => {
+            const album = await getAlbumDetails(like.albumId);
+            return album.toObject();
+        })
+    );
+
+    const total = await Likes.countDocuments({ userId });
+
+    return {
+        albums: albumsWithDetails,
+        currentPage: page,
+        totalPages: Math.ceil(total / limit),
+        total
+    };
+};
+
+export const getAlbumPage = async (albumId: string, page: number = 1) => {
+    const limit = 10;
+    const skip = (page - 1) * limit;
+
+    const album = await getAlbumDetails(albumId);
+
+    const reviews = await Review.find({ albumId })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .populate("userId", "username");
+
+    const reviewsWithDetails = await Promise.all(
+        reviews.map(async (review) => {
+            const comments = await Comment.find({ reviewId: review._id }).populate(
+                "userId",
+                "username"
+            );
+
+            // Legacy query — Rating schema has no reviewId; kept for API shape parity with JS
+            const ratings = await Rating.find({ reviewId: review._id } as Record<string, unknown>).populate(
+                "userId",
+                "username"
+            );
+
+            const reviewUser = asPopulatedUser(review.userId);
+
+            return {
+                reviewId: review._id,
+                reviewText: review.reviewText,
+                rating: undefined,
+                createdAt: review.createdAt,
+                user: {
+                    id: reviewUser._id,
+                    username: reviewUser.username,
+                },
+                comments: comments.map((comment) => {
+                    const commentUser = asPopulatedUser(comment.userId);
+                    return {
+                        commentId: comment._id,
+                        text: comment.commentText,
+                        createdAt: comment.createdAt,
+                        user: {
+                            id: commentUser._id,
+                            username: commentUser.username,
+                        },
+                    };
+                }),
+                ratings: ratings.map((rating) => {
+                    const ratingUser = asPopulatedUser(rating.userId);
+                    return {
+                        ratingId: rating._id,
+                        rating: rating.rating,
+                        createdAt: rating.createdAt,
+                        user: {
+                            id: ratingUser._id,
+                            username: ratingUser.username,
+                        },
+                    };
+                }),
+                commentCount: comments.length,
+            };
+        })
+    );
+
+    const [totalReviews, totalComments] = await Promise.all([
+        Review.countDocuments({ albumId }),
+        Comment.countDocuments({ reviewId: { $in: reviews.map(r => r._id) } })
+    ]);
+
+    return {
+        album: album.toObject(),
+        reviews: reviewsWithDetails,
+        pagination: {
+            currentPage: page,
+            totalPages: Math.ceil(totalReviews / limit),
+            totalReviews,
+            totalComments
+        }
+    };
+};
+
+export const getTrackPage = async (trackId: string, page: number = 1) => {
+    const limit = 10;
+    const skip = (page - 1) * limit;
+
+    const track = await getTrackDetails(trackId);
+
+    const ratings = await Rating.find({ itemId: trackId, itemType: "tracks" })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .populate("userId", "username");
+
+    const totalRatings = await Rating.countDocuments({ itemId: trackId, itemType: "tracks" });
+
+    return {
+        track: track.toObject(),
+        ratings: ratings.map((rating) => {
+            const ratingUser = asPopulatedUser(rating.userId);
+            return {
+                ratingId: rating._id,
+                rating: rating.rating,
+                createdAt: rating.createdAt,
+                user: {
+                    id: ratingUser._id,
+                    username: ratingUser.username,
+                },
+            };
+        }),
+        pagination: {
+            currentPage: page,
+            totalPages: Math.ceil(totalRatings / limit),
+            totalRatings
+        }
+    };
+};
+
+export const getArtistPage = async (artistId: string) => {
+    const artist = await getArtistDetails(artistId);
+
+    return {
+        artist: {
+            id: artist.artistId,
+            name: artist.name,
+            followers: artist.followers,
+            genres: artist.genres,
+            href: artist.href,
+            images: artist.images,
+            popularity: artist.popularity,
+            type: artist.type,
+            uri: artist.uri,
+            external_urls: artist.external_urls,
+            lastAccessed: artist.lastAccessed,
+            createdAt: artist.createdAt,
+            updatedAt: artist.updatedAt
+        }
+    };
+};
+
+export const getUserListenLater = async (username: string, page: number = 1) => {
+    const user = await User.findOne({ username }).select("_id");
+    if (!user) {
+        throw new AppError("User not found.", 404);
+    }
+    const userId = user._id;
+    const limit = 12;
+    const skip = (page - 1) * limit;
+
+    const listenLater = await ListenLater.find({ userId })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit);
+
+    const albumsWithDetails = await Promise.all(
+        listenLater.map(async (item) => {
+            const album = await getAlbumDetails(item.albumId);
+            return {
+                ...album.toObject(),
+                addedAt: item.createdAt
+            };
+        })
+    );
+
+    const total = await ListenLater.countDocuments({ userId });
+
+    return {
+        albums: albumsWithDetails,
+        currentPage: page,
+        totalPages: Math.ceil(total / limit),
+        total
+    };
+};
