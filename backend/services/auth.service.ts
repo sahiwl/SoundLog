@@ -55,6 +55,9 @@ export const loginUser = async ({username, password}: LoginInput): Promise<IUser
     if (!user) {
         throw new AppError("Invalid credentials", 400);
     }
+    if (!user.password) {
+        throw new AppError("Invalid credentials", 400);
+    }
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
     if (!isPasswordCorrect) {
         throw new AppError("Invalid credentials", 400);
