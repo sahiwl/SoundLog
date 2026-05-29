@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import useAuthStore from '../store/useAuthStore.js'
+import useAuthStore from '../store/useAuthStore'
 import { Eye, EyeOff, X } from "lucide-react";
 import { ToastContainer, toast } from 'react-toastify';
 import { Link, useNavigate } from 'react-router-dom';

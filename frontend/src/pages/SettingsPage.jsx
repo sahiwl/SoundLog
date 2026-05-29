@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Camera } from "lucide-react";
-import useAuthStore from "../store/useAuthStore.js";
+import useAuthStore from "../store/useAuthStore";
 import { axiosInstance } from "../lib/axios";
 import { showToast } from "../lib/toastConfig";
 import Background from "../components/Background.jsx";

@@ -22,7 +22,7 @@ import AuthSuccess from "./components/AuthSuccess";
 import { useState, useEffect } from "react";
 import { axiosInstance } from "./lib/axios";
 import LoadingScreen from "./components/LoadingScreen";
-import useAuthStore from "./store/useAuthStore.js";
+import useAuthStore from "./store/useAuthStore";
 
 function App() {
   const location = useLocation();
