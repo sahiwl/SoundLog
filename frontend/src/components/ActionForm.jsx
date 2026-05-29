@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { axiosInstance } from "../lib/axios.js";
-import { showToast } from '../lib/toastConfig.js';
+import { axiosInstance } from "../lib/axios";
+import { showToast } from '../lib/toastConfig';
 import useAuthStore from "../store/useAuthStore.js";
 import { Headphones, Heart, HeartOff, Check, BookmarkIcon, Trash2 } from "lucide-react";
 import { toast, ToastContainer } from "react-toastify";

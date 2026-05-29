@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { axiosInstance } from "../lib/axios.js";
+import { axiosInstance } from "../lib/axios";
 import Background from '../components/Background.jsx';
 
 const ArtistPage = () => {

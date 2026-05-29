@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { axiosInstance } from "../lib/axios.js";
+import { axiosInstance } from "../lib/axios";
 import AlbumImage from "./AlbumImage.jsx";
 import { X, Plus, Search as SearchIcon } from "lucide-react";
 

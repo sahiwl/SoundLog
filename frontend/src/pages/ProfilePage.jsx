@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import useAuthStore from "../store/useAuthStore.js";
-import { axiosInstance } from "../lib/axios.js";
+import { axiosInstance } from "../lib/axios";
 import Background from "../components/Background.jsx";
 import AlbumImage from "../components/AlbumImage.jsx";
 import UserAvatar from "../components/UserAvatar.jsx";

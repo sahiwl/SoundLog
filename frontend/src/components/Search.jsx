@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from "react-router-dom";
-import { axiosInstance } from "../lib/axios.js";
-import { showToast } from "../lib/toastConfig.js";
+import { axiosInstance } from "../lib/axios";
+import { showToast } from "../lib/toastConfig";
 import { X } from 'lucide-react';
 import Background from "./Background";
 

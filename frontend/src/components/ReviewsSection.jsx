@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Heart, Pencil, Trash2, X } from "lucide-react";
-import { axiosInstance } from "../lib/axios.js";
-import { showToast } from '../lib/toastConfig.js';
+import { axiosInstance } from "../lib/axios";
+import { showToast } from '../lib/toastConfig';
 import { Link } from "react-router-dom";
 
 const ReviewsSection = ({ reviews, userId, albumId, onReviewUpdate }) => {

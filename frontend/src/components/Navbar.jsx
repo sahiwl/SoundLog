@@ -2,7 +2,7 @@ import React, { useCallback, useState } from "react";
 import { Search, User, LogOut, Menu, X } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import useAuthStore from "../store/useAuthStore.js";
-import { showToast } from "../lib/toastConfig.js";
+import { showToast } from "../lib/toastConfig";
 import FullScreenSearch from "./Search.jsx";
 import UserAvatar from "./UserAvatar.jsx";
 

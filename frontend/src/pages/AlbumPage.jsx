@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { axiosInstance } from "../lib/axios.js";
+import { axiosInstance } from "../lib/axios";
 import ActionForm from "../components/ActionForm.jsx";
-import { showToast } from "../lib/toastConfig.js";
+import { showToast } from "../lib/toastConfig";
 import ReviewsSection from "../components/ReviewsSection.jsx";
 import Background from "../components/Background.jsx";
 

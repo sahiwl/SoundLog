@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { axiosInstance } from "../lib/axios.js";
+import { axiosInstance } from "../lib/axios";
 
 export const usePaginatedResource = (endpoint, { enabled = true } = {}) => {
   const [items, setItems] = useState([]);

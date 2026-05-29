@@ -4,8 +4,8 @@ import { Eye, EyeOff, X } from "lucide-react";
 import { ToastContainer, toast } from 'react-toastify';
 import { Link, useNavigate } from 'react-router-dom';
 import Background from '../components/Background.jsx';
-import { showToast } from '../lib/toastConfig.js';
-import { getGoogleAuthUrl } from '../lib/googleAuth.js';
+import { showToast } from '../lib/toastConfig';
+import { getGoogleAuthUrl } from '../lib/googleAuth';
 
 const Signin = () => {
   const [formData, setformData] = useState({username: '', password: ''})  

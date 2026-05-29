@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import useAuthStore from '../store/useAuthStore.js';
 import { Eye, EyeOff, X } from "lucide-react";
-import { showToast } from '../lib/toastConfig.js';
+import { showToast } from '../lib/toastConfig';
 import { Link, useNavigate } from 'react-router-dom';
 import Background from '../components/Background.jsx';
 import { ToastContainer } from 'react-toastify';
-import { getGoogleAuthUrl } from '../lib/googleAuth.js';
+import { getGoogleAuthUrl } from '../lib/googleAuth';
 
 const Signup = () => {
   const navigate = useNavigate()
