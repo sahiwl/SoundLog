@@ -33,6 +33,11 @@ function App() {
     checkAuth();
   }, [checkAuth]);
 
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
+
   useEffect(() => {
     let isActive = true;
 

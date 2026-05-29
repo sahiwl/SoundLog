@@ -1,17 +1,20 @@
 import { useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
+const DRAG_THRESHOLD_PX = 8;
+
 /**
  * DaisyUI carousel (scroll-snap + overflow) with:
  * - trackpad / touch scroll (native)
- * - daisyUI btn-circle prev/next (JS scrollBy — anchor links only work for full-width slides)
- * - mouse drag on desktop (not in daisyUI; added here per maintainer guidance)
+ * - daisyUI btn-circle prev/next (JS scrollBy)
+ * - mouse drag on desktop: only after pointer moves past threshold so Link clicks still work
  */
 const HorizontalCarousel = ({ children, className = "" }) => {
   const trackRef = useRef(null);
   const dragRef = useRef({
     active: false,
-    moved: false,
+    dragging: false,
+    suppressClick: false,
     startX: 0,
     scrollLeft: 0,
   });
@@ -26,34 +29,54 @@ const HorizontalCarousel = ({ children, className = "" }) => {
   const onPointerDown = (e) => {
     if (e.button !== 0) return;
     const el = trackRef.current;
+    if (!el) return;
+
     dragRef.current = {
       active: true,
-      moved: false,
+      dragging: false,
+      suppressClick: false,
       startX: e.clientX,
       scrollLeft: el.scrollLeft,
     };
-    el.setPointerCapture(e.pointerId);
   };
 
   const onPointerMove = (e) => {
     if (!dragRef.current.active) return;
     const el = trackRef.current;
+    if (!el) return;
+
     const dx = e.clientX - dragRef.current.startX;
-    if (Math.abs(dx) > 4) dragRef.current.moved = true;
+
+    if (!dragRef.current.dragging) {
+      if (Math.abs(dx) <= DRAG_THRESHOLD_PX) return;
+      dragRef.current.dragging = true;
+      dragRef.current.suppressClick = true;
+      el.setPointerCapture(e.pointerId);
+    }
+
     el.scrollLeft = dragRef.current.scrollLeft - dx;
   };
 
   const endDrag = (e) => {
     if (!dragRef.current.active) return;
+
+    if (dragRef.current.dragging) {
+      try {
+        trackRef.current?.releasePointerCapture(e.pointerId);
+      } catch {
+        // pointer may already be released
+      }
+    }
+
     dragRef.current.active = false;
-    trackRef.current?.releasePointerCapture(e.pointerId);
+    dragRef.current.dragging = false;
   };
 
   const onClickCapture = (e) => {
-    if (dragRef.current.moved) {
+    if (dragRef.current.suppressClick) {
       e.preventDefault();
       e.stopPropagation();
-      dragRef.current.moved = false;
+      dragRef.current.suppressClick = false;
     }
   };
 
@@ -74,6 +97,7 @@ const HorizontalCarousel = ({ children, className = "" }) => {
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={endDrag}
+        onPointerLeave={endDrag}
         onPointerCancel={endDrag}
         onClickCapture={onClickCapture}
       >

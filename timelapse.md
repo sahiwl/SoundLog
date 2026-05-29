@@ -1,5 +1,9 @@
 # Timelapse
 
+### 29 May 2026 10:52AM
+ - merged PR: migrated backend to ts
+ - enable ts strict:on in backend
+
 ### 22 May 2026 4:26PM
  - fix: when no Profile Pic, a character is rendered as a placeholder at pfp
  - setup pnpm workspace for root dev script 
