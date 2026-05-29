@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
-import Background from "../components/Background.jsx";
+import Background from "../components/Background";
 import PaginatedUserAlbumGrid from "../components/PaginatedUserAlbumGrid.jsx";
-import PaginationControls from "../components/PaginationControls.jsx";
+import PaginationControls from "../components/PaginationControls";
 import { usePaginatedResource } from "../hooks/usePaginatedResource.js";
 
 const UserListenLater = () => {

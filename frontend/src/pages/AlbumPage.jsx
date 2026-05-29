@@ -4,7 +4,7 @@ import { axiosInstance } from "../lib/axios";
 import ActionForm from "../components/ActionForm.jsx";
 import { showToast } from "../lib/toastConfig";
 import ReviewsSection from "../components/ReviewsSection.jsx";
-import Background from "../components/Background.jsx";
+import Background from "../components/Background";
 
 const AlbumPage = () => {
   const { albumId } = useParams();

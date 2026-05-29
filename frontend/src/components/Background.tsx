@@ -1,7 +1,12 @@
-// src/components/Background.jsx
-import React from "react";
+import type { ReactNode } from "react";
 
-const Background = ({ children, imageUrl, className }) => (
+interface BackgroundProps {
+  children?: ReactNode;
+  imageUrl?: string;
+  className?: string;
+}
+
+const Background = ({ children, imageUrl, className = "" }: BackgroundProps) => (
   <div className={`min-h-screen relative flex bg-back overflow-hidden ${className}`}>
     <div 
       className="absolute inset-0 -z-10"

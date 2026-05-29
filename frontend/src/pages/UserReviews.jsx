@@ -1,7 +1,7 @@
 import { Link, useParams } from "react-router-dom";
-import Background from "../components/Background.jsx";
-import AlbumImage from "../components/AlbumImage.jsx";
-import PaginationControls from "../components/PaginationControls.jsx";
+import Background from "../components/Background";
+import AlbumImage from "../components/AlbumImage";
+import PaginationControls from "../components/PaginationControls";
 import { usePaginatedResource } from "../hooks/usePaginatedResource.js";
 
 const UserReviews = () => {

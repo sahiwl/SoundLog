@@ -3,7 +3,7 @@ import useAuthStore from '../store/useAuthStore';
 import { Eye, EyeOff, X } from "lucide-react";
 import { showToast } from '../lib/toastConfig';
 import { Link, useNavigate } from 'react-router-dom';
-import Background from '../components/Background.jsx';
+import Background from '../components/Background';
 import { ToastContainer } from 'react-toastify';
 import { getGoogleAuthUrl } from '../lib/googleAuth';
 

@@ -1,7 +1,20 @@
-import { useRef } from "react";
+import { useRef, type ReactNode, type PointerEvent, type MouseEvent } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const DRAG_THRESHOLD_PX = 8;
+
+interface HorizontalCarouselProps {
+  children: ReactNode;
+  className?: string;
+}
+
+interface DragState {
+  active: boolean;
+  dragging: boolean;
+  suppressClick: boolean;
+  startX: number;
+  scrollLeft: number;
+}
 
 /**
  * DaisyUI carousel (scroll-snap + overflow) with:
@@ -9,9 +22,9 @@ const DRAG_THRESHOLD_PX = 8;
  * - daisyUI btn-circle prev/next (JS scrollBy)
  * - mouse drag on desktop: only after pointer moves past threshold so Link clicks still work
  */
-const HorizontalCarousel = ({ children, className = "" }) => {
-  const trackRef = useRef(null);
-  const dragRef = useRef({
+const HorizontalCarousel = ({ children, className = "" }: HorizontalCarouselProps) => {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const dragRef = useRef<DragState>({
     active: false,
     dragging: false,
     suppressClick: false,
@@ -19,14 +32,14 @@ const HorizontalCarousel = ({ children, className = "" }) => {
     scrollLeft: 0,
   });
 
-  const scrollByStep = (direction) => {
+  const scrollByStep = (direction: number) => {
     const el = trackRef.current;
     if (!el) return;
     const step = Math.max(el.clientWidth * 0.75, 280);
     el.scrollBy({ left: direction * step, behavior: "smooth" });
   };
 
-  const onPointerDown = (e) => {
+  const onPointerDown = (e: PointerEvent<HTMLDivElement>) => {
     if (e.button !== 0) return;
     const el = trackRef.current;
     if (!el) return;
@@ -40,7 +53,7 @@ const HorizontalCarousel = ({ children, className = "" }) => {
     };
   };
 
-  const onPointerMove = (e) => {
+  const onPointerMove = (e: PointerEvent<HTMLDivElement>) => {
     if (!dragRef.current.active) return;
     const el = trackRef.current;
     if (!el) return;
@@ -57,7 +70,7 @@ const HorizontalCarousel = ({ children, className = "" }) => {
     el.scrollLeft = dragRef.current.scrollLeft - dx;
   };
 
-  const endDrag = (e) => {
+  const endDrag = (e: PointerEvent<HTMLDivElement>) => {
     if (!dragRef.current.active) return;
 
     if (dragRef.current.dragging) {
@@ -72,7 +85,7 @@ const HorizontalCarousel = ({ children, className = "" }) => {
     dragRef.current.dragging = false;
   };
 
-  const onClickCapture = (e) => {
+  const onClickCapture = (e: MouseEvent<HTMLDivElement>) => {
     if (dragRef.current.suppressClick) {
       e.preventDefault();
       e.stopPropagation();

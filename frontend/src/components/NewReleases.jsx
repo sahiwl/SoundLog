@@ -4,7 +4,7 @@ import { axiosInstance } from '../lib/axios'
 import { showToast } from '../lib/toastConfig'
 import { Link } from 'react-router-dom'
 import { Music } from 'lucide-react'
-import HorizontalCarousel from './HorizontalCarousel.jsx'
+import HorizontalCarousel from './HorizontalCarousel'
 
 const NewReleases = () => {
 

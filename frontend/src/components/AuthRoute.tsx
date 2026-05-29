@@ -2,7 +2,11 @@ import { Navigate, Outlet } from "react-router-dom";
 import useAuthStore from "../store/useAuthStore";
 import { showToast } from '../lib/toastConfig';
 
-const AuthRoute = ({ routeType }) => {
+interface AuthRouteProps {
+  routeType: "auth" | "protected";
+}
+
+const AuthRoute = ({ routeType }: AuthRouteProps) => {
   const { isAuthenticated, isCheckingAuth } = useAuthStore();
 
   if (isCheckingAuth) {

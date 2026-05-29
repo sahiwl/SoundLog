@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { axiosInstance } from "../lib/axios";
-import AlbumImage from "./AlbumImage.jsx";
+import AlbumImage from "./AlbumImage";
 import { X, Plus, Search as SearchIcon } from "lucide-react";
 
 const MAX_FAVOURITES = 4;

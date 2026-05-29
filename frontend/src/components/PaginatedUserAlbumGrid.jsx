@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import AlbumImage from "./AlbumImage.jsx";
+import AlbumImage from "./AlbumImage";
 
 const PaginatedUserAlbumGrid = ({ albums }) => (
   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

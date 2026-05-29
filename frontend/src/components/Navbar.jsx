@@ -4,7 +4,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import useAuthStore from "../store/useAuthStore";
 import { showToast } from "../lib/toastConfig";
 import FullScreenSearch from "./Search.jsx";
-import UserAvatar from "./UserAvatar.jsx";
+import UserAvatar from "./UserAvatar";
 
 const UserSection = ({ isAuthenticated, onLogout, user }) => {
   const navigate = useNavigate();

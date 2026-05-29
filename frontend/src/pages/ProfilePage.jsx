@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import useAuthStore from "../store/useAuthStore";
 import { axiosInstance } from "../lib/axios";
-import Background from "../components/Background.jsx";
-import AlbumImage from "../components/AlbumImage.jsx";
-import UserAvatar from "../components/UserAvatar.jsx";
+import Background from "../components/Background";
+import AlbumImage from "../components/AlbumImage";
+import UserAvatar from "../components/UserAvatar";
 
 const FavouriteSlot = ({ album, index }) => {
   if (!album) {

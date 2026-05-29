@@ -1,4 +1,14 @@
-const PaginationControls = ({ currentPage, totalPages, onPageChange }) => (
+interface PaginationControlsProps {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}
+
+const PaginationControls = ({
+  currentPage,
+  totalPages,
+  onPageChange,
+}: PaginationControlsProps) => (
   <div className="flex justify-between items-center mt-6">
     <button
       type="button"

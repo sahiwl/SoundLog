@@ -4,9 +4,9 @@ import { Camera } from "lucide-react";
 import useAuthStore from "../store/useAuthStore";
 import { axiosInstance } from "../lib/axios";
 import { showToast } from "../lib/toastConfig";
-import Background from "../components/Background.jsx";
+import Background from "../components/Background";
 import FavouritesPicker from "../components/FavouritesPicker.jsx";
-import UserAvatar from "../components/UserAvatar.jsx";
+import UserAvatar from "../components/UserAvatar";
 
 const inputClass =
   "mt-1 w-full rounded border border-gray-700 bg-zinc-800 px-4 py-2 text-sm text-gray-200 placeholder-gray-500 focus:border-white focus:outline-none";

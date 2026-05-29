@@ -1,11 +1,13 @@
 const ALBUM_PLACEHOLDER = "/album-placeholder.svg";
 
-const AlbumImage = ({
-  src,
-  alt = "Album cover",
-  size = 300,
-  className = "",
-}) => (
+interface AlbumImageProps {
+  src?: string | null;
+  alt?: string;
+  size?: number;
+  className?: string;
+}
+
+const AlbumImage = ({src,alt = "Album cover",size = 300,className = ""}: AlbumImageProps) => (
   <img
     src={src || ALBUM_PLACEHOLDER}
     alt={alt}

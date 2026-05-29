@@ -3,7 +3,7 @@ import { Music } from 'lucide-react';
 import { axiosInstance } from '../lib/axios';
 import { Link } from 'react-router-dom';
 import useAuthStore from '../store/useAuthStore';
-import HorizontalCarousel from './HorizontalCarousel.jsx';
+import HorizontalCarousel from './HorizontalCarousel';
 
 const UserLiked = () => {
     const [userLikedAlbums, setUserLikedAlbums] = useState([]);

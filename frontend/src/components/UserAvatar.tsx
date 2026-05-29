@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 
-const UserAvatar = ({
-  username = "?",
-  src,
-  size = 32,
-  className = "",
-  textClassName = "",
-}) => {
+interface UserAvatarProps {
+  username?: string;
+  src?: string | null;
+  size?: number;
+  className?: string;
+  textClassName?: string;
+}
+
+const UserAvatar = ({username = "?",src,size = 32,className = "",textClassName = ""}: UserAvatarProps) => {
   const [errored, setErrored] = useState(false);
 
   useEffect(() => {

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Sparkles, Music, Heart, Zap, Coffee, Focus, PartyPopper } from 'lucide-react';
 import { axiosInstance } from '../lib/axios';
 import { Link } from 'react-router-dom';
-import HorizontalCarousel from './HorizontalCarousel.jsx';
+import HorizontalCarousel from './HorizontalCarousel';
 
 const MOOD_ICONS = {
     happy: Heart,
