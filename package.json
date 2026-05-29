@@ -8,7 +8,7 @@
     "dev": "concurrently -n backend,frontend -c blue,green \"pnpm --filter backend dev\" \"pnpm --filter frontend dev\"",
     "dev:backend": "pnpm --filter backend dev",
     "dev:frontend": "pnpm --filter frontend dev",
-    "typecheck": "pnpm --filter backend typecheck",
+    "typecheck": "pnpm --filter backend typecheck && pnpm --filter frontend typecheck",
     "build:backend": "pnpm --filter backend build"
   },
   "devDependencies": {
