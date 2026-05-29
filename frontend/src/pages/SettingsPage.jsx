@@ -5,7 +5,7 @@ import useAuthStore from "../store/useAuthStore";
 import { axiosInstance } from "../lib/axios";
 import { showToast } from "../lib/toastConfig";
 import Background from "../components/Background";
-import FavouritesPicker from "../components/FavouritesPicker.jsx";
+import FavouritesPicker from "../components/FavouritesPicker";
 import UserAvatar from "../components/UserAvatar";
 
 const inputClass =

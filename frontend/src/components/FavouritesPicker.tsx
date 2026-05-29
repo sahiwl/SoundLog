@@ -2,12 +2,31 @@ import { useEffect, useState } from "react";
 import { axiosInstance } from "../lib/axios";
 import AlbumImage from "./AlbumImage";
 import { X, Plus, Search as SearchIcon } from "lucide-react";
+import type { AlbumCard } from "../types/album";
+import type { SpotifyImage } from "../types/spotify";
 
 const MAX_FAVOURITES = 4;
 
-const SearchPicker = ({ onPick, onClose, excludeIds = [] }) => {
+export interface FavouriteAlbum {
+  albumId: string;
+  name: string;
+  images?: SpotifyImage[];
+  artists?: { name: string }[];
+}
+
+interface SearchPickerProps {
+  onPick: (album: AlbumCard) => void;
+  onClose: () => void;
+  excludeIds?: string[];
+}
+
+const SearchPicker = ({
+  onPick,
+  onClose,
+  excludeIds = [],
+}: SearchPickerProps) => {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState([]);
+  const [results, setResults] = useState<AlbumCard[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -18,9 +37,10 @@ const SearchPicker = ({ onPick, onClose, excludeIds = [] }) => {
     const t = setTimeout(async () => {
       try {
         setLoading(true);
-        const res = await axiosInstance.get("/releases/search", {
-          params: { query, limit: 10 },
-        });
+        const res = await axiosInstance.get<{ albums?: AlbumCard[] }>(
+          "/releases/search",
+          { params: { query, limit: 10 } }
+        );
         setResults(res.data?.albums || []);
       } catch (err) {
         console.error("Album search failed:", err);
@@ -99,11 +119,19 @@ const SearchPicker = ({ onPick, onClose, excludeIds = [] }) => {
   );
 };
 
-const FavouritesPicker = ({ value = [], onChange }) => {
+interface FavouritesPickerProps {
+  value?: FavouriteAlbum[];
+  onChange: (albums: FavouriteAlbum[]) => void;
+}
+
+const FavouritesPicker = ({
+  value = [],
+  onChange,
+}: FavouritesPickerProps) => {
   const [pickerOpen, setPickerOpen] = useState(false);
 
-  const handlePick = (album) => {
-    const next = [
+  const handlePick = (album: AlbumCard) => {
+    const next: FavouriteAlbum[] = [
       ...value,
       {
         albumId: album.id,
@@ -116,9 +144,8 @@ const FavouritesPicker = ({ value = [], onChange }) => {
     setPickerOpen(false);
   };
 
-  const removeAt = (idx) => {
-    const next = value.filter((_, i) => i !== idx);
-    onChange(next);
+  const removeAt = (idx: number) => {
+    onChange(value.filter((_, i) => i !== idx));
   };
 
   const slots = Array.from({ length: MAX_FAVOURITES });

@@ -1,14 +1,28 @@
-import React, { useState } from 'react';
+import { useState } from "react";
 import { Heart, Pencil, Trash2, X } from "lucide-react";
 import { axiosInstance } from "../lib/axios";
-import { showToast } from '../lib/toastConfig';
+import { showToast } from "../lib/toastConfig";
 import { Link } from "react-router-dom";
+import type { AlbumReview } from "../types/review";
+import type { MessageResponse } from "../types/api";
 
-const ReviewsSection = ({ reviews, userId, albumId, onReviewUpdate }) => {
-  const [editingReviewId, setEditingReviewId] = useState(null);
+interface ReviewsSectionProps {
+  reviews: AlbumReview[];
+  userId: string | null;
+  albumId: string;
+  onReviewUpdate: () => void;
+}
+
+const ReviewsSection = ({
+  reviews,
+  userId,
+  albumId,
+  onReviewUpdate,
+}: ReviewsSectionProps) => {
+  const [editingReviewId, setEditingReviewId] = useState<string | null>(null);
   const [editedReviewText, setEditedReviewText] = useState("");
 
-  const handleEditClick = (review) => {
+  const handleEditClick = (review: AlbumReview) => {
     setEditingReviewId(review.reviewId);
     setEditedReviewText(review.reviewText);
   };
@@ -18,21 +32,23 @@ const ReviewsSection = ({ reviews, userId, albumId, onReviewUpdate }) => {
     setEditedReviewText("");
   };
 
-  const handleDeleteReview = async () =>{
+  const handleDeleteReview = async () => {
     try {
-        const resp = await axiosInstance.delete(`/actions/review/${albumId}`)
-        showToast.success(resp.data.message)
-        onReviewUpdate(); // refresh reviews
+      const resp = await axiosInstance.delete<MessageResponse>(
+        `/actions/review/${albumId}`
+      );
+      showToast.success(resp.data.message);
+      onReviewUpdate();
     } catch (error) {
-        console.error("Error deleting review:", error);
-        showToast.error("Failed to delete review");
+      console.error("Error deleting review:", error);
+      showToast.error("Failed to delete review");
     }
-  }
+  };
 
   const handleUpdateReview = async () => {
     try {
       await axiosInstance.put(`/actions/review/${albumId}`, {
-        reviewText: editedReviewText.trim()
+        reviewText: editedReviewText.trim(),
       });
 
       onReviewUpdate();
@@ -45,9 +61,11 @@ const ReviewsSection = ({ reviews, userId, albumId, onReviewUpdate }) => {
     }
   };
 
-  const handleLikeReview = async (reviewId) => {
+  const handleLikeReview = async (reviewId: string) => {
     try {
-      const response = await axiosInstance.post(`/actions/review/like/${reviewId}`);
+      const response = await axiosInstance.post<MessageResponse>(
+        `/actions/review/like/${reviewId}`
+      );
       showToast.success(response.data.message);
       onReviewUpdate();
     } catch (err) {
@@ -67,22 +85,11 @@ const ReviewsSection = ({ reviews, userId, albumId, onReviewUpdate }) => {
 
       <div className="space-y-4">
         {reviews.length > 0 ? (
-          reviews.map(review => (
+          reviews.map((review) => (
             <div key={review.reviewId} className="bg-grids p-4 rounded">
               <div className="flex justify-between items-center mb-2">
                 <div className="flex items-center gap-2">
-                  {/* {review.user.profilePic ? (
-                    <img
-                      src={review.user.profilePic}
-                      alt=""
-                      className="w-8 h-8 rounded-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-8 h-8 rounded-full bg-gray-500 flex items-center justify-center text-white">
-                      {review.user.username.charAt(0).toUpperCase()}
-                    </div>
-                  )} */}
-                  <Link 
+                  <Link
                     to={`/${review.user.username}/profile`}
                     className="font-medium hover:text-purple-400 transition-colors"
                   >
@@ -92,30 +99,42 @@ const ReviewsSection = ({ reviews, userId, albumId, onReviewUpdate }) => {
                 <div className="flex items-center gap-2">
                   {review.user.id === userId && (
                     <button
-                      onClick={() => editingReviewId === review.reviewId ? handleCancelEdit() : handleEditClick(review)}
+                      onClick={() =>
+                        editingReviewId === review.reviewId
+                          ? handleCancelEdit()
+                          : handleEditClick(review)
+                      }
                       className="text-gray-400 hover:text-white flex items-center gap-1"
                     >
                       {editingReviewId === review.reviewId ? (
-                        <> <X size={16} /><span>Cancel</span> </>
+                        <>
+                          {" "}
+                          <X size={16} />
+                          <span>Cancel</span>{" "}
+                        </>
                       ) : (
-                        <><Pencil size={16} /><span>Edit</span> </>
+                        <>
+                          <Pencil size={16} />
+                          <span>Edit</span>{" "}
+                        </>
                       )}
                     </button>
                   )}
                   <p className="text-gray-400 text-sm">
-                    {new Date(review.createdAt).toLocaleDateString()}
+                    {review.createdAt
+                      ? new Date(review.createdAt).toLocaleDateString()
+                      : ""}
                   </p>
                 </div>
               </div>
 
-              {/* Review Content */}
               {editingReviewId === review.reviewId ? (
                 <div className="mt-2">
                   <textarea
                     value={editedReviewText}
                     onChange={(e) => setEditedReviewText(e.target.value)}
                     className="w-full bg-gray-700 rounded p-3 text-white mb-2"
-                    rows="4"
+                    rows={4}
                   />
                   <div className="flex justify-end gap-2">
                     <button
@@ -136,40 +155,45 @@ const ReviewsSection = ({ reviews, userId, albumId, onReviewUpdate }) => {
                 <p className="text-sm mt-2">{review.reviewText}</p>
               )}
 
-              {/* Like Section */}
               <div className="flex items-center justify-between mt-4">
-                <div className='flex items-center gap-4'>
-
-                <button
-                  onClick={() => handleLikeReview(review.reviewId)}
-                  className={`flex items-center gap-2 text-sm transition-colors ${
-                      review.likedBy?.includes(userId) 
-                      ? 'text-red-500' 
-                      : 'text-gray-400 hover:text-red-500'
+                <div className="flex items-center gap-4">
+                  <button
+                    onClick={() => handleLikeReview(review.reviewId)}
+                    className={`flex items-center gap-2 text-sm transition-colors ${
+                      review.likedBy?.includes(userId ?? "")
+                        ? "text-red-500"
+                        : "text-gray-400 hover:text-red-500"
                     }`}
-                    >
-                  <Heart 
-                    size={20} 
-                    fill={review.likedBy?.includes(userId) ? "currentColor" : "none"}
-                    className="transition-colors"
+                  >
+                    <Heart
+                      size={20}
+                      fill={
+                        review.likedBy?.includes(userId ?? "")
+                          ? "currentColor"
+                          : "none"
+                      }
+                      className="transition-colors"
                     />
-                  {review.likedBy?.includes(userId) ? 'Unlike' : 'Like'}
-                </button>
-                <button className='flex items-center gap-2 text-sm text-gray-400 hover:text-slate-100' onClick={()=> handleDeleteReview()}>
+                    {review.likedBy?.includes(userId ?? "") ? "Unlike" : "Like"}
+                  </button>
+                  <button
+                    className="flex items-center gap-2 text-sm text-gray-400 hover:text-slate-100"
+                    onClick={() => handleDeleteReview()}
+                  >
                     <Trash2 size={20} /> <span>delete</span>
-                </button>
-                    </div>
+                  </button>
+                </div>
                 <span className="text-xs text-gray-400">
-                  {review.likes || 0} {review.likes === 1 ? 'like' : 'likes'}
+                  {review.likes || 0} {review.likes === 1 ? "like" : "likes"}
                 </span>
-                
               </div>
-              
             </div>
           ))
         ) : (
           <div className="col-span-full bg-grids p-4 rounded text-center">
-            <p className="text-gray-400">No reviews yet. Be the first to review this album!</p>
+            <p className="text-gray-400">
+              No reviews yet. Be the first to review this album!
+            </p>
           </div>
         )}
       </div>

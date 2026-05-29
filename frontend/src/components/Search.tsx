@@ -1,19 +1,28 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { axiosInstance } from "../lib/axios";
 import { showToast } from "../lib/toastConfig";
-import { X } from 'lucide-react';
+import { X } from "lucide-react";
 import Background from "./Background";
+import type { SearchResultItem, SearchResults } from "../types/api";
 
-// Result section component
-const ResultSection = ({ title, items, type, onClose }) => {
+type SearchResultType = "track" | "album" | "artist";
+
+interface ResultSectionProps {
+  title: string;
+  items: SearchResultItem[];
+  type: SearchResultType;
+  onClose: () => void;
+}
+
+const ResultSection = ({ title, items, type, onClose }: ResultSectionProps) => {
   if (!items?.length) return null;
-  
-  const getLink = (item) => {
-    const paths = {
+
+  const getLink = (item: SearchResultItem) => {
+    const paths: Record<SearchResultType, string> = {
       track: `/tracks/${item.id}`,
       album: `/album/${item.id}`,
-      artist: `/artist/${item.id}`
+      artist: `/artist/${item.id}`,
     };
     return paths[type];
   };
@@ -30,9 +39,9 @@ const ResultSection = ({ title, items, type, onClose }) => {
             className="block p-3 hover:bg-purple-400/10 rounded-lg transition-colors"
           >
             <div className="text-white">{item.name}</div>
-            {(type !== 'artist' && item.artists) && (
+            {type !== "artist" && item.artists && (
               <div className="text-gray-400 text-sm">
-                {item.artists.map(a => a.name).join(', ')}
+                {item.artists.map((a) => a.name).join(", ")}
               </div>
             )}
           </Link>
@@ -42,20 +51,30 @@ const ResultSection = ({ title, items, type, onClose }) => {
   );
 };
 
-const FullScreenSearch = ({ query = '', onClose }) => {
+interface FullScreenSearchProps {
+  query?: string;
+  onClose: () => void;
+}
+
+const FullScreenSearch = ({ query = "", onClose }: FullScreenSearchProps) => {
   const [searchQuery, setSearchQuery] = useState(query);
-  const [results, setResults] = useState({ tracks: [], albums: [], artists: [] });
+  const [results, setResults] = useState<SearchResults>({
+    tracks: [],
+    albums: [],
+    artists: [],
+  });
   const [loading, setLoading] = useState(false);
-  const searchRef = useRef(null);
+  const searchRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       if (searchQuery.trim()) {
         setLoading(true);
-        axiosInstance.get("/releases/search", {
-          params: { query: searchQuery, limit: 10 }
-        })
-          .then(response => setResults(response.data))
+        axiosInstance
+          .get<SearchResults>("/releases/search", {
+            params: { query: searchQuery, limit: 10 },
+          })
+          .then((response) => setResults(response.data))
           .catch(() => showToast.error("Search failed. Please try again."))
           .finally(() => setLoading(false));
       }
@@ -65,9 +84,11 @@ const FullScreenSearch = ({ query = '', onClose }) => {
   }, [searchQuery]);
 
   useEffect(() => {
-    document.body.style.overflow = 'hidden';
+    document.body.style.overflow = "hidden";
     searchRef.current?.focus();
-    return () => document.body.style.overflow = 'unset';
+    return () => {
+      document.body.style.overflow = "unset";
+    };
   }, []);
 
   return (
@@ -81,27 +102,50 @@ const FullScreenSearch = ({ query = '', onClose }) => {
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search for albums, artists, or tracks..."
             className="w-full p-4 bg-grids border rounded-lg text-gray-300 text-xl focus:outline-none"
-            onKeyDown={(e) => e.key === 'Escape' && onClose()}
+            onKeyDown={(e) => e.key === "Escape" && onClose()}
           />
-          <button onClick={onClose} className="absolute right-4 text-gray-400 hover:text-white">
+          <button
+            onClick={onClose}
+            className="absolute right-4 text-gray-400 hover:text-white"
+          >
             <X size={24} />
           </button>
         </div>
-        
+
         <div className="mt-8 max-h-[70vh] overflow-y-auto">
           {loading ? (
             <div className="text-center text-gray-400">Searching...</div>
           ) : (
             <div className="flex flex-col md:flex-row md:gap-8">
               <div className="flex-1">
-                <ResultSection title="Tracks" items={results.tracks} type="track" onClose={onClose} />
-                <ResultSection title="Albums" items={results.albums} type="album" onClose={onClose} />
+                <ResultSection
+                  title="Tracks"
+                  items={results.tracks}
+                  type="track"
+                  onClose={onClose}
+                />
+                <ResultSection
+                  title="Albums"
+                  items={results.albums}
+                  type="album"
+                  onClose={onClose}
+                />
                 <div className="md:hidden">
-                  <ResultSection title="Artists" items={results.artists} type="artist" onClose={onClose} />
+                  <ResultSection
+                    title="Artists"
+                    items={results.artists}
+                    type="artist"
+                    onClose={onClose}
+                  />
                 </div>
               </div>
               <div className="hidden md:block w-140">
-                <ResultSection title="Artists" items={results.artists} type="artist" onClose={onClose} />
+                <ResultSection
+                  title="Artists"
+                  items={results.artists}
+                  type="artist"
+                  onClose={onClose}
+                />
               </div>
             </div>
           )}

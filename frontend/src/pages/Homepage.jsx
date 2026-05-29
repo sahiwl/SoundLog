@@ -1,7 +1,7 @@
-import NewReleases from '../components/NewReleases.jsx'
-import RecommendedAlbums from '../components/RecommendedAlbums.jsx'
-import SmartDiscovery from '../components/SmartDiscovery.jsx'
-import UserLiked from '../components/UserLiked.jsx'
+import NewReleases from '../components/NewReleases'
+import RecommendedAlbums from '../components/RecommendedAlbums'
+import SmartDiscovery from '../components/SmartDiscovery'
+import UserLiked from '../components/UserLiked'
 
 const Homepage = () => {
   return (

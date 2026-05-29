@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { axiosInstance } from "../lib/axios";
-import ActionForm from "../components/ActionForm.jsx";
+import ActionForm from "../components/ActionForm";
 import { showToast } from "../lib/toastConfig";
-import ReviewsSection from "../components/ReviewsSection.jsx";
+import ReviewsSection from "../components/ReviewsSection";
 import Background from "../components/Background";
 
 const AlbumPage = () => {

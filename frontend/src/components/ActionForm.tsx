@@ -1,35 +1,47 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+import { isAxiosError } from "axios";
 import { axiosInstance } from "../lib/axios";
-import { showToast } from '../lib/toastConfig';
+import { showToast } from "../lib/toastConfig";
 import useAuthStore from "../store/useAuthStore";
-import { Headphones, Heart, HeartOff, Check, BookmarkIcon, Trash2 } from "lucide-react";
+import {
+  Headphones,
+  Heart,
+  HeartOff,
+  Check,
+  BookmarkIcon,
+  Trash2,
+} from "lucide-react";
 import { toast, ToastContainer } from "react-toastify";
+import type { AlbumActionsState, MessageResponse } from "../types/api";
 
-const ActionForm = ({ albumId, onActionComplete }) => {
+type ActionType = "like" | "listen" | "listenLater";
 
+interface ActionFormProps {
+  albumId: string;
+  onActionComplete?: () => void;
+}
+
+const ActionForm = ({ albumId, onActionComplete }: ActionFormProps) => {
   const { authUser } = useAuthStore();
   const [reviewText, setReviewText] = useState("");
   const [loading, setLoading] = useState(false);
   const [isEditingRating, setIsEditingRating] = useState(false);
-  const [inputRating, setInputRating] = useState('');
+  const [inputRating, setInputRating] = useState("");
 
-  // const isOwnProfile = authUser?.username === username
-
-  // States from getActions
   const [listened, setListened] = useState(false);
   const [liked, setLiked] = useState(false);
   const [listenLater, setListenLater] = useState(false);
-  const [rating, setRating] = useState(null);
-  const [reviewed, setReviewed] = useState(false);
-
-
-
+  const [rating, setRating] = useState<number | null>(null);
+  const [_reviewed, setReviewed] = useState(false);
 
   useEffect(() => {
     const fetchActions = async () => {
       try {
-        const response = await axiosInstance.get(`/actions/albums/${albumId}`);
-        const { listened, liked, listenLater, rating, reviewed } = response.data;
+        const response = await axiosInstance.get<AlbumActionsState>(
+          `/actions/albums/${albumId}`
+        );
+        const { listened, liked, listenLater, rating, reviewed } =
+          response.data;
         setListened(listened);
         setLiked(liked);
         setListenLater(listenLater);
@@ -42,41 +54,48 @@ const ActionForm = ({ albumId, onActionComplete }) => {
     fetchActions();
   }, [albumId]);
 
-  const handleAction = async (actionType) => {
+  const handleAction = async (actionType: ActionType) => {
     try {
       setLoading(true);
-      let endpoint;
-      let newState;
-      
+      let endpoint: string;
+      let newState: boolean;
+
       switch (actionType) {
-        case 'like':
+        case "like":
           endpoint = `/actions/like/${albumId}`;
           newState = !liked;
           setLiked(newState);
           break;
-        case 'listen':
+        case "listen":
           endpoint = `/actions/listen/${albumId}`;
           newState = !listened;
           setListened(newState);
           break;
-        case 'listenLater':
+        case "listenLater":
           endpoint = `/actions/listenLater/${albumId}`;
           newState = !listenLater;
           setListenLater(newState);
           break;
-        default:
-          return;
       }
 
-      const response = await axiosInstance.post(endpoint);
+      const response = await axiosInstance.post<MessageResponse>(endpoint);
       showToast.success(response.data.message);
     } catch (error) {
-      showToast.error(error.response?.data?.message || `Error updating ${actionType}`);
-      // Revert state on error
+      showToast.error(
+        isAxiosError<{ message?: string }>(error)
+          ? error.response?.data?.message || `Error updating ${actionType}`
+          : `Error updating ${actionType}`
+      );
       switch (actionType) {
-        case 'like': setLiked(!liked); break;
-        case 'listen': setListened(!listened); break;
-        case 'listenLater': setListenLater(!listenLater); break;
+        case "like":
+          setLiked(!liked);
+          break;
+        case "listen":
+          setListened(!listened);
+          break;
+        case "listenLater":
+          setListenLater(!listenLater);
+          break;
       }
     } finally {
       setLoading(false);
@@ -84,19 +103,25 @@ const ActionForm = ({ albumId, onActionComplete }) => {
   };
 
   const handleSubmitRating = async () => {
-    const ratingNum = parseInt(inputRating);
+    const ratingNum = parseInt(inputRating, 10);
     if (isNaN(ratingNum) || ratingNum < 0 || ratingNum > 100) {
       showToast.warn("Rating must be a number between 0 and 100");
       return;
     }
     setLoading(true);
     try {
-      await axiosInstance.post(`/actions/rate/albums/${albumId}`, { rating: ratingNum });
+      await axiosInstance.post(`/actions/rate/albums/${albumId}`, {
+        rating: ratingNum,
+      });
       setRating(ratingNum);
-      setInputRating('');
+      setInputRating("");
       setIsEditingRating(false);
     } catch (error) {
-      showToast.error(error.response?.data?.message || "Error rating album");
+      showToast.error(
+        isAxiosError<{ message?: string }>(error)
+          ? error.response?.data?.message || "Error rating album"
+          : "Error rating album"
+      );
     } finally {
       setLoading(false);
     }
@@ -110,14 +135,19 @@ const ActionForm = ({ albumId, onActionComplete }) => {
 
     setLoading(true);
     try {
-      const resp = await axiosInstance.post(`/actions/review/${albumId}`, {
-        reviewText: reviewText.trim(),
-      });
+      const resp = await axiosInstance.post<MessageResponse>(
+        `/actions/review/${albumId}`,
+        { reviewText: reviewText.trim() }
+      );
       showToast.success(resp.data.message);
       setReviewText("");
       onActionComplete?.();
     } catch (error) {
-      showToast.error(error.response?.data?.message || "Error posting review");
+      showToast.error(
+        isAxiosError<{ message?: string }>(error)
+          ? error.response?.data?.message || "Error posting review"
+          : "Error posting review"
+      );
     } finally {
       setLoading(false);
     }
@@ -156,7 +186,11 @@ const ActionForm = ({ albumId, onActionComplete }) => {
       setIsEditingRating(false);
       showToast.success("Rating deleted successfully!");
     } catch (error) {
-      showToast.error(error?.response?.data?.message || "Failed to delete rating");
+      showToast.error(
+        isAxiosError<{ message?: string }>(error)
+          ? error.response?.data?.message || "Failed to delete rating"
+          : "Failed to delete rating"
+      );
     }
   };
 
@@ -220,41 +254,52 @@ const ActionForm = ({ albumId, onActionComplete }) => {
 
         <div className="ml-auto flex space-x-6">
           <button
-            onClick={() => handleAction('listen')}
+            onClick={() => handleAction("listen")}
             className="flex flex-col items-center"
             disabled={loading}
           >
             <span className="w-8 h-8 flex items-center justify-center">
-              <Headphones size={20} className={listened ? "text-green-500" : ""} />
+              <Headphones
+                size={20}
+                className={listened ? "text-green-500" : ""}
+              />
             </span>
             <span className="text-xs text-gray-400">
-              {listened ? 'LISTENED' : 'LISTEN'}
+              {listened ? "LISTENED" : "LISTEN"}
             </span>
           </button>
 
           <button
-            onClick={() => handleAction('like')}
+            onClick={() => handleAction("like")}
             className="flex flex-col items-center"
             disabled={loading}
           >
             <span className="w-8 h-8 flex items-center justify-center">
-              {liked ? <Heart fill="currentColor" size={20} className="text-red-500" /> : <HeartOff size={20} />}
+              {liked ? (
+                <Heart fill="currentColor" size={20} className="text-red-500" />
+              ) : (
+                <HeartOff size={20} />
+              )}
             </span>
             <span className="text-xs text-gray-400">
-              {liked ? 'LIKED' : 'LIKE'}
+              {liked ? "LIKED" : "LIKE"}
             </span>
           </button>
 
           <button
-            onClick={() => handleAction('listenLater')}
+            onClick={() => handleAction("listenLater")}
             className="flex flex-col items-center"
             disabled={loading}
           >
             <span className="w-8 h-8 flex items-center justify-center">
-              {listenLater ? <Check size={20} className="text-green-500" /> : <BookmarkIcon size={20} />}
+              {listenLater ? (
+                <Check size={20} className="text-green-500" />
+              ) : (
+                <BookmarkIcon size={20} />
+              )}
             </span>
             <span className="text-xs text-gray-400">
-              {listenLater ? 'ListenLater' : 'ListenLater'}
+              {listenLater ? "ListenLater" : "ListenLater"}
             </span>
           </button>
         </div>
@@ -264,7 +309,7 @@ const ActionForm = ({ albumId, onActionComplete }) => {
         value={reviewText}
         onChange={(e) => setReviewText(e.target.value)}
         className="w-full bg-gra-700 rounded p-3 bg-grids text-white"
-        rows="4"
+        rows={4}
         placeholder="Add a Review"
       />
 

@@ -1,7 +1,12 @@
 import { Link } from "react-router-dom";
 import AlbumImage from "./AlbumImage";
+import type { Album } from "../types/album";
 
-const PaginatedUserAlbumGrid = ({ albums }) => (
+interface PaginatedUserAlbumGridProps {
+  albums: Album[];
+}
+
+const PaginatedUserAlbumGrid = ({ albums }: PaginatedUserAlbumGridProps) => (
   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
     {albums.map((album) => (
       <Link

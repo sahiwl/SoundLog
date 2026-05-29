@@ -78,3 +78,15 @@ export interface RecommendationsResponse {
 
 export type AuthResponse = AuthUser;
 export type UserProfileResponse = UserProfile;
+
+export interface SearchResultItem {
+  id: string;
+  name: string;
+  artists?: { id?: string; name: string }[];
+}
+
+export interface SearchResults {
+  tracks: SearchResultItem[];
+  albums: SearchResultItem[];
+  artists: SearchResultItem[];
+}

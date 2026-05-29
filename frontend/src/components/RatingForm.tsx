@@ -1,33 +1,46 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+import { isAxiosError } from "axios";
+import { toast } from "react-toastify";
 import { axiosInstance } from "../lib/axios";
-import { showToast } from '../lib/toastConfig';
+import { showToast } from "../lib/toastConfig";
 import useAuthStore from "../store/useAuthStore";
 import { Trash2 } from "lucide-react";
+import type { RatingResponse } from "../types/api";
 
-const RatingForm = ({ trackId, onActionComplete }) => {
+interface RatingFormProps {
+  trackId: string;
+  onActionComplete?: () => void;
+}
+
+const RatingForm = ({ trackId, onActionComplete }: RatingFormProps) => {
   const { authUser } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [isEditingRating, setIsEditingRating] = useState(false);
-  const [inputRating, setInputRating] = useState('');
-
-  const [rating, setRating] = useState(null);
+  const [inputRating, setInputRating] = useState("");
+  const [rating, setRating] = useState<number | null>(null);
 
   const handleSubmitRating = async () => {
-    const ratingNum = parseInt(inputRating);
+    const ratingNum = parseInt(inputRating, 10);
     if (isNaN(ratingNum) || ratingNum < 0 || ratingNum > 100) {
       showToast.warn("Rating must be a number between 0 and 100");
       return;
     }
     setLoading(true);
     try {
-      const response = await axiosInstance.post(`/actions/rate/tracks/${trackId}`, { rating: ratingNum });
+      await axiosInstance.post(`/actions/rate/tracks/${trackId}`, {
+        rating: ratingNum,
+      });
       setRating(ratingNum);
-      setInputRating('');
+      setInputRating("");
       setIsEditingRating(false);
       showToast.success("Rating updated successfully!");
-      if (onActionComplete) onActionComplete();
+      onActionComplete?.();
     } catch (error) {
-      showToast.error(error?.response?.data?.message || "Failed to update rating");
+      showToast.error(
+        isAxiosError<{ message?: string }>(error)
+          ? error.response?.data?.message || "Failed to update rating"
+          : "Failed to update rating"
+      );
     } finally {
       setLoading(false);
     }
@@ -35,22 +48,22 @@ const RatingForm = ({ trackId, onActionComplete }) => {
 
   const handleDeleteRating = async () => {
     if (!rating) return;
-    
-    const toastId = showToast.info(
+
+    const toastId = toast.info(
       <div>
         <p>Delete this rating?</p>
         <div className="mt-2 flex justify-end gap-2">
           <button
             onClick={() => {
               deleteRating();
-              showToast.dismiss(toastId);
+              toast.dismiss(toastId);
             }}
             className="px-3 py-1 bg-red-500 text-white rounded text-sm"
           >
             Delete
           </button>
           <button
-            onClick={() => showToast.dismiss(toastId)}
+            onClick={() => toast.dismiss(toastId)}
             className="px-3 py-1 bg-gray-500 text-white rounded text-sm"
           >
             Cancel
@@ -68,26 +81,31 @@ const RatingForm = ({ trackId, onActionComplete }) => {
       setRating(null);
       setIsEditingRating(false);
       showToast.success("Rating deleted successfully!");
-      if (onActionComplete) onActionComplete();
+      onActionComplete?.();
     } catch (error) {
-      showToast.error(error?.response?.data?.message || "Failed to delete rating");
+      showToast.error(
+        isAxiosError<{ message?: string }>(error)
+          ? error.response?.data?.message || "Failed to delete rating"
+          : "Failed to delete rating"
+      );
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-     const fetchActions = async () => {
-       try {
-         const response = await axiosInstance.get(`/actions/rate/tracks/${trackId}`);
-         const { rating } = response.data;
-         setRating(rating);
-       } catch (error) {
-         console.error("Error fetching actions:", error);
-       }
-     };
-     fetchActions();
-   }, [trackId]);
+    const fetchActions = async () => {
+      try {
+        const response = await axiosInstance.get<RatingResponse>(
+          `/actions/rate/tracks/${trackId}`
+        );
+        setRating(response.data.rating);
+      } catch (error) {
+        console.error("Error fetching actions:", error);
+      }
+    };
+    fetchActions();
+  }, [trackId]);
 
   return (
     <div className="mt-8 bg-grids rounded p-4">
@@ -106,7 +124,7 @@ const RatingForm = ({ trackId, onActionComplete }) => {
           )}
         </div>
         <div className="flex-grow">
-        <p className="font-medium">{authUser?.username || "Anonymous"}</p>
+          <p className="font-medium">{authUser?.username || "Anonymous"}</p>
           <div className="flex items-center">
             {isEditingRating || !rating ? (
               <div className="">
@@ -145,8 +163,8 @@ const RatingForm = ({ trackId, onActionComplete }) => {
                 </button>
               </div>
             )}
-      </div>
-      </div>
+          </div>
+        </div>
       </div>
     </div>
   );

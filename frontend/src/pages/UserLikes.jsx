@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import Background from "../components/Background";
-import PaginatedUserAlbumGrid from "../components/PaginatedUserAlbumGrid.jsx";
+import PaginatedUserAlbumGrid from "../components/PaginatedUserAlbumGrid";
 import PaginationControls from "../components/PaginationControls";
 import { usePaginatedResource } from "../hooks/usePaginatedResource.js";
 
