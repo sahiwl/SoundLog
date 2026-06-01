@@ -11,8 +11,8 @@
     "moduleDetection": "force",
     "noEmit": true,
     "jsx": "react-jsx",
-    "strict": false,
-    "allowJs": true,
+    "strict": true,
+    "allowJs": false,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true

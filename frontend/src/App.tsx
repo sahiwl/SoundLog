@@ -33,7 +33,6 @@ function App() {
     checkAuth();
   }, [checkAuth]);
 
-
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [location.pathname]);
@@ -41,13 +40,16 @@ function App() {
   useEffect(() => {
     let isActive = true;
 
-    axiosInstance.get("/health")
+    axiosInstance
+      .get("/health")
       .catch(() => {})
       .finally(() => {
         if (isActive) setIsWarmingUp(false);
       });
 
-    return () => {isActive = false;};
+    return () => {
+      isActive = false;
+    };
   }, []);
 
   if (isWarmingUp && location.pathname === "/") return <LoadingScreen />;
