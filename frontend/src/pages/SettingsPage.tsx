@@ -1,12 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ChangeEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Camera } from "lucide-react";
 import useAuthStore from "../store/useAuthStore";
 import { axiosInstance } from "../lib/axios";
 import { showToast } from "../lib/toastConfig";
 import Background from "../components/Background";
-import FavouritesPicker from "../components/FavouritesPicker";
+import FavouritesPicker, {
+  type FavouriteAlbum,
+} from "../components/FavouritesPicker";
 import UserAvatar from "../components/UserAvatar";
+import type { UserProfile } from "../types/user";
 
 const inputClass =
   "mt-1 w-full rounded border border-gray-700 bg-zinc-800 px-4 py-2 text-sm text-gray-200 placeholder-gray-500 focus:border-white focus:outline-none";
@@ -17,13 +20,15 @@ const SettingsPage = () => {
   const { authUser, isUpdatingProfile, updateProfile } = useAuthStore();
   const navigate = useNavigate();
 
-  const [selectedImage, setSelectedImage] = useState(authUser?.profilePic || "");
+  const [selectedImage, setSelectedImage] = useState(
+    authUser?.profilePic || ""
+  );
   const [formData, setFormData] = useState({
     username: authUser?.username || "",
     email: authUser?.email || "",
     bio: authUser?.bio || "",
   });
-  const [favourites, setFavourites] = useState([]);
+  const [favourites, setFavourites] = useState<FavouriteAlbum[]>([]);
   const [loadingFavourites, setLoadingFavourites] = useState(true);
 
   useEffect(() => {
@@ -33,7 +38,9 @@ const SettingsPage = () => {
     (async () => {
       try {
         setLoadingFavourites(true);
-        const { data } = await axiosInstance.get(`/user/${authUser.username}`);
+        const { data } = await axiosInstance.get<UserProfile>(
+          `/user/${authUser.username}`
+        );
         if (!cancelled) setFavourites(data.favourites || []);
       } catch (err) {
         console.error("Failed to load favourites:", err);
@@ -47,15 +54,15 @@ const SettingsPage = () => {
     };
   }, [authUser?.username]);
 
-  const handleImageUpload = async (e) => {
-    const file = e.target.files[0];
+  const handleImageUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
     reader.readAsDataURL(file);
 
     reader.onload = async () => {
-      const base64Image = reader.result;
+      const base64Image = reader.result as string;
       setSelectedImage(base64Image);
       try {
         await updateProfile({ profilePic: base64Image });
@@ -68,11 +75,14 @@ const SettingsPage = () => {
     reader.onerror = () => showToast.error("Error reading image");
   };
 
-  const handleChange = (e) => {
+  const handleChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSave = async () => {
+    if (!authUser) return;
     try {
       await updateProfile({
         username: formData.username,
@@ -92,7 +102,6 @@ const SettingsPage = () => {
       className="text-white pt-28 pb-16 min-h-screen"
     >
       <div className="max-w-2xl mx-auto px-4 sm:px-6">
-        {/* Heading */}
         <div className="flex items-baseline justify-between mb-6">
           <div>
             <h1 className="text-3xl font-semibold tracking-tight">
@@ -113,7 +122,6 @@ const SettingsPage = () => {
         </div>
 
         <div className="bg-grids p-6 sm:p-8 rounded-lg shadow-xl space-y-8">
-          {/* Avatar */}
           <div className="flex flex-col items-center gap-3">
             <label
               htmlFor="imageUpload"
@@ -142,7 +150,6 @@ const SettingsPage = () => {
             </p>
           </div>
 
-          {/* Account */}
           <section>
             <h2 className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 mb-3">
               Account
@@ -173,7 +180,6 @@ const SettingsPage = () => {
             </div>
           </section>
 
-          {/* About */}
           <section>
             <h2 className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 mb-3">
               About
@@ -185,13 +191,12 @@ const SettingsPage = () => {
                 value={formData.bio}
                 onChange={handleChange}
                 placeholder="Tell people what you're listening to..."
-                rows="3"
+                rows={3}
                 className={`${inputClass} resize-none`}
               />
             </div>
           </section>
 
-          {/* Favourites */}
           <section>
             <h2 className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 mb-3">
               Favourite Albums
@@ -201,14 +206,10 @@ const SettingsPage = () => {
                 <span className="loading loading-spinner loading-md" />
               </div>
             ) : (
-              <FavouritesPicker
-                value={favourites}
-                onChange={setFavourites}
-              />
+              <FavouritesPicker value={favourites} onChange={setFavourites} />
             )}
           </section>
 
-          {/* Actions */}
           <div className="flex items-center justify-end gap-3 pt-2 border-t border-white/10">
             {authUser?.username && (
               <Link

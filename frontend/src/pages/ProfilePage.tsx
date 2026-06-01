@@ -5,8 +5,19 @@ import { axiosInstance } from "../lib/axios";
 import Background from "../components/Background";
 import AlbumImage from "../components/AlbumImage";
 import UserAvatar from "../components/UserAvatar";
+import type { AlbumSummary } from "../types/album";
+import type {
+  RecentReviewSummary,
+  UserProfile,
+  UserProfileStats,
+} from "../types/user";
 
-const FavouriteSlot = ({ album, index }) => {
+interface FavouriteSlotProps {
+  album?: AlbumSummary;
+  index: number;
+}
+
+const FavouriteSlot = ({ album, index }: FavouriteSlotProps) => {
   if (!album) {
     return (
       <div className="flex flex-col items-center gap-2">
@@ -40,7 +51,13 @@ const FavouriteSlot = ({ album, index }) => {
   );
 };
 
-const StatCard = ({ label, value, to }) => {
+interface StatCardProps {
+  label: string;
+  value?: number;
+  to?: string;
+}
+
+const StatCard = ({ label, value, to }: StatCardProps) => {
   const inner = (
     <div className="rounded-lg bg-white/5 border border-white/10 px-4 py-3 text-center hover:bg-white/10 transition-colors">
       <div className="text-2xl font-bold tracking-tight">{value ?? 0}</div>
@@ -56,7 +73,7 @@ const ProfilePage = () => {
   const { username } = useParams();
   const navigate = useNavigate();
   const { authUser } = useAuthStore();
-  const [userInfo, setUserInfo] = useState(null);
+  const [userInfo, setUserInfo] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const isOwnProfile = authUser?.username === username;
 
@@ -64,7 +81,9 @@ const ProfilePage = () => {
     const fetchUserProfile = async () => {
       try {
         setLoading(true);
-        const response = await axiosInstance.get(`/user/${username}`);
+        const response = await axiosInstance.get<UserProfile>(
+          `/user/${username}`
+        );
         setUserInfo(response.data);
       } catch (error) {
         console.error("Error fetching profile:", error);
@@ -94,8 +113,14 @@ const ProfilePage = () => {
   }
 
   const favourites = userInfo.favourites || [];
-  const stats = userInfo.stats || {};
-  const recentReviews = userInfo.recentReviews || [];
+  const stats: UserProfileStats = userInfo.stats || {
+    albums: 0,
+    reviews: 0,
+    likes: 0,
+    listenLater: 0,
+    listened: 0,
+  };
+  const recentReviews: RecentReviewSummary[] = userInfo.recentReviews || [];
 
   return (
     <Background
@@ -103,7 +128,6 @@ const ProfilePage = () => {
       className="text-white pt-24 min-h-screen"
     >
       <div className="max-w-5xl mx-auto px-4 sm:px-6 pb-16">
-        {/* Header */}
         <section className="flex flex-col sm:flex-row sm:items-end gap-6 pb-8 border-b border-white/10">
           <UserAvatar
             username={userInfo.username}
@@ -145,14 +169,15 @@ const ProfilePage = () => {
                 </span>{" "}
                 Following
               </span>
-              <span>
-                Joined {new Date(userInfo.createdAt).toLocaleDateString()}
-              </span>
+              {userInfo.createdAt && (
+                <span>
+                  Joined {new Date(userInfo.createdAt).toLocaleDateString()}
+                </span>
+              )}
             </div>
           </div>
         </section>
 
-        {/* Stats */}
         <section className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-3">
           <StatCard
             label="Albums"
@@ -176,7 +201,6 @@ const ProfilePage = () => {
           />
         </section>
 
-        {/* Favourites */}
         <section className="mt-10">
           <div className="flex items-baseline justify-between mb-4">
             <h2 className="text-sm font-semibold uppercase tracking-widest text-gray-400">
@@ -207,7 +231,6 @@ const ProfilePage = () => {
           )}
         </section>
 
-        {/* Recent Reviews */}
         <section className="mt-12">
           <div className="flex items-baseline justify-between mb-4">
             <h2 className="text-sm font-semibold uppercase tracking-widest text-gray-400">

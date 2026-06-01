@@ -2,12 +2,15 @@ import { Link, useParams } from "react-router-dom";
 import Background from "../components/Background";
 import AlbumImage from "../components/AlbumImage";
 import PaginationControls from "../components/PaginationControls";
-import { usePaginatedResource } from "../hooks/usePaginatedResource.js";
+import { usePaginatedResource } from "../hooks/usePaginatedResource";
+import type { UserReviewListItem } from "../types/review";
 
 const UserReviews = () => {
   const { username } = useParams();
   const { items, loading, error, currentPage, totalPages, goToPage } =
-    usePaginatedResource(username ? `/pages/${username}/reviews` : null);
+    usePaginatedResource<UserReviewListItem>(
+      username ? `/pages/${username}/reviews` : null
+    );
 
   if (loading) {
     return (
@@ -25,7 +28,7 @@ const UserReviews = () => {
       className="text-white pt-28 min-h-screen"
     >
       <div className="container mx-auto px-4 py-6">
-        <h1 className="text-3xl font-bold mb-6">{username}'s Reviews</h1>
+        <h1 className="text-3xl font-bold mb-6">{username}&apos;s Reviews</h1>
         <div className="space-y-6">
           {items.map((review) => (
             <div
@@ -53,10 +56,14 @@ const UserReviews = () => {
                   <div className="text-lg font-bold">
                     <span
                       className={
-                        review.rating === "NA" ? "text-gray-500" : "text-green-500"
+                        review.rating === "NA"
+                          ? "text-gray-500"
+                          : "text-green-500"
                       }
                     >
-                      {review.rating === "NA" ? "Not Rated" : `${review.rating}`}
+                      {review.rating === "NA"
+                        ? "Not Rated"
+                        : `${review.rating}`}
                     </span>
                   </div>
                 </div>
@@ -64,9 +71,11 @@ const UserReviews = () => {
                   <p className="text-gray-300">
                     {review.reviewText || "No review text provided."}
                   </p>
-                  <p className="text-gray-500 text-sm mt-2">
-                    {new Date(review.createdAt).toLocaleDateString()}
-                  </p>
+                  {review.createdAt && (
+                    <p className="text-gray-500 text-sm mt-2">
+                      {new Date(review.createdAt).toLocaleDateString()}
+                    </p>
+                  )}
                 </div>
               </Link>
             </div>

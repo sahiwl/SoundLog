@@ -90,3 +90,45 @@ export interface SearchResults {
   albums: SearchResultItem[];
   artists: SearchResultItem[];
 }
+
+/** /pages/tracks/:trackId */
+export interface TrackPageResponse {
+  track: CachedTrack;
+}
+
+export interface CachedTrack {
+  trackId: string;
+  name: string;
+  track_number?: number;
+  duration_ms?: number;
+  explicit?: boolean;
+  popularity?: number;
+  artists: { spotifyId: string; name: string; id?: string }[];
+  album?: {
+    spotifyId?: string;
+    name?: string;
+    release_date?: string;
+    images?: import("./spotify").SpotifyImage[];
+  };
+  external_urls?: { spotify?: string };
+  ratings?: {
+    _id: string;
+    rating: number;
+    createdAt?: string;
+    user?: { username: string };
+  }[];
+}
+
+/** /pages/artists/:artistId */
+export interface ArtistPageResponse {
+  artist: CachedArtist;
+}
+
+export interface CachedArtist {
+  name: string;
+  popularity?: number;
+  images?: import("./spotify").SpotifyImage[];
+  genres?: string[];
+  followers?: { total?: number };
+  external_urls?: { spotify?: string };
+}

@@ -1,8 +1,18 @@
 import { useCallback, useEffect, useState } from "react";
 import { axiosInstance } from "../lib/axios";
+import type { PaginatedAlbumsResponse, PaginatedReviewsResponse } from "../types/api";
 
-export const usePaginatedResource = (endpoint, { enabled = true } = {}) => {
-  const [items, setItems] = useState([]);
+type PaginatedData = PaginatedAlbumsResponse | PaginatedReviewsResponse;
+
+interface UsePaginatedResourceOptions {
+  enabled?: boolean;
+}
+
+export const usePaginatedResource = <T,>(
+  endpoint: string | null,
+  { enabled = true }: UsePaginatedResourceOptions = {}
+) => {
+  const [items, setItems] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -15,10 +25,15 @@ export const usePaginatedResource = (endpoint, { enabled = true } = {}) => {
       try {
         setLoading(true);
         setError("");
-        const response = await axiosInstance.get(endpoint, { params: { page } });
+        const response = await axiosInstance.get<PaginatedData>(endpoint, {
+          params: { page },
+        });
         const data = response.data;
 
-        setItems(data.albums ?? data.reviews ?? []);
+        const nextItems = (
+          "albums" in data ? data.albums : data.reviews
+        ) as T[];
+        setItems(nextItems);
         setCurrentPage(data.currentPage ?? page);
         setTotalPages(data.totalPages ?? 1);
       } catch (err) {
@@ -37,7 +52,7 @@ export const usePaginatedResource = (endpoint, { enabled = true } = {}) => {
     }
   }, [endpoint, enabled, fetchPage]);
 
-  const goToPage = (page) => {
+  const goToPage = (page: number) => {
     if (page > 0 && page <= totalPages) {
       fetchPage(page);
     }
