@@ -1,0 +1,31 @@
+import NewReleases from "../components/NewReleases";
+import RecommendedAlbums from "../components/RecommendedAlbums";
+import SmartDiscovery from "../components/SmartDiscovery";
+import UserLiked from "../components/UserLiked";
+
+const Homepage = () => (
+  <div className="text-white pt-28 min-h-screen ">
+    <div className="container mx-auto px-4 py-6 max-w-7xl ">
+      <div className="space-y-12">
+        <NewReleases />
+        <RecommendedAlbums />
+        <UserLiked />
+        <SmartDiscovery />
+
+        <section className="text-center py-16">
+          <div className="max-w-2xl mx-auto">
+            <h2 className="text-2xl md:text-3xl font-bold mb-4">
+              STICK FOR MORE 🐬
+            </h2>
+            <p className="text-gray-400 text-lg leading-relaxed">
+              Discover, rate, and review your favorite albums. Connect with
+              fellow music lovers and explore new sounds curated just for you.
+            </p>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+);
+
+export default Homepage;

@@ -1,0 +1,134 @@
+/**
+ * Shared API response shapes — match backend JSON (no { success, data } envelope).
+ * Expand as components migrate to TypeScript.
+ */
+
+import type { Album, AlbumCard } from "./album";
+import type { UserReviewListItem } from "./review";
+import type { AuthUser, UserProfile } from "./user";
+
+export interface MessageResponse {
+  message: string;
+}
+
+export interface ApiErrorResponse {
+  message: string;
+  aiRateLimitInfo?: AIRateLimitInfo;
+}
+
+/** Paginated user lists — albums, likes, listen later, reviews. */
+export interface PaginatedAlbumsResponse {
+  albums: Album[];
+  currentPage: number;
+  totalPages: number;
+  total: number;
+}
+
+export interface PaginatedReviewsResponse {
+  reviews: UserReviewListItem[];
+  currentPage: number;
+  totalPages: number;
+  total: number;
+}
+
+export interface AlbumActionsState {
+  listened: boolean;
+  liked: boolean;
+  listenLater: boolean;
+  rating: number | null;
+  reviewed: boolean;
+}
+
+export interface RatingResponse {
+  rating: number;
+}
+
+/** Batch track ratings — /actions/tracks/ratings?ids= */
+export type TrackRatingsMap = Record<string, number>;
+
+export interface AIRateLimitInfo {
+  canMakeRequest: boolean;
+  remainingRequests: number;
+  timeUntilReset: number;
+  maxRequests: number;
+  windowMs: number;
+  windowSeconds: number;
+  currentRequests: number;
+  isAtLimit: boolean;
+}
+
+export interface MoodRecommendations {
+  type: "mood" | "personalized";
+  mood?: string;
+  albums: AlbumCard[];
+  tracks: [];
+  tasteProfile?: string;
+  isUsingAiFallback?: boolean;
+  fallbackReason?: string;
+  needMoreData?: boolean;
+  error?: string;
+}
+
+export interface RecommendationsResponse {
+  recommendations: MoodRecommendations;
+  availableMoods: string[];
+  aiRateLimitInfo: AIRateLimitInfo;
+  aiPowered?: boolean;
+}
+
+export type AuthResponse = AuthUser;
+export type UserProfileResponse = UserProfile;
+
+export interface SearchResultItem {
+  id: string;
+  name: string;
+  artists?: { id?: string; name: string }[];
+}
+
+export interface SearchResults {
+  tracks: SearchResultItem[];
+  albums: SearchResultItem[];
+  artists: SearchResultItem[];
+}
+
+/** /pages/tracks/:trackId */
+export interface TrackPageResponse {
+  track: CachedTrack;
+}
+
+export interface CachedTrack {
+  trackId: string;
+  name: string;
+  track_number?: number;
+  duration_ms?: number;
+  explicit?: boolean;
+  popularity?: number;
+  artists: { spotifyId: string; name: string; id?: string }[];
+  album?: {
+    spotifyId?: string;
+    name?: string;
+    release_date?: string;
+    images?: import("./spotify").SpotifyImage[];
+  };
+  external_urls?: { spotify?: string };
+  ratings?: {
+    _id: string;
+    rating: number;
+    createdAt?: string;
+    user?: { username: string };
+  }[];
+}
+
+/** /pages/artists/:artistId */
+export interface ArtistPageResponse {
+  artist: CachedArtist;
+}
+
+export interface CachedArtist {
+  name: string;
+  popularity?: number;
+  images?: import("./spotify").SpotifyImage[];
+  genres?: string[];
+  followers?: { total?: number };
+  external_urls?: { spotify?: string };
+}
