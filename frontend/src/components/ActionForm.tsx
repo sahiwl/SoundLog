@@ -11,7 +11,7 @@ import {
   BookmarkIcon,
   Trash2,
 } from "lucide-react";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import type { AlbumActionsState, MessageResponse } from "../types/api";
 
 type ActionType = "like" | "listen" | "listenLater";
@@ -299,7 +299,7 @@ const ActionForm = ({ albumId, onActionComplete }: ActionFormProps) => {
               )}
             </span>
             <span className="text-xs text-gray-400">
-              {listenLater ? "ListenLater" : "ListenLater"}
+              {listenLater ? "SAVED" : "LATER"}
             </span>
           </button>
         </div>
@@ -308,7 +308,7 @@ const ActionForm = ({ albumId, onActionComplete }: ActionFormProps) => {
       <textarea
         value={reviewText}
         onChange={(e) => setReviewText(e.target.value)}
-        className="w-full bg-gra-700 rounded p-3 bg-grids text-white"
+        className="w-full rounded p-3 bg-grids text-white"
         rows={4}
         placeholder="Add a Review"
       />
@@ -324,7 +324,6 @@ const ActionForm = ({ albumId, onActionComplete }: ActionFormProps) => {
           </button>
         </div>
       </div>
-      <ToastContainer />
     </div>
   );
 };

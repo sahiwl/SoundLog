@@ -1,6 +1,6 @@
 import { useEffect, useState, type ChangeEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Camera } from "lucide-react";
+import { Camera, Eye, EyeOff } from "lucide-react";
 import useAuthStore from "../store/useAuthStore";
 import { axiosInstance } from "../lib/axios";
 import { showToast } from "../lib/toastConfig";
@@ -17,8 +17,10 @@ const inputClass =
 const labelClass = "block text-sm font-medium text-gray-300";
 
 const SettingsPage = () => {
-  const { authUser, isUpdatingProfile, updateProfile } = useAuthStore();
+  const { authUser, isUpdatingProfile, isChangingPassword, updateProfile, changePassword } =
+    useAuthStore();
   const navigate = useNavigate();
+  const isGoogleOnly = Boolean(authUser?.hasGoogleAuth);
 
   const [selectedImage, setSelectedImage] = useState(
     authUser?.profilePic || ""
@@ -30,6 +32,14 @@ const SettingsPage = () => {
   });
   const [favourites, setFavourites] = useState<FavouriteAlbum[]>([]);
   const [loadingFavourites, setLoadingFavourites] = useState(true);
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
     if (!authUser?.username) return;
@@ -79,6 +89,45 @@ const SettingsPage = () => {
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setPasswordData({ ...passwordData, [e.target.name]: e.target.value });
+  };
+
+  const handlePasswordSubmit = async () => {
+    const { currentPassword, newPassword, confirmPassword } = passwordData;
+
+    if (!newPassword || !confirmPassword) {
+      showToast.warn("Please fill in all password fields");
+      return;
+    }
+    if (newPassword.length < 6) {
+      showToast.warn("New password must be at least 6 characters");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      showToast.warn("New passwords do not match");
+      return;
+    }
+    if (!isGoogleOnly && !currentPassword) {
+      showToast.warn("Current password is required");
+      return;
+    }
+
+    const ok = await changePassword({
+      ...(isGoogleOnly ? {} : { currentPassword }),
+      newPassword,
+      confirmPassword,
+    });
+
+    if (ok) {
+      setPasswordData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+    }
   };
 
   const handleSave = async () => {
@@ -208,6 +257,106 @@ const SettingsPage = () => {
             ) : (
               <FavouritesPicker value={favourites} onChange={setFavourites} />
             )}
+          </section>
+
+          {/* Security */}
+          <section>
+            <h2 className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 mb-3">
+              Security
+            </h2>
+            <p className="text-sm text-gray-400 mb-4">
+              {isGoogleOnly
+                ? "Set a password to sign in with your username and password."
+                : "Change your account password."}
+            </p>
+            <div className="space-y-4">
+              {!isGoogleOnly && (
+                <div className="relative">
+                  <label className={labelClass}>Current password</label>
+                  <input
+                    type={showCurrentPassword ? "text" : "password"}
+                    name="currentPassword"
+                    value={passwordData.currentPassword}
+                    onChange={handlePasswordChange}
+                    autoComplete="current-password"
+                    className={inputClass}
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-3 top-9 text-gray-500 hover:text-white"
+                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                    aria-label={
+                      showCurrentPassword ? "Hide password" : "Show password"
+                    }
+                  >
+                    {showCurrentPassword ? (
+                      <Eye size={18} />
+                    ) : (
+                      <EyeOff size={18} />
+                    )}
+                  </button>
+                </div>
+              )}
+              <div className="relative">
+                <label className={labelClass}>New password</label>
+                <input
+                  type={showNewPassword ? "text" : "password"}
+                  name="newPassword"
+                  value={passwordData.newPassword}
+                  onChange={handlePasswordChange}
+                  autoComplete="new-password"
+                  placeholder="At least 6 characters"
+                  className={inputClass}
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-9 text-gray-500 hover:text-white"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                  aria-label={
+                    showNewPassword ? "Hide password" : "Show password"
+                  }
+                >
+                  {showNewPassword ? <Eye size={18} /> : <EyeOff size={18} />}
+                </button>
+              </div>
+              <div className="relative">
+                <label className={labelClass}>Confirm new password</label>
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  name="confirmPassword"
+                  value={passwordData.confirmPassword}
+                  onChange={handlePasswordChange}
+                  autoComplete="new-password"
+                  className={inputClass}
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-9 text-gray-500 hover:text-white"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  aria-label={
+                    showConfirmPassword ? "Hide password" : "Show password"
+                  }
+                >
+                  {showConfirmPassword ? (
+                    <Eye size={18} />
+                  ) : (
+                    <EyeOff size={18} />
+                  )}
+                </button>
+              </div>
+              <button
+                type="button"
+                onClick={handlePasswordSubmit}
+                disabled={isChangingPassword}
+                className="px-4 py-2 text-sm rounded border border-white/10 text-gray-200 hover:bg-white/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isChangingPassword
+                  ? "Updating..."
+                  : isGoogleOnly
+                    ? "Set password"
+                    : "Update password"}
+              </button>
+            </div>
           </section>
 
           <div className="flex items-center justify-end gap-3 pt-2 border-t border-white/10">

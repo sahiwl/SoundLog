@@ -9,6 +9,7 @@ export interface AuthUser {
   followers?: string[];
   following?: string[];
   favourites?: string[];
+  hasGoogleAuth?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -55,4 +56,10 @@ export interface UpdateUserProfileInput {
   email?: string;
   bio?: string;
   favourites?: string[];
+}
+
+export interface ChangePasswordInput {
+  currentPassword?: string;
+  newPassword: string;
+  confirmPassword: string;
 }

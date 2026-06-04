@@ -4,6 +4,7 @@ import { axiosInstance } from "../lib/axios";
 import { showToast } from "../lib/toastConfig";
 import type {
   AuthUser,
+  ChangePasswordInput,
   LoginInput,
   SignupInput,
   UpdateUserProfileInput,
@@ -20,11 +21,13 @@ interface AuthState {
   isCheckingAuth: boolean;
   isAuthenticated: boolean;
   isUpdatingProfile: boolean;
+  isChangingPassword: boolean;
   checkAuth: () => Promise<void>;
   signup: (data: SignupInput) => Promise<AuthActionResult>;
   signin: (data: LoginInput) => Promise<AuthActionResult>;
   logout: () => Promise<void>;
   updateProfile: (data: UpdateUserProfileInput) => Promise<void>;
+  changePassword: (data: ChangePasswordInput) => Promise<boolean>;
 }
 
 let authCheckPromise: Promise<void> | null = null;
@@ -44,6 +47,7 @@ const useAuthStore = create<AuthState>((set) => ({
   isCheckingAuth: true,
   isAuthenticated: false,
   isUpdatingProfile: false,
+  isChangingPassword: false,
 
   checkAuth: async () => {
     if (authCheckPromise) return authCheckPromise;
@@ -133,6 +137,21 @@ const useAuthStore = create<AuthState>((set) => ({
       showToast.error(getErrorMessage(error, "Update failed"));
     } finally {
       set({ isUpdatingProfile: false });
+    }
+  },
+
+  changePassword: async (data) => {
+    set({ isChangingPassword: true });
+    try {
+      await axiosInstance.patch("/auth/change-password", data);
+      showToast.success("Password updated successfully");
+      return true;
+    } catch (error) {
+      console.error("Error in changePassword:", error);
+      showToast.error(getErrorMessage(error, "Failed to update password"));
+      return false;
+    } finally {
+      set({ isChangingPassword: false });
     }
   },
 }));

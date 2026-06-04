@@ -65,6 +65,45 @@ export const loginUser = async ({username, password}: LoginInput): Promise<IUser
     return user;
 };
 
+
+interface ChangePasswordInput {
+    currentPassword?: string;
+    newPassword: string;
+}
+
+export const changePassword = async (
+    userId: string | Types.ObjectId,
+    { currentPassword, newPassword }: ChangePasswordInput
+): Promise<void> => {
+    const user = await User.findById(userId);
+    if (!user) {
+        throw new AppError("User not found", 404);
+    }
+    if (!user.password) {
+        throw new AppError("Password change is not available for this account", 400);
+    }
+
+    if (currentPassword) {
+        const ok = await bcrypt.compare(currentPassword, user.password);
+        if (!ok) {
+            throw new AppError("Current password is incorrect", 400);
+        }
+    } else if (user.googleId) {
+        // Google sign-in: allow first-time password set without current password
+    } else {
+        throw new AppError("Current password is required", 400);
+    }
+
+    if (await bcrypt.compare(newPassword, user.password)) {
+        throw new AppError("New password must be different from your current password", 400);
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+    await user.save();
+};
+
+
 export const updateUserProfile = async (userId: string | Types.ObjectId, { profilePic, username, email, bio, favourites }: UpdateUserProfileInput): Promise<IUser | null> => {
     if ( !profilePic && !username && !email && bio === undefined && !favourites) 
     {

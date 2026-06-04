@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express";
 import {
   checkAuth,
+  changePassword,
   login,
   logout,
   signup,
@@ -17,6 +18,7 @@ import {
   signupSchema,
   loginSchema,
   updateProfileSchema,
+  changePasswordSchema,
 } from "../validators/auth.schema.js";
 
 const router = express.Router();
@@ -48,6 +50,14 @@ router.get(
     generateToken(req.user._id, res);
     return res.redirect(`${frontendOrigin()}/auth-success`);
   }
+);
+
+router.patch(
+  "/change-password",
+  protectRoute,
+  authRateLimiter,
+  validate(changePasswordSchema),
+  asyncHandler(changePassword)
 );
 
 router.patch(

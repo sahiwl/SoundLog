@@ -44,5 +44,30 @@ export const updateProfile = async (req: AuthenticatedRequest, res: Response) =>
 };
 
 export const checkAuth = async (req: AuthenticatedRequest, res: Response) => {
-  res.status(200).json(req.user);
+  res.status(200).json({
+    _id: req.user._id,
+    username: req.user.username,
+    email: req.user.email,
+    profilePic: req.user.profilePic,
+    bio: req.user.bio,
+    followers: req.user.followers,
+    following: req.user.following,
+    favourites: req.user.favourites,
+    hasGoogleAuth: Boolean(req.user.googleId),
+  });
 };
+
+export const changePassword = async (req: AuthenticatedRequest,res: Response) => {
+  const { currentPassword, newPassword } = req.body as {
+    currentPassword?: string;
+    newPassword: string;
+    confirmPassword?: string;
+  };
+  await authService.changePassword(req.user._id, {
+    currentPassword,
+    newPassword,
+  });
+  res.status(200).json({ message: "Password updated successfully" });
+};
+
+
